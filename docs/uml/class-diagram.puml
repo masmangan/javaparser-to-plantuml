@@ -1,0 +1,15 @@
+@startuml
+hide empty members
+!theme blueprint
+package "io.github.masmangan.assis" {
+class AssisApp
+class GenerateClassDiagram
+}
+
+left to right direction
+note bottom
+Generated with ASSIS (Java → UML)
+Source repository:
+https://github.com/masmangan/javaparser-to-plantuml
+end note
+@enduml
