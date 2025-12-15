@@ -13,6 +13,12 @@ mvn -DskipTests package
 ```bash
 java -jar target/assis-1.0-SNAPSHOT.jar
 ```
+
+## Run (Development)
+```
+mvn -q -DskipTests exec:java -Dexec.mainClass=io.github.masmangan.assis.AssisApp
+```
+
 ## Classes Overview
 
 ![Assis](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/masmangan/javaparser-to-plantuml/refs/heads/main/docs/uml/class-diagram.puml)
