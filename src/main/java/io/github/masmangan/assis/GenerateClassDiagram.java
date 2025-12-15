@@ -14,7 +14,7 @@ import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -179,7 +179,7 @@ public class GenerateClassDiagram {
             pw.println("@enduml");
         }
 
-        System.out.println("Diagram at: " + out.toAbsolutePath());
+       // System.out.println("Diagram at: " + out.toAbsolutePath());
     }
 
     /**
@@ -190,6 +190,7 @@ public class GenerateClassDiagram {
     private static void addFooter(PrintWriter pw) {
         String timestamp = OffsetDateTime
                 .now(ZoneOffset.UTC)
+                .truncatedTo(ChronoUnit.SECONDS)
                 .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
         pw.println();
