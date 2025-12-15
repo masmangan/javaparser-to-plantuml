@@ -1,4 +1,4 @@
-@startuml
+@startuml class-diagram
 hide empty members
 !theme blueprint
 package "io.github.masmangan.assis" {
@@ -9,7 +9,7 @@ class GenerateClassDiagram
 left to right direction
 
 center footer
-Generated with ASSIS (Java -> UML) at: 2025-12-15T10:48:37.529665598Z
+Generated with ASSIS (Java -> UML) at: 2025-12-15T16:16:30.268621097Z
 https://github.com/masmangan/javaparser-to-plantuml
 end footer
 

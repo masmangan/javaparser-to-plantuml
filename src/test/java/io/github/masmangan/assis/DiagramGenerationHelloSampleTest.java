@@ -8,10 +8,16 @@ package io.github.masmangan.assis;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+
 import java.net.URISyntaxException;
 import java.net.URL;
+
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+
 import java.util.Comparator;
 
 import org.junit.jupiter.api.Test;
