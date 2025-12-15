@@ -22,7 +22,7 @@ This project is licensed under the MIT License.
 
 Assis uses existing open-source tools as building blocks:
 
-- **PlantUML** — UML diagram language  
+- **PlantUML** — UML tool 
   https://plantuml.com
 
 - **JavaParser** — Java source code parser  

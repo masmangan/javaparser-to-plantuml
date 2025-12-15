@@ -19,7 +19,7 @@ public final class AssisApp {
      * @throws Exception error reading source file or writing diagrams
      */
     public static void main(String[] args) throws Exception {
-        System.out.println("Assis, from Java to UML!");
+        System.out.println("ASSIS - from Java to UML!");
         GenerateClassDiagram.generate();
     }
 }
