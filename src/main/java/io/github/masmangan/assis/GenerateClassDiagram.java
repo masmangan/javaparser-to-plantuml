@@ -17,7 +17,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +27,7 @@ import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
@@ -42,9 +43,10 @@ public class GenerateClassDiagram {
         String pkg;
         String name;
         boolean isInterface;
-        Set<String> extendsTypes = new HashSet<>();
-        Set<String> implementsTypes = new HashSet<>();
-        Set<String> fieldsToTypes = new HashSet<>();
+        Set<String> extendsTypes = new LinkedHashSet<>();
+        Set<String> implementsTypes = new LinkedHashSet<>();
+        Set<String> fieldsToTypes = new LinkedHashSet<>();
+        Set<String> methods = new LinkedHashSet<>();
     }
 
     /**
@@ -116,6 +118,23 @@ public class GenerateClassDiagram {
                     info.fieldsToTypes.add(simpleName(t));
                 }
 
+                for (MethodDeclaration method : cid.getMethods()) {
+                    if (!method.isPublic())
+                        continue;
+
+                    String returnType = method.getType().asString();
+                    String name = method.getNameAsString();
+
+                    String params = method.getParameters().stream()
+                            .map(param -> param.getNameAsString() + " : " + param.getType().asString())
+                            .collect(Collectors.joining(", "));
+
+                    String staticTag = method.isStatic() ? " {static}" : "";
+
+                    String signature = "+ " + name + "(" + params + ") : " + returnType + staticTag;
+                    info.methods.add(signature);
+                }
+
                 types.put(info.name, info);
             }
         }
@@ -139,11 +158,17 @@ public class GenerateClassDiagram {
                     pw.println("package \"" + pkg + "\" {");
                 for (TypeInfo t : entry.getValue()) {
                     if (t.isInterface) {
-                        pw.println("interface " + t.name);
+                        pw.println("interface " + t.name + "{");
                     } else {
-                        pw.println("class " + t.name);
+                        pw.println("class " + t.name + "{");
                     }
+
+                    for (String m : t.methods) {
+                        pw.println("  " + m);
+                    }
+                    pw.println("}");
                 }
+
                 if (!pkg.isEmpty())
                     pw.println("}");
             }
@@ -179,7 +204,7 @@ public class GenerateClassDiagram {
             pw.println("@enduml");
         }
 
-       // System.out.println("Diagram at: " + out.toAbsolutePath());
+        // System.out.println("Diagram at: " + out.toAbsolutePath());
     }
 
     /**
@@ -195,7 +220,7 @@ public class GenerateClassDiagram {
 
         pw.println();
         pw.println("center footer");
-        pw.println("Generated with ASSIS (Java -> UML) at: " + timestamp);
+        pw.println("Generated with ASSIS (Java -> UML) at " + timestamp);
         pw.println("https://github.com/masmangan/javaparser-to-plantuml");
         pw.println("end footer");
         pw.println();

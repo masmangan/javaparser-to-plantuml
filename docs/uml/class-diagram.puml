@@ -2,14 +2,19 @@
 hide empty members
 !theme blueprint
 package "io.github.masmangan.assis" {
-class AssisApp
-class GenerateClassDiagram
+class AssisApp{
+  + main(args : String[]) : void {static}
+}
+class GenerateClassDiagram{
+  + generate() : void {static}
+  + generate(src : Path, out : Path) : void {static}
+}
 }
 
 left to right direction
 
 center footer
-Generated with ASSIS (Java -> UML) at: 2025-12-15T20:31:43Z
+Generated with ASSIS (Java -> UML) at 2025-12-15T21:49:07Z
 https://github.com/masmangan/javaparser-to-plantuml
 end footer
 

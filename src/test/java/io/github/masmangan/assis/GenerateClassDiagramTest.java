@@ -15,23 +15,23 @@ import org.junit.jupiter.api.io.TempDir;
 
 class GenerateClassDiagramTest {
 
-    @TempDir
-    Path tempDir;
+        @TempDir
+        Path tempDir;
 
-    @Test
-    void generatedDiagramContainsExpectedClasses() throws Exception {
-        Path output = tempDir.resolve("diagram.puml");
+        @Test
+        void generatedDiagramContainsExpectedClasses() throws Exception {
+                Path output = tempDir.resolve("diagram.puml");
 
-        GenerateClassDiagram.generate(
-                Path.of("src/main/java"),
-                output);
+                GenerateClassDiagram.generate(
+                                Path.of("src/main/java"),
+                                output);
 
-        String content = Files.readString(output);
+                String content = Files.readString(output);
 
-        assertTrue(content.contains("class AssisApp"),
-                "Diagram should contain AssisApp");
+                assertTrue(content.contains("class AssisApp"),
+                                "Diagram should contain AssisApp");
 
-        assertTrue(content.contains("class GenerateClassDiagram"),
-                "Diagram should contain GenerateClassDiagram");
-    }
+                assertTrue(content.contains("class GenerateClassDiagram"),
+                                "Diagram should contain GenerateClassDiagram");
+        }
 }
