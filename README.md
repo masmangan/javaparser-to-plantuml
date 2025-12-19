@@ -1,3 +1,5 @@
+[![CodeQL Advanced](https://github.com/masmangan/javaparser-to-plantuml/actions/workflows/codeql.yml/badge.svg)](https://github.com/masmangan/javaparser-to-plantuml/actions/workflows/codeql.yml)
+
 # javaparser-to-plantuml
 Generate a UML diagram from Java code, using Java Parser and PlantUML
 
