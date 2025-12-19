@@ -1,3 +1,4 @@
+[![SonarCloud analysis](https://github.com/masmangan/javaparser-to-plantuml/actions/workflows/sonarcloud.yml/badge.svg)](https://github.com/masmangan/javaparser-to-plantuml/actions/workflows/sonarcloud.yml)
 [![CodeQL Advanced](https://github.com/masmangan/javaparser-to-plantuml/actions/workflows/codeql.yml/badge.svg)](https://github.com/masmangan/javaparser-to-plantuml/actions/workflows/codeql.yml)
 
 # javaparser-to-plantuml
