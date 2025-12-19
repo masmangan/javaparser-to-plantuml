@@ -17,24 +17,12 @@ public final class AssisApp {
     }
 
     /**
-     * Extracts package version information.
-     * 
-     * @return
-     */
-    private static String versionOrDev() {
-        String v = AssisApp.class.getPackage().getImplementationVersion();
-        return (v == null || v.isBlank()) ? "dev" : v;
-    }
-
-    /**
      * Generates PlantUML class diagrams from Java source code.
      * 
      * @param args not used
      * @throws Exception error reading source file or writing diagrams
      */
     public static void main(String[] args) throws Exception {
-        System.out.println("ASSIS " + versionOrDev() + " (Java -> UML)");
-
         GenerateClassDiagram.generate();
     }
 }

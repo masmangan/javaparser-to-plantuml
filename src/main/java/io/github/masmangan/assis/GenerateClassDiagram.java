@@ -42,11 +42,10 @@ enum Kind {
  */
 public class GenerateClassDiagram {
 
-
     /**
      * 
      */
-    private Logger logger;
+    private static final Logger logger = Logger.getLogger(GenerateClassDiagram.class.getName());
 
     /**
      * 
@@ -65,6 +64,16 @@ public class GenerateClassDiagram {
         Set<String> implementsTypes = new LinkedHashSet<>();
         Set<String> fieldsToTypes = new LinkedHashSet<>();
         Set<String> methods = new LinkedHashSet<>();
+    }
+
+    /**
+     * Extracts package version information.
+     * 
+     * @return
+     */
+    private static String versionOrDev() {
+        String v = GenerateClassDiagram.class.getPackage().getImplementationVersion();
+        return (v == null || v.isBlank()) ? "dev" : v;
     }
 
     /**
@@ -87,11 +96,14 @@ public class GenerateClassDiagram {
      * @throws Exception
      */
     public static void generate(Path src, Path out) throws Exception {
+        logger.info("ASSIS " + versionOrDev() + " (Java -> UML)");
+
         ParserConfiguration config = new ParserConfiguration();
         config.setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17);
         StaticJavaParser.setConfiguration(config);
-        System.out.println("Scanning " + src);
+        logger.info("Scanning " + src);
 
+        //
         Map<String, TypeInfo> types = new HashMap<>();
         List<Path> files = new ArrayList<>();
         if (Files.exists(src)) {
@@ -106,7 +118,7 @@ public class GenerateClassDiagram {
             try {
                 cu = StaticJavaParser.parse(code);
             } catch (Exception e) {
-                System.err.println("Parser fail: " + p + " (" + e.getMessage() + ")");
+                logger.warning("Parser fail: " + p + " (" + e.getMessage() + ")");
                 continue;
             }
 
@@ -118,7 +130,7 @@ public class GenerateClassDiagram {
                         || td instanceof com.github.javaparser.ast.body.RecordDeclaration))
                     continue;
                 TypeInfo info = new TypeInfo();
-                                    info.pkg = pkg;
+                info.pkg = pkg;
 
                 if (td instanceof com.github.javaparser.ast.body.EnumDeclaration ed) {
                     info.name = ed.getNameAsString();
@@ -175,7 +187,7 @@ public class GenerateClassDiagram {
             }
         }
 
-        System.out.println("Writing " + out);
+        logger.info("Writing " + out);
 
         // Generate PlantUML
         try (PrintWriter pw = new PrintWriter(Files.newBufferedWriter(out))) {
@@ -244,7 +256,7 @@ public class GenerateClassDiagram {
             pw.println("@enduml");
         }
 
-        // System.out.println("Diagram at: " + out.toAbsolutePath());
+        
     }
 
     /**

@@ -9,12 +9,14 @@ class GenerateClassDiagram{
   + generate() : void {static}
   + generate(src : Path, out : Path) : void {static}
 }
+enum Kind {
+}
 }
 
 left to right direction
 
 center footer
-Generated with ASSIS (Java -> UML) at 2025-12-15T21:49:07Z
+Generated with ASSIS (Java -> UML) at 2025-12-19T15:14:41Z
 https://github.com/masmangan/javaparser-to-plantuml
 end footer
 
