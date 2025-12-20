@@ -17,6 +17,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -37,6 +38,10 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 enum Kind {
     CLASS, INTERFACE, ENUM, RECORD, ANNOTATION
+}
+
+enum Modifier {
+    ABSTRACT, FINAL
 }
 
 /**
@@ -62,8 +67,11 @@ public class GenerateClassDiagram {
         String pkg;
         String name;
         Kind kind = Kind.CLASS;
+        EnumSet<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
+
         Set<String> extendsTypes = new LinkedHashSet<>();
         Set<String> implementsTypes = new LinkedHashSet<>();
+
         Set<String> fieldsToTypes = new LinkedHashSet<>();
         Set<String> methods = new LinkedHashSet<>();
     }
@@ -129,9 +137,15 @@ public class GenerateClassDiagram {
      * @return
      */
     private static String getClassifier(TypeInfo t) {
-        String classifier = "class " + t.name + " {";
+        String classifier = "**error at classifier**  {";
         if (t.kind == Kind.CLASS) {
-            classifier = "class " + t.name + " {";
+            if (t.modifiers.contains(Modifier.ABSTRACT)) {
+                classifier = "abstract class " + t.name + " {";
+            } else if (t.modifiers.contains(Modifier.FINAL)) {
+                classifier = "class " + t.name + " <<final>>  {";
+            } else {
+                classifier = "class " + t.name + " {";
+            }
         } else if (t.kind == Kind.INTERFACE) {
             classifier = "interface " + t.name + " {";
         } else if (t.kind == Kind.RECORD) {
@@ -347,9 +361,15 @@ public class GenerateClassDiagram {
      */
     private static void scanClassOrInterface(TypeInfo info, ClassOrInterfaceDeclaration cid) {
         info.name = cid.getNameAsString();
-        info.kind = Kind.CLASS;
         if (cid.isInterface()) {
             info.kind = Kind.INTERFACE;
+        } else {
+            info.kind = Kind.CLASS;
+            if (cid.isAbstract()) {
+                info.modifiers.add(Modifier.ABSTRACT);
+            } else if (cid.isFinal()) {
+                info.modifiers.add(Modifier.FINAL);
+            }
         }
 
         // extends

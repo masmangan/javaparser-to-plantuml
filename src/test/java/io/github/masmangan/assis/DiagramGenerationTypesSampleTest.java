@@ -12,7 +12,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import static io.github.masmangan.assis.TestWorkbench.assertPumlContains;
 
-class DiagramGenerationTypeSampleTest {
+class DiagramGenerationTypesSampleTest {
 
     @TempDir
     Path tempDir;
