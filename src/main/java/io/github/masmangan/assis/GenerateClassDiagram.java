@@ -36,7 +36,7 @@ import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 enum Kind {
-    CLASS, INTERFACE, ENUM, RECORD
+    CLASS, INTERFACE, ENUM, RECORD, ANNOTATION
 }
 
 /**
@@ -130,13 +130,18 @@ public class GenerateClassDiagram {
      */
     private static String getClassifier(TypeInfo t) {
         String classifier = "class " + t.name + " {";
-
-        if (t.kind == Kind.INTERFACE) {
+        if (t.kind == Kind.CLASS) {
+            classifier = "class " + t.name + " {";
+        } else if (t.kind == Kind.INTERFACE) {
             classifier = "interface " + t.name + " {";
         } else if (t.kind == Kind.RECORD) {
-            classifier = "class " + t.name + " <<record>> {";
+            classifier = "record " + t.name + " {";
         } else if (t.kind == Kind.ENUM) {
             classifier = "enum " + t.name + " {";
+        } else if (t.kind == Kind.ANNOTATION) {
+            classifier = "annotation " + t.name + " {";
+        } else {
+            logger.log(Level.WARNING, () -> "Unexpected type: " + t.toString());
         }
 
         return classifier;
@@ -151,9 +156,11 @@ public class GenerateClassDiagram {
     private static void writePackages(PrintWriter pw, Map<String, List<TypeInfo>> byPkg) {
         for (var entry : byPkg.entrySet()) {
             String pkg = entry.getKey();
+
             if (!pkg.isEmpty()) {
                 pw.println("package \"" + pkg + "\" {");
             }
+
             for (TypeInfo t : entry.getValue()) {
                 String classifier = getClassifier(t);
                 pw.println(classifier);
@@ -312,10 +319,7 @@ public class GenerateClassDiagram {
      * @param td
      */
     private static void scanType(Map<String, TypeInfo> types, String pkg, TypeDeclaration<?> td) {
-        if (!(td instanceof ClassOrInterfaceDeclaration
-                || td instanceof com.github.javaparser.ast.body.EnumDeclaration
-                || td instanceof com.github.javaparser.ast.body.RecordDeclaration))
-            return;
+
         TypeInfo info = new TypeInfo();
         info.pkg = pkg;
 
@@ -325,8 +329,13 @@ public class GenerateClassDiagram {
         } else if (td instanceof com.github.javaparser.ast.body.RecordDeclaration rd) {
             info.name = rd.getNameAsString();
             info.kind = Kind.RECORD;
+        } else if (td instanceof com.github.javaparser.ast.body.AnnotationDeclaration ad) {
+            info.name = ad.getNameAsString();
+            info.kind = Kind.ANNOTATION;
         } else if (td instanceof ClassOrInterfaceDeclaration cid) {
             scanClassOrInterface(info, cid);
+        } else {
+            logger.log(Level.WARNING, () -> "Unexpected type: " + td.toString());
         }
         types.put(info.name, info);
     }
