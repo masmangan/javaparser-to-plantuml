@@ -12,21 +12,23 @@ import org.junit.jupiter.api.io.TempDir;
 
 import static io.github.masmangan.assis.TestWorkbench.assertPumlContains;
 
-class DiagramGenerationTypesSampleTest {
+class GenerateClassDiagramTypesSampleTest {
 
     @TempDir
     Path tempDir;
 
     @Test
-    void generatesDiagramContainingHelloClass() throws Exception {
-        String puml = TestWorkbench.generatePumlFromSample("samples/types", tempDir, "types");
+    void generatesDiagramContainingTypes() throws Exception {
+        String puml = TestWorkbench.generatePumlFromSample(
+                "samples/types",
+                tempDir,
+                "types");
 
         assertPumlContains(puml, "class Class");
         assertPumlContains(puml, "interface Interface");
         assertPumlContains(puml, "enum Enumeration");
         assertPumlContains(puml, "annotation Annotation");
         assertPumlContains(puml, "record Record");
-
     }
 
 }

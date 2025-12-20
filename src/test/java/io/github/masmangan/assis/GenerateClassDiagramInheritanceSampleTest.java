@@ -4,6 +4,7 @@
  */
 
 package io.github.masmangan.assis;
+
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
@@ -11,13 +12,16 @@ import org.junit.jupiter.api.io.TempDir;
 
 import static io.github.masmangan.assis.TestWorkbench.assertPumlContains;
 
-public class DiagramGenerationInheritanceSampleTest {
+class GenerateClassDiagramInheritanceSampleTest {
     @TempDir
     Path tempDir;
 
     @Test
-    void generatesDiagramContainingHelloClass() throws Exception {
-        String puml = TestWorkbench.generatePumlFromSample("samples/inheritance", tempDir, "inheritance");
+    void generatesDiagramContainingInheritance() throws Exception {
+        String puml = TestWorkbench.generatePumlFromSample(
+                "samples/inheritance",
+                tempDir,
+                "inheritance");
 
         // types
         assertPumlContains(puml, "interface A");
@@ -29,5 +33,5 @@ public class DiagramGenerationInheritanceSampleTest {
         assertPumlContains(puml, "A <|-- B");
         assertPumlContains(puml, "Base <|-- Child");
         assertPumlContains(puml, "B <|.. Child");
-    }    
+    }
 }

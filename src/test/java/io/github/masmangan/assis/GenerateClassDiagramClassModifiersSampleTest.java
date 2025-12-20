@@ -7,13 +7,16 @@ import org.junit.jupiter.api.io.TempDir;
 
 import static io.github.masmangan.assis.TestWorkbench.assertPumlContains;
 
-public class DiagramGenerationModifiersSampleTest {
+class GenerateClassDiagramClassModifiersSampleTest {
     @TempDir
     Path tempDir;
 
     @Test
     void generatesDiagramContainingHelloClass() throws Exception {
-        String puml = TestWorkbench.generatePumlFromSample("samples/modifiers", tempDir, "modifiers");
+        String puml = TestWorkbench.generatePumlFromSample(
+                "samples/cmodifiers",
+                tempDir,
+                "cmodifiers");
 
         assertPumlContains(puml, "abstract class AbstractClass");
         assertPumlContains(puml, "class FinalClass <<final>>");

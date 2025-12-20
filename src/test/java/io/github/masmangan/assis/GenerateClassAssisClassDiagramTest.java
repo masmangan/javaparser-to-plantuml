@@ -5,7 +5,7 @@
 
 package io.github.masmangan.assis;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static io.github.masmangan.assis.TestWorkbench.assertPumlContains;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,13 +13,13 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-class GenerateClassDiagramTest {
+class GenerateClassAssisClassDiagramTest {
 
         @TempDir
         Path tempDir;
 
         @Test
-        void generatedDiagramContainsExpectedClasses() throws Exception {
+        void generatedDiagramContainsAssisClasses() throws Exception {
                 Path output = tempDir.resolve("diagram.puml");
 
                 GenerateClassDiagram.generate(
@@ -28,10 +28,8 @@ class GenerateClassDiagramTest {
 
                 String content = Files.readString(output);
 
-                assertTrue(content.contains("class AssisApp"),
-                                "Diagram should contain AssisApp");
+                assertPumlContains(content, "class AssisApp");
 
-                assertTrue(content.contains("class GenerateClassDiagram"),
-                                "Diagram should contain GenerateClassDiagram");
+                assertPumlContains(content, "class GenerateClassDiagram");
         }
 }

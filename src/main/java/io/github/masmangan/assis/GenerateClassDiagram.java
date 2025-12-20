@@ -450,7 +450,9 @@ public class GenerateClassDiagram {
 
         if (method.isStatic()) {
             flags += " {static}";
-        } else if (method.isAbstract()) {
+        } 
+        
+        if (method.isAbstract()) {
             flags += " {abstract}";
         }
 

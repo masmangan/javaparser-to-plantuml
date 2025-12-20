@@ -12,14 +12,17 @@ import org.junit.jupiter.api.io.TempDir;
 
 import static io.github.masmangan.assis.TestWorkbench.assertPumlContains;
 
-class DiagramGenerationHelloSampleTest {
+class GenerateClassDiagramHelloSampleTest {
 
     @TempDir
     Path tempDir;
 
     @Test
     void generatesDiagramContainingHelloClass() throws Exception {
-        String puml = TestWorkbench.generatePumlFromSample("samples/hello", tempDir, "hello");
+        String puml = TestWorkbench.generatePumlFromSample(
+                "samples/hello",
+                tempDir,
+                "hello");
         assertPumlContains(puml, "class Hello");
         assertPumlContains(puml, "main");
     }

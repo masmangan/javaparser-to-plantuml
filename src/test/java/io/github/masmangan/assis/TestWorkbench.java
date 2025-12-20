@@ -22,7 +22,7 @@ public class TestWorkbench {
     static Path copySampleProjectToTemp(String resourcePath, Path targetDir)
             throws IOException, URISyntaxException {
 
-        URL url = DiagramGenerationHelloSampleTest.class.getClassLoader().getResource(resourcePath);
+        URL url = GenerateClassDiagramHelloSampleTest.class.getClassLoader().getResource(resourcePath);
         if (url == null) {
             throw new IllegalStateException("Resource not found: " + resourcePath);
         }

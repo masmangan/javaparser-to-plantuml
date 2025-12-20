@@ -1,4 +1,4 @@
-package samples.modifiers;
+package samples.cmodifiers;
 
 abstract class AbstractClass { }
 
