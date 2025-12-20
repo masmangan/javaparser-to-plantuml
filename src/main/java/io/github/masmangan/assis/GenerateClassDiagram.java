@@ -326,49 +326,74 @@ public class GenerateClassDiagram {
             info.name = rd.getNameAsString();
             info.kind = Kind.RECORD;
         } else if (td instanceof ClassOrInterfaceDeclaration cid) {
-            info.name = cid.getNameAsString();
-            info.kind = Kind.CLASS;
-            if (cid.isInterface()) {
-                info.kind = Kind.INTERFACE;
-            }
-            // extends
-            for (ClassOrInterfaceType ext : cid.getExtendedTypes()) {
-                info.extendsTypes.add(simpleName(ext.getNameAsString()));
-            }
-
-            // implements
-            for (ClassOrInterfaceType impl : cid.getImplementedTypes()) {
-                info.implementsTypes.add(simpleName(impl.getNameAsString()));
-            }
-
-            // fields -> association candidates
-            for (FieldDeclaration fd : cid.getFields()) {
-                String t = fd.getElementType().asString();
-                // tira generics e arrays simples
-                t = t.replaceAll("<.*>", "").replace("[]", "");
-                info.fieldsToTypes.add(simpleName(t));
-            }
-
-            // methods
-            for (MethodDeclaration method : cid.getMethods()) {
-                if (!method.isPublic()) {
-                    continue;
-                }
-
-                String returnType = method.getType().asString();
-                String name = method.getNameAsString();
-
-                String params = method.getParameters().stream()
-                        .map(param -> param.getNameAsString() + " : " + param.getType().asString())
-                        .collect(Collectors.joining(", "));
-
-                String flags = getFlags(method);
-
-                String signature = "+ " + name + "(" + params + ") : " + returnType + flags;
-                info.methods.add(signature);
-            }
+            scanClassOrInterface(info, cid);
         }
         types.put(info.name, info);
+    }
+
+    /**
+     * 
+     * @param info
+     * @param cid
+     */
+    private static void scanClassOrInterface(TypeInfo info, ClassOrInterfaceDeclaration cid) {
+        info.name = cid.getNameAsString();
+        info.kind = Kind.CLASS;
+        if (cid.isInterface()) {
+            info.kind = Kind.INTERFACE;
+        }
+        
+        // extends
+        for (ClassOrInterfaceType ext : cid.getExtendedTypes()) {
+            info.extendsTypes.add(simpleName(ext.getNameAsString()));
+        }
+
+        // implements
+        for (ClassOrInterfaceType impl : cid.getImplementedTypes()) {
+            info.implementsTypes.add(simpleName(impl.getNameAsString()));
+        }
+
+        // fields -> association candidates
+        for (FieldDeclaration fd : cid.getFields()) {
+            String t = scanField(fd);
+            info.fieldsToTypes.add(simpleName(t));
+        }
+
+        // methods
+        for (MethodDeclaration method : cid.getMethods()) {
+            if (!method.isPublic()) {
+                continue;
+            }
+
+            String signature = scanMethod(method);
+            info.methods.add(signature);
+        }
+    }
+
+    private static String scanField(FieldDeclaration fd) {
+        String t = fd.getElementType().asString();
+        // tira generics e arrays simples
+        t = t.replaceAll("<.*>", "").replace("[]", "");
+        return t;
+    }
+
+    /**
+     * 
+     * @param method
+     * @return
+     */
+    private static String scanMethod(MethodDeclaration method) {
+        String returnType = method.getType().asString();
+        String name = method.getNameAsString();
+
+        String params = method.getParameters().stream()
+                .map(param -> param.getNameAsString() + " : " + param.getType().asString())
+                .collect(Collectors.joining(", "));
+
+        String flags = getFlags(method);
+
+        String signature = "+ " + name + "(" + params + ") : " + returnType + flags;
+        return signature;
     }
 
     /**
@@ -394,11 +419,13 @@ public class GenerateClassDiagram {
      */
     private static String getFlags(MethodDeclaration method) {
         String flags = "";
+        
         if (method.isStatic()) {
             flags += " {static}";
         } else if (method.isAbstract()) {
             flags += " {abstract}";
         }
+
         if (method.isFinal()) {
             flags += " {final}";
         }
