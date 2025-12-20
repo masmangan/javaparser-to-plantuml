@@ -16,11 +16,7 @@ enum Kind {
 left to right direction
 
 center footer
-<<<<<<< HEAD
-Generated with ASSIS (Java -> UML) at 2025-12-20T02:54:33Z
-=======
-Generated with ASSIS (Java -> UML) at 2025-12-20T02:29:23Z
->>>>>>> 7403d1058ca45550a5cbd768f390a23cf479de5e
+Generated with ASSIS (Java -> UML) at 2025-12-20T03:04:08Z
 https://github.com/masmangan/javaparser-to-plantuml
 end footer
 
