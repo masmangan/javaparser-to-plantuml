@@ -11,7 +11,7 @@ package io.github.masmangan.assis;
 public final class AssisApp {
 
     /**
-     * 
+     * No constructor available.
      */
     private AssisApp() {
     }

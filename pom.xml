@@ -7,7 +7,7 @@
   <artifactId>assis</artifactId>
   <packaging>jar</packaging>
 
-  <version>0.3.0</version>
+  <version>0.4.0-SNAPSHOT</version>
 
   <name>assis</name>
 
@@ -24,7 +24,6 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
     <maven.compiler.release>17</maven.compiler.release>
     <junit.jupiter.version>5.10.2</junit.jupiter.version>
     <sonar.organization>masmangan</sonar.organization>
@@ -43,43 +42,35 @@
   </dependencyManagement>
 
   <dependencies>
-
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>com.github.javaparser</groupId>
       <artifactId>javaparser-core</artifactId>
       <version>3.25.9</version>
     </dependency>
-
   </dependencies>
 
   <build>
-
     <plugins>
-
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
         <version>3.1.0</version>
       </plugin>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-clean-plugin</artifactId>
         <version>3.3.2</version>
       </plugin>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
         <version>3.3.1</version>
       </plugin>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
@@ -92,7 +83,6 @@
           </archive>
         </configuration>
       </plugin>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -101,34 +91,27 @@
           <release>17</release>
         </configuration>
       </plugin>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.2.5</version>
       </plugin>
-
     <plugin>
       <groupId>org.sonarsource.scanner.maven</groupId>
       <artifactId>sonar-maven-plugin</artifactId>
       <version>5.5.0.6356</version>
     </plugin>
-
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>0.8.14</version>
         <executions>
-
-          <!-- Attach JaCoCo agent -->
           <execution>
             <id>prepare-agent</id>
             <goals>
               <goal>prepare-agent</goal>
             </goals>
           </execution>
-
-          <!-- Generate XML report for Sonar -->
           <execution>
             <id>report</id>
             <phase>verify</phase>
@@ -136,7 +119,6 @@
               <goal>report</goal>
             </goals>
           </execution>
-
         </executions>
       </plugin>
 
@@ -144,7 +126,6 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
         <version>3.5.1</version>
-
         <executions>
           <execution>
             <phase>package</phase>
@@ -171,9 +152,6 @@
           </execution>
         </executions>
       </plugin>
-
     </plugins>
-
   </build>
-
 </project>

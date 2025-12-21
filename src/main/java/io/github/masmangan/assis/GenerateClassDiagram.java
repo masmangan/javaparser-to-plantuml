@@ -16,6 +16,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -36,26 +37,42 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
+/**
+ * JLS Types.
+ */
 enum Kind {
     CLASS, INTERFACE, ENUM, RECORD, ANNOTATION
 }
 
+/**
+ * Class modifiers.
+ */
 enum Modifier {
     ABSTRACT, FINAL
 }
 
 /**
- * The {@code GenerateClassDiagram} class is a PlantUML class diagram generator.
+ * The {@code GenerateClassDiagram} class is a PlantUML Language class diagram generator.
  */
 public class GenerateClassDiagram {
 
     /**
-     * 
+     * Default documentation path.
+     */
+    private static final String DOCS_UML_CLASS_DIAGRAM_PUML = "docs/uml/class-diagram.puml";
+ 
+    /**
+     * Default source path.
+     */
+    private static final String SRC_MAIN_JAVA = "src/main/java";
+
+    /**
+     * Logs info and warnings.
      */
     private static final Logger logger = Logger.getLogger(GenerateClassDiagram.class.getName());
 
     /**
-     * 
+     * No constructor available.
      */
     private GenerateClassDiagram() {
     }
@@ -79,7 +96,7 @@ public class GenerateClassDiagram {
     /**
      * Extracts package version information.
      * 
-     * @return
+     * @return gets package information from Maven property, or dev otherwise.
      */
     private static String versionOrDev() {
         String v = GenerateClassDiagram.class.getPackage().getImplementationVersion();
@@ -92,8 +109,8 @@ public class GenerateClassDiagram {
      * @throws Exception
      */
     public static void generate() throws IOException {
-        Path src = Paths.get("src/main/java");
-        Path out = Paths.get("docs/uml/class-diagram.puml");
+        Path src = Paths.get(SRC_MAIN_JAVA);
+        Path out = Paths.get(DOCS_UML_CLASS_DIAGRAM_PUML);
         Files.createDirectories(out.getParent());
         generate(src, out);
     }
@@ -106,8 +123,8 @@ public class GenerateClassDiagram {
      * @throws Exception
      */
     public static void generate(Path src, Path out) throws IOException {
-        logger.log(Level.INFO, () -> "ASSIS " + versionOrDev() + " (Java -> UML)");
-
+        logger.log(Level.INFO, () -> assisLine());
+ 
         ParserConfiguration config = new ParserConfiguration();
         config.setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17);
         StaticJavaParser.setConfiguration(config);
@@ -123,15 +140,31 @@ public class GenerateClassDiagram {
 
     /**
      * 
+     * @return
+     */
+    private static String assisLine() {
+        return "ASSIS " + versionOrDev() + " (Java -> UML)";
+    }
+
+    /**
+     * Adds a header to the diagram.
+     * 
      * @param pw
      */
     private static void addHeader(PrintWriter pw) {
         pw.println("@startuml class-diagram");
+        pw.println();
         pw.println("hide empty members");
         pw.println("!theme blueprint");
+        pw.println("!pragma useIntermediatePackages false");
+        pw.println();
     }
 
     /**
+     * Get classifier and modifiers.
+     * 
+     * Kind enumeration defines available classifiers.
+     * Modifier enumeration defines available modifiers.
      * 
      * @param t
      * @return
@@ -162,6 +195,7 @@ public class GenerateClassDiagram {
     }
 
     /**
+     * Writes package contents to the diagram.
      * 
      * @param pw
      * @param byPkg
@@ -192,6 +226,7 @@ public class GenerateClassDiagram {
     }
 
     /**
+     * Writes relationships to the diagram.
      * 
      * @param pw
      * @param types
@@ -211,6 +246,7 @@ public class GenerateClassDiagram {
     }
 
     /**
+     * Writes associations from fields.
      * 
      * @param pw
      * @param types
@@ -225,6 +261,7 @@ public class GenerateClassDiagram {
     }
 
     /**
+     * Writes implements relationships.
      * 
      * @param pw
      * @param types
@@ -239,6 +276,7 @@ public class GenerateClassDiagram {
     }
 
     /**
+     * Writes implements relationships.
      * 
      * @param pw
      * @param types
@@ -253,6 +291,7 @@ public class GenerateClassDiagram {
     }
 
     /**
+     * Writes diagram contents.
      * 
      * @param out
      * @param types
@@ -281,6 +320,7 @@ public class GenerateClassDiagram {
     }
 
     /**
+     * Scans source code information.
      * 
      * @param src
      * @param types
@@ -296,6 +336,7 @@ public class GenerateClassDiagram {
     }
 
     /**
+     * Gest compilation unit from source code.
      * 
      * @param code
      * @return
@@ -310,6 +351,7 @@ public class GenerateClassDiagram {
     }
 
     /**
+     * Scans package list from source code.
      * 
      * @param types
      * @param p
@@ -319,7 +361,11 @@ public class GenerateClassDiagram {
         String code = Files.readString(p);
         CompilationUnit cu = getCompilationUnit(code);
 
-        String pkg = cu.getPackageDeclaration().map(pd -> pd.getName().toString()).orElse("");
+        String pkg = cu
+                .getPackageDeclaration()
+                .map(pd -> pd.getName()
+                        .toString())
+                .orElse("");
 
         for (TypeDeclaration<?> td : cu.getTypes()) {
             scanType(types, pkg, td);
@@ -399,9 +445,14 @@ public class GenerateClassDiagram {
         }
     }
 
+    /**
+     * Scans field but removes generics and arrays.
+     * 
+     * @param fd
+     * @return
+     */
     private static String scanField(FieldDeclaration fd) {
         String t = fd.getElementType().asString();
-        // tira generics e arrays simples
         t = t.replaceAll("<.*>", "").replace("[]", "");
         return t;
     }
@@ -450,8 +501,8 @@ public class GenerateClassDiagram {
 
         if (method.isStatic()) {
             flags += " {static}";
-        } 
-        
+        }
+
         if (method.isAbstract()) {
             flags += " {abstract}";
         }
@@ -476,7 +527,7 @@ public class GenerateClassDiagram {
         pw.println();
         pw.println("center footer");
         pw.println("Generated with ASSIS (Java -> UML) at " + timestamp);
-        pw.println("https://github.com/masmangan/javaparser-to-plantuml");
+        pw.println("https://github.com/masmangan/assis");
         pw.println("end footer");
         pw.println();
     }
