@@ -60,11 +60,13 @@ public class GenerateClassDiagram {
 
     /**
      * Default documentation path.
+     * We are borrowing from PlantUML folder convention.
      */
-    private static final String DOCS_UML_CLASS_DIAGRAM_PUML = "docs/uml/class-diagram.puml";
+    private static final String DOCS_UML_CLASS_DIAGRAM_PUML = "docs/diagrams/src/class-diagram.puml";
 
     /**
      * Default source path.
+     * We are borrowing from Maven folder convention.
      */
     private static final String SRC_MAIN_JAVA = "src/main/java";
 
@@ -491,10 +493,6 @@ public class GenerateClassDiagram {
 
         // methods
         for (MethodDeclaration method : cid.getMethods()) {
-            if (!method.isPublic()) {
-                continue;
-            }
-
             String signature = scanMethod(method);
             info.methods.add(signature);
         }

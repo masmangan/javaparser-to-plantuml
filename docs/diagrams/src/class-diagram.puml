@@ -1,0 +1,52 @@
+@startuml class-diagram
+
+hide empty members
+!theme blueprint
+!pragma useIntermediatePackages false
+
+package "io.github.masmangan.assis" {
+class AssisApp <<final>> {
+  + main(args : String[]) : void {static}
+}
+class GenerateClassDiagram {
+  - {static} DOCS_UML_CLASS_DIAGRAM_PUML : String {final}
+  - {static} SRC_MAIN_JAVA : String {final}
+  - {static} logger : Logger {final}
+  + versionOrDev() : String {static}
+  + generate() : void {static}
+  + generate(src : Path, out : Path) : void {static}
+  + assisLine() : String {static}
+  + addHeader(pw : PrintWriter) : void {static}
+  + getClassifier(t : TypeInfo) : String {static}
+  + writePackages(pw : PrintWriter, byPkg : Map<String,List<TypeInfo>>, types : Map<String,TypeInfo>, root : SourceRoot) : void {static}
+  + writeRelationships(pw : PrintWriter, types : Map<String,TypeInfo>, root : SourceRoot) : void {static}
+  + writeAssociations(pw : PrintWriter, types : Map<String,TypeInfo>, t : TypeInfo) : void {static}
+  + displayTypeFrom(vd : com.github.javaparser.ast.body.VariableDeclarator) : String {static}
+  + isAssociation(types : Map<String,TypeInfo>, t : TypeInfo, fr : FieldRef) : boolean {static}
+  + assocTypeFrom(fd : FieldDeclaration, vd : com.github.javaparser.ast.body.VariableDeclarator) : String {static}
+  + writeFields(pw : PrintWriter, types : Map<String,TypeInfo>, t : TypeInfo) : void {static}
+  + writeImplements(pw : PrintWriter, types : Map<String,TypeInfo>, t : TypeInfo) : void {static}
+  + writeExtends(pw : PrintWriter, types : Map<String,TypeInfo>, t : TypeInfo) : void {static}
+  + writeDiagram(out : Path, types : Map<String,TypeInfo>, root : SourceRoot) : void {static}
+  + scanSources(src : Path, types : Map<String,TypeInfo>) : SourceRoot {static}
+  + scanType(types : Map<String,TypeInfo>, pkg : String, td : TypeDeclaration<?>) : void {static}
+  + scanClassOrInterface(info : TypeInfo, cid : ClassOrInterfaceDeclaration) : void {static}
+  + scanMethod(method : MethodDeclaration) : String {static}
+  + getFlags(method : MethodDeclaration) : String {static}
+  + addFooter(pw : PrintWriter) : void {static}
+  + simpleName(qname : String) : String {static}
+}
+enum Kind {
+}
+enum Modifier {
+}
+}
+
+left to right direction
+
+center footer
+Generated with ASSIS (Java -> UML) at 2025-12-23T20:07:53Z
+https://github.com/masmangan/assis
+end footer
+
+@enduml
