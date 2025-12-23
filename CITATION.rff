@@ -1,0 +1,40 @@
+cff-version: 1.2.0
+
+title: "ASSIS: Back from Java — Java to UML"
+
+message: >
+  If you use ASSIS in academic work, please cite it using the metadata below.
+
+type: software
+
+authors:
+  - family-names: Mangan
+    given-names: Marco Aurélio Souza
+    country: BR
+    orcid: "https://orcid.org/0000-0002-8939-9155"
+
+version: "0.2.0"
+
+date-released: 2025-01-01
+
+abstract: >
+  ASSIS is an open-source reverse engineering tool that extracts descriptive
+  UML from Java source code. It is designed for novice and
+  intermediate programmers, supporting software comprehension, teaching,
+  and agile modeling practices. ASSIS leverages JavaParser and PlantUML to
+  generate customizable, layered diagrams aligned with educational and
+  architectural viewpoints.
+
+keywords:
+  - Java
+  - UML
+  - reverse engineering
+  - software modeling
+  - software visualization
+  - software architecture
+  - education
+
+license: MIT
+
+repository-code: "https://github.com/masmangan/assis"
+url: "https://github.com/masmangan/assis"
