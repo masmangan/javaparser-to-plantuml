@@ -12,7 +12,7 @@ class GenerateClassDiagramMethodModifiersSampleTest {
     Path tempDir;
 
     @Test
-    void generatesDiagramContainingHelloClass() throws Exception {
+    void generatesDiagramContainingMethodModifiers() throws Exception {
         String puml = TestWorkbench.generatePumlFromSample(
                 "samples/mmodifiers",
                 tempDir,

@@ -13,7 +13,7 @@ class GenerateClassDiagramDefaultPackageSampleTest {
     Path tempDir;
 
     @Test
-    void generatesDiagramContainingHelloClass() throws Exception {
+    void generatesDiagramContainingDefaultPackageClass() throws Exception {
         String puml = TestWorkbench.generatePumlFromSample(
                 "samples/defaultpackage",
                 tempDir,

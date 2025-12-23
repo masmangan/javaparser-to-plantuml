@@ -12,7 +12,7 @@ class GenerateClassDiagramEntitySampleTest {
     Path tempDir;
 
     @Test
-    void generatesDiagramContainingHelloClass() throws Exception {
+    void generatesDiagramContainingEntity() throws Exception {
         String puml = TestWorkbench.generatePumlFromSample(
                 "samples/entity",
                 tempDir,

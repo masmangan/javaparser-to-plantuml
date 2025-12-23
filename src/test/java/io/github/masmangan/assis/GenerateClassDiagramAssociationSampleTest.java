@@ -12,7 +12,7 @@ class GenerateClassDiagramAssociationSampleTest {
     Path tempDir;
 
     @Test
-    void generatesDiagramContainingHelloClass() throws Exception {
+    void generatesDiagramContainingAssociation() throws Exception {
         String puml = TestWorkbench.generatePumlFromSample(
                 "samples/association",
                 tempDir,
