@@ -1,0 +1,19 @@
+@startuml class-diagram
+
+hide empty members
+!theme blueprint
+!pragma useIntermediatePackages false
+package "samples.types" {
+  class "samples.types.Class" as Class
+  interface "samples.types.Interface" as Interface
+  record "samples.types.Record" as Record
+  enum "samples.types.Enumeration" as Enumeration
+  annotation "samples.types.Annotation" as Annotation
+}left to right direction
+
+center footer
+Generated with ASSIS (Java -> UML) at 2025-12-23T20:39:04Z
+https://github.com/masmangan/assis
+end footer
+
+@enduml
