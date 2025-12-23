@@ -94,6 +94,18 @@ public class GenerateClassDiagram {
     }
 
     /**
+     * 
+     */
+    static class MethodRef {
+        final MethodDeclaration method;
+
+        public MethodRef(MethodDeclaration method) {
+            this.method = method;
+        }
+
+    }
+
+    /**
      * Symbol table entry
      */
     static class TypeInfo {
@@ -106,7 +118,7 @@ public class GenerateClassDiagram {
         Set<String> extendsTypes = new LinkedHashSet<>();
         Set<String> implementsTypes = new LinkedHashSet<>();
         Set<FieldRef> fields = new LinkedHashSet<>();
-        Set<String> methods = new LinkedHashSet<>();
+        Set<MethodRef> methods = new LinkedHashSet<>();
         public TypeDeclaration<?> td;
         public CompilationUnit cu;
     }
@@ -239,9 +251,7 @@ public class GenerateClassDiagram {
 
                 writeFields(pw, types, t);
 
-                for (String m : t.methods) {
-                    pw.println("  " + m);
-                }
+                writeMethods(pw, types, t);
 
                 pw.println("}");
             }
@@ -251,6 +261,22 @@ public class GenerateClassDiagram {
             }
         }
 
+    }
+
+    private static void writeMethods(PrintWriter pw, Map<String, TypeInfo> types, TypeInfo t) {
+        for (MethodRef m : t.methods) {
+       String returnType = m.method.getType().asString();
+        String name = m.method.getNameAsString();
+
+        String params = m.method.getParameters().stream()
+                .map(param -> param.getNameAsString() + " : " + param.getType().asString())
+                .collect(Collectors.joining(", "));
+
+        String flags = getFlags(m.method);
+            String vis = getVisibility(m);
+
+            pw.println("  " + vis + " " + name + "(" + params + ") : " + returnType + flags);
+        }
     }
 
     /**
@@ -318,12 +344,7 @@ public class GenerateClassDiagram {
             String staticPrefix = fr.fd.isStatic() ? "{static} " : "";
 
             // visibility (optional now; easy to add)
-             String vis = switch (fr.fd.getAccessSpecifier()) {
-             case PUBLIC -> "+";
-             case PROTECTED -> "#";
-             case PRIVATE -> "-";
-             default -> "~";
-             };
+            String vis = getVisibility(fr);
 
             List<String> mods = new ArrayList<>();
             if (fr.fd.isFinal())
@@ -339,6 +360,24 @@ public class GenerateClassDiagram {
         }
     }
 
+    private static String getVisibility(FieldRef fr) {
+        String vis = switch (fr.fd.getAccessSpecifier()) {
+            case PUBLIC -> "+";
+            case PROTECTED -> "#";
+            case PRIVATE -> "-";
+            default -> "~";
+        };
+        return vis;
+    }
+    private static String getVisibility(MethodRef fr) {
+        String vis = switch (fr.method.getAccessSpecifier()) {
+            case PUBLIC -> "+";
+            case PROTECTED -> "#";
+            case PRIVATE -> "-";
+            default -> "~";
+        };
+        return vis;
+    }
     /**
      * Writes implements relationships.
      * 
@@ -493,27 +532,9 @@ public class GenerateClassDiagram {
 
         // methods
         for (MethodDeclaration method : cid.getMethods()) {
-            String signature = scanMethod(method);
-            info.methods.add(signature);
+            // String signature = scanMethod(method);
+            info.methods.add(new MethodRef(method));
         }
-    }
-
-    /**
-     * 
-     * @param method
-     * @return
-     */
-    private static String scanMethod(MethodDeclaration method) {
-        String returnType = method.getType().asString();
-        String name = method.getNameAsString();
-
-        String params = method.getParameters().stream()
-                .map(param -> param.getNameAsString() + " : " + param.getType().asString())
-                .collect(Collectors.joining(", "));
-
-        String flags = getFlags(method);
-
-        return "+ " + name + "(" + params + ") : " + returnType + flags;
     }
 
     /**
