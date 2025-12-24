@@ -11,9 +11,4 @@ package "samples.types" {
   annotation "samples.types.Annotation" as Annotation
 }left to right direction
 
-center footer
-Generated with ASSIS (Java -> UML) at 2025-12-23T20:39:04Z
-https://github.com/masmangan/assis
-end footer
-
 @enduml
