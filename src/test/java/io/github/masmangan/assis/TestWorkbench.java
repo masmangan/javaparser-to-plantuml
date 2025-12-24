@@ -80,7 +80,8 @@ public class TestWorkbench {
     }
 
     static String safeFileName(String s) {
-        if (s == null || s.isBlank()) return "_";
+        if (s == null || s.isBlank())
+            return "_";
         return s.replaceAll("[^a-zA-Z0-9._-]+", "_");
     }
 
@@ -128,13 +129,26 @@ public class TestWorkbench {
                 "Expected diagram to contain class: " + name);
     }
 
-static void assertAnyLineContainsAll(String puml, String... tokens) {
-    boolean ok = puml.lines().anyMatch(line -> {
-        for (String t : tokens) {
-            if (!line.contains(t)) return false;
+    static void assertAnyLineContainsAll(String puml, String... tokens) {
+        boolean ok = puml.lines().anyMatch(line -> {
+            for (String t : tokens) {
+                if (!line.contains(t))
+                    return false;
+            }
+            return true;
+        });
+        assertTrue(ok, "Expected a line containing: " + String.join(" AND ", tokens) + ". Content:\n" + puml);
+    }
+
+    static void assertAppearsInOrder(String text, String... fragments) {
+        int pos = -1;
+        for (String f : fragments) {
+            int next = text.indexOf(f);
+            if (next < 0)
+                throw new AssertionError("Missing fragment: " + f + "\n" + text);
+            if (next <= pos)
+                throw new AssertionError("Out of order: " + f + "\n" + text);
+            pos = next;
         }
-        return true;
-    });
-    assertTrue(ok, "Expected a line containing: " + String.join(" AND ", tokens) + ". Content:\n" + puml);
-}
+    }
 }
