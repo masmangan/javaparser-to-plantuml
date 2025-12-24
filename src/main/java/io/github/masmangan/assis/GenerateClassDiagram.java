@@ -29,6 +29,9 @@ import com.github.javaparser.utils.SourceRoot;
 import com.github.javaparser.ParseResult;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.AccessSpecifier;
+
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -39,10 +42,8 @@ import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.EnumConstantDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
-
 import com.github.javaparser.ast.nodeTypes.modifiers.NodeWithAccessModifiers;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.github.javaparser.ast.AccessSpecifier;
+
 /**
  * The {@code GenerateClassDiagram} class is a PlantUML Language class diagram
  * generator.
@@ -523,6 +524,16 @@ public class GenerateClassDiagram {
         }
     }
 
+    private static Map<String, List<TypeInfo>> sortPackagesByName(Map<String, List<TypeInfo>> byPkg) {
+        return byPkg.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (a, b) -> a,
+                        LinkedHashMap::new));
+    }
+
     /**
      * Writes diagram contents.
      * 
@@ -534,13 +545,14 @@ public class GenerateClassDiagram {
         try (PrintWriter pw = new PrintWriter(Files.newBufferedWriter(out))) {
             addHeader(pw);
 
-            // Map<String, List<TypeInfo>> byPkg = types.values().stream()
-            // .collect(Collectors.groupingBy(t -> t.pkg == null ? "" : t.pkg));
             Map<String, List<TypeInfo>> byPkg = types.values().stream()
                     .collect(Collectors.groupingBy(
                             t -> t.pkg == null ? "" : t.pkg,
                             LinkedHashMap::new,
                             Collectors.toList()));
+            byPkg = sortPackagesByName(byPkg);
+
+            byPkg.values().forEach(list -> list.sort((a, b) -> a.fqn.compareTo(b.fqn)));
             writePackages(pw, byPkg, types);
 
             writeRelationships(pw, types);
