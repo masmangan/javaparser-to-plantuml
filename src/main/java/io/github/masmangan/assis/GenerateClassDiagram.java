@@ -12,13 +12,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,29 +25,24 @@ import java.util.stream.Collectors;
 
 import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.StaticJavaParser;
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.FieldDeclaration;
-import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.body.TypeDeclaration;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.utils.SourceRoot;
 import com.github.javaparser.ParseResult;
 
-/**
- * JLS Types.
- */
-enum Kind {
-    CLASS, INTERFACE, ENUM, RECORD, ANNOTATION
-}
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.body.AnnotationDeclaration;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.RecordDeclaration;
+import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.ast.body.EnumConstantDeclaration;
+import com.github.javaparser.ast.body.EnumDeclaration;
 
-/**
- * Class modifiers.
- */
-enum Modifier {
-    ABSTRACT, FINAL
-}
-
+import com.github.javaparser.ast.nodeTypes.modifiers.NodeWithAccessModifiers;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.AccessSpecifier;
 /**
  * The {@code GenerateClassDiagram} class is a PlantUML Language class diagram
  * generator.
@@ -82,14 +73,50 @@ public class GenerateClassDiagram {
     }
 
     /**
+     * JLS Types.
+     */
+    enum Kind {
+        CLASS, INTERFACE, ENUM, RECORD, ANNOTATION
+    }
+
+    /**
+     * Class modifiers.
+     */
+    enum Modifier {
+        ABSTRACT, FINAL
+    }
+
+    /**
+     * 
+     */
+    static class EnumConstantRef {
+        final EnumConstantDeclaration ecd;
+
+        public EnumConstantRef(EnumConstantDeclaration ecd) {
+            this.ecd = ecd;
+        }
+    }
+
+    /**
      */
     static class FieldRef {
         final FieldDeclaration fd;
-        final com.github.javaparser.ast.body.VariableDeclarator vd;
+        final VariableDeclarator vd;
 
-        FieldRef(FieldDeclaration fd, com.github.javaparser.ast.body.VariableDeclarator vd) {
+        FieldRef(FieldDeclaration fd, VariableDeclarator vd) {
             this.fd = fd;
             this.vd = vd;
+        }
+    }
+
+    /**
+     * 
+     */
+    static class ConstructorRef {
+        final ConstructorDeclaration ctor;
+
+        public ConstructorRef(ConstructorDeclaration ctor) {
+            this.ctor = ctor;
         }
     }
 
@@ -120,6 +147,9 @@ public class GenerateClassDiagram {
         Set<String> implementsTypes = new LinkedHashSet<>();
         Set<FieldRef> fields = new LinkedHashSet<>();
         Set<MethodRef> methods = new LinkedHashSet<>();
+        Set<ConstructorRef> constructors = new LinkedHashSet<>();
+        List<EnumConstantRef> enumConstants = new ArrayList<>();
+
         TypeDeclaration<?> td;
         CompilationUnit cu;
     }
@@ -160,7 +190,7 @@ public class GenerateClassDiagram {
         config.setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17);
         StaticJavaParser.setConfiguration(config);
 
-        Map<String, TypeInfo> types = new HashMap<>();
+        Map<String, TypeInfo> types = new LinkedHashMap<>();
 
         logger.log(Level.INFO, () -> "Scanning " + src);
         scanSources(src, types);
@@ -186,6 +216,7 @@ public class GenerateClassDiagram {
         pw.println("@startuml class-diagram");
         pw.println();
         pw.println("hide empty members");
+        pw.println();
         pw.println("!theme blueprint");
         pw.println("!pragma useIntermediatePackages false");
         pw.println();
@@ -249,7 +280,11 @@ public class GenerateClassDiagram {
                 String classifier = getClassifier(t);
                 pw.println(classifier);
 
+                writeEnumConstants(pw, t);
+
                 writeFields(pw, types, t);
+
+                writeConstructors(pw, t);
 
                 writeMethods(pw, t);
 
@@ -263,6 +298,43 @@ public class GenerateClassDiagram {
 
     }
 
+    /**
+     * 
+     * @param pw
+     * @param t
+     */
+    private static void writeEnumConstants(PrintWriter pw, TypeInfo t) {
+        if (t.kind != Kind.ENUM)
+            return;
+
+        for (EnumConstantRef c : t.enumConstants) {
+            pw.println("  " + c.ecd.getNameAsString());
+        }
+    }
+
+    /**
+     * 
+     * @param pw
+     * @param t
+     */
+    private static void writeConstructors(PrintWriter pw, TypeInfo t) {
+        for (ConstructorRef c : t.constructors) {
+            String name = c.ctor.getNameAsString(); // "Person" (valid Java)
+            String params = c.ctor.getParameters().stream()
+                    .map(p -> p.getNameAsString() + " : " + p.getType().asString())
+                    .collect(Collectors.joining(", "));
+
+            String vis = getVisibility(c);
+
+            pw.println("  " + vis + " <<create>> " + name + "(" + params + ")");
+        }
+    }
+
+    /**
+     * 
+     * @param pw
+     * @param t
+     */
     private static void writeMethods(PrintWriter pw, TypeInfo t) {
         for (MethodRef m : t.methods) {
             String returnType = m.method.getType().asString();
@@ -288,13 +360,11 @@ public class GenerateClassDiagram {
      * @throws IOException
      */
     private static void writeRelationships(PrintWriter pw, Map<String, TypeInfo> types) {
-        // Extends and implements
         for (TypeInfo t : types.values()) {
             writeExtends(pw, types, t);
             writeImplements(pw, types, t);
         }
 
-        // Associations
         for (TypeInfo t : types.values()) {
             writeAssociations(pw, types, t);
         }
@@ -316,13 +386,25 @@ public class GenerateClassDiagram {
         }
     }
 
-    private static String displayTypeFrom(com.github.javaparser.ast.body.VariableDeclarator vd) {
+    /**
+     * 
+     * @param vd
+     * @return
+     */
+    private static String displayTypeFrom(VariableDeclarator vd) {
         return vd.getType().asString();
     }
 
+    /**
+     * 
+     * @param types
+     * @param owner
+     * @param vd
+     * @return
+     */
     private static String assocTypeFrom(Map<String, TypeInfo> types, TypeInfo owner,
-            com.github.javaparser.ast.body.VariableDeclarator vd) {
-        String raw = vd.getType().asString(); // better than fd.getElementType() for weird cases
+            VariableDeclarator vd) {
+        String raw = vd.getType().asString();
         raw = raw.replaceAll("<.*>", "").replace("[]", "").trim();
         String resolved = resolveTypeName(types, owner, raw);
         if (resolved == null)
@@ -332,10 +414,16 @@ public class GenerateClassDiagram {
         return resolved;
     }
 
+    /**
+     * 
+     * @param pw
+     * @param types
+     * @param t
+     */
     private static void writeFields(PrintWriter pw, Map<String, TypeInfo> types, TypeInfo t) {
         for (FieldRef fr : t.fields) {
             if (assocTypeFrom(types, t, fr.vd) != null) {
-                continue; // keep current behavior: association instead of attribute
+                continue;
             }
 
             String name = fr.vd.getNameAsString();
@@ -361,17 +449,41 @@ public class GenerateClassDiagram {
         }
     }
 
+    /**
+     * 
+     * @param fr
+     * @return
+     */
     private static String getVisibility(FieldRef fr) {
-        return switch (fr.fd.getAccessSpecifier()) {
-            case PUBLIC -> "+";
-            case PROTECTED -> "#";
-            case PRIVATE -> "-";
-            default -> "~";
-        };
+        return visibility(fr.fd);
     }
 
+    /**
+     * 
+     * @param fr
+     * @return
+     */
     private static String getVisibility(MethodRef fr) {
-        return switch (fr.method.getAccessSpecifier()) {
+        return visibility(fr.method);
+    }
+
+    /**
+     * 
+     * @param cr
+     * @return
+     */
+    private static String getVisibility(ConstructorRef cr) {
+        return visibility(cr.ctor);
+    }
+
+    /**
+     * 
+     * @param n
+     * @return
+     */
+    private static String visibility(NodeWithAccessModifiers<?> n) {
+        AccessSpecifier a = n.getAccessSpecifier();
+        return switch (a) {
             case PUBLIC -> "+";
             case PROTECTED -> "#";
             case PRIVATE -> "-";
@@ -419,14 +531,16 @@ public class GenerateClassDiagram {
      * @param root
      */
     private static void writeDiagram(Path out, Map<String, TypeInfo> types) {
-        // Generate PlantUML
         try (PrintWriter pw = new PrintWriter(Files.newBufferedWriter(out))) {
             addHeader(pw);
 
-            // packages
+            // Map<String, List<TypeInfo>> byPkg = types.values().stream()
+            // .collect(Collectors.groupingBy(t -> t.pkg == null ? "" : t.pkg));
             Map<String, List<TypeInfo>> byPkg = types.values().stream()
-                    .collect(Collectors.groupingBy(t -> t.pkg == null ? "" : t.pkg));
-
+                    .collect(Collectors.groupingBy(
+                            t -> t.pkg == null ? "" : t.pkg,
+                            LinkedHashMap::new,
+                            Collectors.toList()));
             writePackages(pw, byPkg, types);
 
             writeRelationships(pw, types);
@@ -442,6 +556,12 @@ public class GenerateClassDiagram {
         }
     }
 
+    /**
+     * 
+     * @param src
+     * @param types
+     * @throws IOException
+     */
     private static void scanSources(Path src, Map<String, TypeInfo> types) throws IOException {
         if (!Files.exists(src)) {
             logger.log(Level.WARNING, () -> "Source folder does not exist: " + src);
@@ -475,18 +595,22 @@ public class GenerateClassDiagram {
      * @param td
      */
     private static void scanType(Map<String, TypeInfo> types, CompilationUnit cu, String pkg, TypeDeclaration<?> td) {
-
         TypeInfo info = new TypeInfo();
         info.pkg = pkg;
         info.cu = cu;
         info.td = td;
-        if (td instanceof com.github.javaparser.ast.body.EnumDeclaration ed) {
+        if (td instanceof EnumDeclaration ed) {
             info.name = ed.getNameAsString();
             info.kind = Kind.ENUM;
-        } else if (td instanceof com.github.javaparser.ast.body.RecordDeclaration rd) {
+
+            for (EnumConstantDeclaration c : ed.getEntries()) {
+                info.enumConstants.add(new EnumConstantRef(c));
+            }
+
+        } else if (td instanceof RecordDeclaration rd) {
             info.name = rd.getNameAsString();
             info.kind = Kind.RECORD;
-        } else if (td instanceof com.github.javaparser.ast.body.AnnotationDeclaration ad) {
+        } else if (td instanceof AnnotationDeclaration ad) {
             info.name = ad.getNameAsString();
             info.kind = Kind.ANNOTATION;
         } else if (td instanceof ClassOrInterfaceDeclaration cid) {
@@ -505,6 +629,7 @@ public class GenerateClassDiagram {
      */
     private static void scanClassOrInterface(TypeInfo info, ClassOrInterfaceDeclaration cid) {
         info.name = cid.getNameAsString();
+
         if (cid.isInterface()) {
             info.kind = Kind.INTERFACE;
         } else {
@@ -518,12 +643,10 @@ public class GenerateClassDiagram {
                     .anyMatch(a -> a.getNameAsString().equals("Entity"));
         }
 
-        // extends
         for (ClassOrInterfaceType ext : cid.getExtendedTypes()) {
             info.extendsTypes.add(simpleName(ext.getNameAsString()));
         }
 
-        // implements
         for (ClassOrInterfaceType impl : cid.getImplementedTypes()) {
             info.implementsTypes.add(simpleName(impl.getNameAsString()));
         }
@@ -534,7 +657,10 @@ public class GenerateClassDiagram {
             }
         }
 
-        // methods
+        for (ConstructorDeclaration ctor : cid.getConstructors()) {
+            info.constructors.add(new ConstructorRef(ctor));
+        }
+
         for (MethodDeclaration method : cid.getMethods()) {
             info.methods.add(new MethodRef(method));
         }
@@ -569,16 +695,9 @@ public class GenerateClassDiagram {
      * @param pw this translation open printwriter
      */
     private static void addFooter(PrintWriter pw) {
-        String timestamp = OffsetDateTime
-                .now(ZoneOffset.UTC)
-                .truncatedTo(ChronoUnit.SECONDS)
-                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-
         pw.println();
-        pw.println("center footer");
-        pw.println("Generated with ASSIS (Java -> UML) at " + timestamp);
-        pw.println("https://github.com/masmangan/assis");
-        pw.println("end footer");
+        pw.println("' Generated with ASSIS (Java -> UML)");
+        pw.println("' https://github.com/masmangan/assis");
         pw.println();
     }
 
@@ -610,21 +729,17 @@ public class GenerateClassDiagram {
         if (raw.isEmpty())
             return null;
 
-        // Already-qualified?
         if (raw.contains(".") && types.containsKey(raw)) {
             return raw;
         }
 
-        // Reduce to simple name for matching
         String simple = simpleName(raw);
 
-        // Same package candidate (handles your JLS Other shadowing correctly)
         String samePkg = (owner.pkg == null || owner.pkg.isEmpty()) ? simple : owner.pkg + "." + simple;
         if (types.containsKey(samePkg)) {
             return samePkg;
         }
 
-        // Unique match across all known types
         String suffix = "." + simple;
         String found = null;
         for (String key : types.keySet()) {
