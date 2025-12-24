@@ -73,8 +73,6 @@ public class TestWorkbench {
         Path dir = GALLERY_ROOT.resolve(safeTest);
         Files.createDirectories(dir);
 
-        // Optional: include timestamp to avoid overwriting when iterating quickly
-        // If you prefer deterministic filenames, remove the timestamp suffix.
         String ts = OffsetDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
         Path dst = dir.resolve(safeBase + "-" + ts + ".puml");
 
@@ -129,4 +127,14 @@ public class TestWorkbench {
                 puml.contains(name) || puml.contains("class \"" + name + "\""),
                 "Expected diagram to contain class: " + name);
     }
+
+static void assertAnyLineContainsAll(String puml, String... tokens) {
+    boolean ok = puml.lines().anyMatch(line -> {
+        for (String t : tokens) {
+            if (!line.contains(t)) return false;
+        }
+        return true;
+    });
+    assertTrue(ok, "Expected a line containing: " + String.join(" AND ", tokens) + ". Content:\n" + puml);
+}
 }
