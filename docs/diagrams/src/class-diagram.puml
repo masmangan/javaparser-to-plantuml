@@ -1,10 +1,15 @@
 @startuml class-diagram
 
 hide empty members
+
 !theme blueprint
 !pragma useIntermediatePackages false
 
 package "io.github.masmangan.assis" {
+class "io.github.masmangan.assis.AssisApp" <<final>> {
+  - <<create>> AssisApp()
+  + main(args : String[]) : void {static}
+}
 class "io.github.masmangan.assis.GenerateClassDiagram" {
   - {static} DOCS_UML_CLASS_DIAGRAM_PUML : String {final}
   - {static} SRC_MAIN_JAVA : String {final}
@@ -22,8 +27,8 @@ class "io.github.masmangan.assis.GenerateClassDiagram" {
   - writeMethods(pw : PrintWriter, t : TypeInfo) : void {static}
   - writeRelationships(pw : PrintWriter, types : Map<String,TypeInfo>) : void {static}
   - writeAssociations(pw : PrintWriter, types : Map<String,TypeInfo>, t : TypeInfo) : void {static}
-  - displayTypeFrom(vd : com.github.javaparser.ast.body.VariableDeclarator) : String {static}
-  - assocTypeFrom(types : Map<String,TypeInfo>, owner : TypeInfo, vd : com.github.javaparser.ast.body.VariableDeclarator) : String {static}
+  - displayTypeFrom(vd : VariableDeclarator) : String {static}
+  - assocTypeFrom(types : Map<String,TypeInfo>, owner : TypeInfo, vd : VariableDeclarator) : String {static}
   - writeFields(pw : PrintWriter, types : Map<String,TypeInfo>, t : TypeInfo) : void {static}
   - getVisibility(fr : FieldRef) : String {static}
   - getVisibility(fr : MethodRef) : String {static}
@@ -31,6 +36,7 @@ class "io.github.masmangan.assis.GenerateClassDiagram" {
   - visibility(n : NodeWithAccessModifiers<?>) : String {static}
   - writeImplements(pw : PrintWriter, types : Map<String,TypeInfo>, t : TypeInfo) : void {static}
   - writeExtends(pw : PrintWriter, types : Map<String,TypeInfo>, t : TypeInfo) : void {static}
+  - sortPackagesByName(byPkg : Map<String,List<TypeInfo>>) : Map<String,List<TypeInfo>> {static}
   - writeDiagram(out : Path, types : Map<String,TypeInfo>) : void {static}
   - scanSources(src : Path, types : Map<String,TypeInfo>) : void {static}
   - scanType(types : Map<String,TypeInfo>, cu : CompilationUnit, pkg : String, td : TypeDeclaration<?>) : void {static}
@@ -39,10 +45,6 @@ class "io.github.masmangan.assis.GenerateClassDiagram" {
   - addFooter(pw : PrintWriter) : void {static}
   - simpleName(qname : String) : String {static}
   - resolveTypeName(types : Map<String,TypeInfo>, owner : TypeInfo, name : String) : String {static}
-}
-class "io.github.masmangan.assis.AssisApp" <<final>> {
-  - <<create>> AssisApp()
-  + main(args : String[]) : void {static}
 }
 }
 
