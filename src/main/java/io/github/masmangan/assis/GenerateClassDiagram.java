@@ -43,6 +43,7 @@ import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.EnumConstantDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.nodeTypes.modifiers.NodeWithAccessModifiers;
+import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 
 /**
  * The {@code GenerateClassDiagram} class is a PlantUML Language class diagram
@@ -103,10 +104,12 @@ public class GenerateClassDiagram {
     static class FieldRef {
         final FieldDeclaration fd;
         final VariableDeclarator vd;
+        final List<String> stereotypes;
 
         FieldRef(FieldDeclaration fd, VariableDeclarator vd) {
             this.fd = fd;
             this.vd = vd;
+            this.stereotypes = stereotypesOf(fd);
         }
     }
 
@@ -115,9 +118,11 @@ public class GenerateClassDiagram {
      */
     static class ConstructorRef {
         final ConstructorDeclaration ctor;
+        final List<String> stereotypes;
 
         public ConstructorRef(ConstructorDeclaration ctor) {
             this.ctor = ctor;
+            this.stereotypes = stereotypesOf(ctor);
         }
     }
 
@@ -126,11 +131,12 @@ public class GenerateClassDiagram {
      */
     static class MethodRef {
         final MethodDeclaration method;
+        final List<String> stereotypes;
 
         public MethodRef(MethodDeclaration method) {
             this.method = method;
+            this.stereotypes = stereotypesOf(method);
         }
-
     }
 
     /**
@@ -142,7 +148,6 @@ public class GenerateClassDiagram {
         String fqn;
         Kind kind = Kind.CLASS;
         EnumSet<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
-        boolean jpaEntity = false;
 
         Set<String> extendsTypes = new LinkedHashSet<>();
         Set<String> implementsTypes = new LinkedHashSet<>();
@@ -150,6 +155,8 @@ public class GenerateClassDiagram {
         Set<MethodRef> methods = new LinkedHashSet<>();
         Set<ConstructorRef> constructors = new LinkedHashSet<>();
         List<EnumConstantRef> enumConstants = new ArrayList<>();
+
+        List<String> stereotypes = new ArrayList<>();
 
         TypeDeclaration<?> td;
         CompilationUnit cu;
@@ -224,6 +231,15 @@ public class GenerateClassDiagram {
     }
 
     /**
+     * 
+     * @param td
+     * @param info
+     */
+    private static void collectAnnotations(TypeDeclaration<?> td, TypeInfo info) {
+        td.getAnnotations().forEach(a -> info.stereotypes.add(a.getName().getIdentifier()));
+    }
+
+    /**
      * Get classifier and modifiers.
      * 
      * Kind enumeration defines available classifiers.
@@ -241,23 +257,21 @@ public class GenerateClassDiagram {
                 classifier = "class \"" + t.fqn + "\"" + " <<final>>";
             } else {
                 classifier = "class \"" + t.fqn + "\"";
-                if (t.jpaEntity) {
-                    classifier += " <<Entity>>";
-                }
             }
-            classifier += " {";
+            // classifier += renderStereotypes(t) ;
         } else if (t.kind == Kind.INTERFACE) {
-            classifier = "interface \"" + t.fqn + "\"" + " {";
+            classifier = "interface \"" + t.fqn + "\"";
         } else if (t.kind == Kind.RECORD) {
-            classifier = "record \"" + t.fqn + "\"" + " {";
+            classifier = "record \"" + t.fqn + "\"";
         } else if (t.kind == Kind.ENUM) {
-            classifier = "enum \"" + t.fqn + "\"" + " {";
+            classifier = "enum \"" + t.fqn + "\"";
         } else if (t.kind == Kind.ANNOTATION) {
-            classifier = "annotation \"" + t.fqn + "\"" + " {";
+            classifier = "annotation \"" + t.fqn + "\"";
         } else {
             logger.log(Level.WARNING, () -> "Unexpected type: " + t.toString());
         }
-
+        classifier += renderStereotypes(t);
+        classifier += " {";
         return classifier;
     }
 
@@ -327,7 +341,8 @@ public class GenerateClassDiagram {
 
             String vis = getVisibility(c);
 
-            pw.println("  " + vis + " <<create>> " + name + "(" + params + ")");
+            //pw.println("  " + vis + " <<create>> " + name + "(" + params + ")");
+            pw.println("  " + vis + " <<create>> " + name + "(" + params + ")" + renderStereotypes(c.stereotypes));
         }
     }
 
@@ -342,13 +357,16 @@ public class GenerateClassDiagram {
             String name = m.method.getNameAsString();
 
             String params = m.method.getParameters().stream()
-                    .map(param -> param.getNameAsString() + " : " + param.getType().asString())
+                    .map(p -> {
+                        String anns = renderStereotypes(stereotypesOf(p));
+                        return (anns + " " + p.getNameAsString() + " : " + p.getType().asString()).trim();
+                    })
                     .collect(Collectors.joining(", "));
-
             String flags = getFlags(m.method);
             String vis = getVisibility(m);
 
-            pw.println("  " + vis + " " + name + "(" + params + ") : " + returnType + flags);
+            pw.println("  " + vis + " " + name + "(" + params + ") : " + returnType + flags
+                    + renderStereotypes(m.stereotypes));
         }
     }
 
@@ -446,7 +464,9 @@ public class GenerateClassDiagram {
 
             String modBlock = mods.isEmpty() ? "" : " {" + String.join(", ", mods) + "}";
 
-            pw.println("  " + vis + " " + staticPrefix + name + " : " + type + modBlock);
+            // pw.println(" " + vis + " " + staticPrefix + name + " : " + type + modBlock);
+            pw.println("  " + vis + " " + staticPrefix + name + " : " + type + modBlock
+                    + renderStereotypes(fr.stereotypes));
         }
     }
 
@@ -524,6 +544,11 @@ public class GenerateClassDiagram {
         }
     }
 
+    /**
+     * 
+     * @param byPkg
+     * @return
+     */
     private static Map<String, List<TypeInfo>> sortPackagesByName(Map<String, List<TypeInfo>> byPkg) {
         return byPkg.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
@@ -600,6 +625,33 @@ public class GenerateClassDiagram {
 
     }
 
+    private static List<String> stereotypesOf(NodeWithAnnotations<?> n) {
+        return n.getAnnotations().stream()
+                .map(a -> a.getName().getIdentifier()) // simple name only
+                .collect(Collectors.toList());
+    }
+
+    private static String renderStereotypes(List<String> ss) {
+        if (ss == null || ss.isEmpty())
+            return "";
+        return " " + ss.stream()
+                .map(s -> "<<" + s + ">>")
+                .collect(Collectors.joining(" "));
+    }
+
+    /**
+     * 
+     * @param t
+     * @return
+     */
+    private static String renderStereotypes(TypeInfo t) {
+        if (t.stereotypes.isEmpty())
+            return "";
+        return " " + t.stereotypes.stream()
+                .map(s -> "<<" + s + ">>")
+                .collect(Collectors.joining(" "));
+    }
+
     /**
      * 
      * @param types
@@ -630,7 +682,13 @@ public class GenerateClassDiagram {
         } else {
             logger.log(Level.WARNING, () -> "Unexpected type: " + td.toString());
         }
-        info.fqn = info.pkg == null || info.pkg.isEmpty() ? info.name : info.pkg + "." + info.name;
+
+        collectAnnotations(td, info);
+
+        info.fqn = info.pkg == null || info.pkg.isEmpty()
+                ? info.name
+                : info.pkg + "." + info.name;
+
         types.put(info.fqn, info);
     }
 
@@ -651,8 +709,6 @@ public class GenerateClassDiagram {
             } else if (cid.isFinal()) {
                 info.modifiers.add(Modifier.FINAL);
             }
-            info.jpaEntity = cid.getAnnotations().stream()
-                    .anyMatch(a -> a.getNameAsString().equals("Entity"));
         }
 
         for (ClassOrInterfaceType ext : cid.getExtendedTypes()) {
