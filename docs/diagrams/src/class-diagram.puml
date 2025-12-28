@@ -20,6 +20,7 @@ class "io.github.masmangan.assis.GenerateClassDiagram" {
   + generate(src : Path, out : Path) : void {static}
   - assisLine() : String {static}
   - addHeader(pw : PrintWriter) : void {static}
+  - collectAnnotations(td : TypeDeclaration<?>, info : TypeInfo) : void {static}
   - getClassifier(t : TypeInfo) : String {static}
   - writePackages(pw : PrintWriter, byPkg : Map<String,List<TypeInfo>>, types : Map<String,TypeInfo>) : void {static}
   - writeEnumConstants(pw : PrintWriter, t : TypeInfo) : void {static}
@@ -39,6 +40,7 @@ class "io.github.masmangan.assis.GenerateClassDiagram" {
   - sortPackagesByName(byPkg : Map<String,List<TypeInfo>>) : Map<String,List<TypeInfo>> {static}
   - writeDiagram(out : Path, types : Map<String,TypeInfo>) : void {static}
   - scanSources(src : Path, types : Map<String,TypeInfo>) : void {static}
+  - renderStereotypes(t : TypeInfo) : String {static}
   - scanType(types : Map<String,TypeInfo>, cu : CompilationUnit, pkg : String, td : TypeDeclaration<?>) : void {static}
   - scanClassOrInterface(info : TypeInfo, cid : ClassOrInterfaceDeclaration) : void {static}
   - getFlags(method : MethodDeclaration) : String {static}
