@@ -40,6 +40,8 @@ class "io.github.masmangan.assis.GenerateClassDiagram" {
   - sortPackagesByName(byPkg : Map<String,List<TypeInfo>>) : Map<String,List<TypeInfo>> {static}
   - writeDiagram(out : Path, types : Map<String,TypeInfo>) : void {static}
   - scanSources(src : Path, types : Map<String,TypeInfo>) : void {static}
+  - stereotypesOf(n : NodeWithAnnotations<?>) : List<String> {static}
+  - renderStereotypes(ss : List<String>) : String {static}
   - renderStereotypes(t : TypeInfo) : String {static}
   - scanType(types : Map<String,TypeInfo>, cu : CompilationUnit, pkg : String, td : TypeDeclaration<?>) : void {static}
   - scanClassOrInterface(info : TypeInfo, cid : ClassOrInterfaceDeclaration) : void {static}
