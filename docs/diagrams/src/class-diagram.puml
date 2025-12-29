@@ -22,6 +22,7 @@ class "io.github.masmangan.assis.GenerateClassDiagram" {
   - addHeader(pw : PrintWriter) : void {static}
   - collectAnnotations(td : TypeDeclaration<?>, info : TypeInfo) : void {static}
   - getClassifier(t : TypeInfo) : String {static}
+  - writeRecordComponents(pw : PrintWriter, types : Map<String,TypeInfo>, t : TypeInfo) : void {static}
   - writePackages(pw : PrintWriter, byPkg : Map<String,List<TypeInfo>>, types : Map<String,TypeInfo>) : void {static}
   - writeEnumConstants(pw : PrintWriter, t : TypeInfo) : void {static}
   - writeConstructors(pw : PrintWriter, t : TypeInfo) : void {static}
@@ -43,14 +44,79 @@ class "io.github.masmangan.assis.GenerateClassDiagram" {
   - stereotypesOf(n : NodeWithAnnotations<?>) : List<String> {static}
   - renderStereotypes(ss : List<String>) : String {static}
   - renderStereotypes(t : TypeInfo) : String {static}
-  - scanType(types : Map<String,TypeInfo>, cu : CompilationUnit, pkg : String, td : TypeDeclaration<?>) : void {static}
+  - scanType(types : Map<String,TypeInfo>, cu : CompilationUnit, pkg : String, td : TypeDeclaration<?>, owner : TypeInfo) : void {static}
+  - scanNestedTypes(types : Map<String,TypeInfo>, cu : CompilationUnit, pkg : String, td : TypeDeclaration<?>, owner : TypeInfo) : void {static}
+  - pumlName(t : TypeInfo) : String {static}
+  - fqn(t : TypeInfo) : String {static}
   - scanClassOrInterface(info : TypeInfo, cid : ClassOrInterfaceDeclaration) : void {static}
   - getFlags(method : MethodDeclaration) : String {static}
   - addFooter(pw : PrintWriter) : void {static}
   - simpleName(qname : String) : String {static}
   - resolveTypeName(types : Map<String,TypeInfo>, owner : TypeInfo, name : String) : String {static}
 }
+class "io.github.masmangan.assis.GenerateClassDiagram_ConstructorRef" {
+  ~ ctor : ConstructorDeclaration {final}
+  ~ stereotypes : List<String> {final}
+  + <<create>> ConstructorRef(ctor : ConstructorDeclaration)
 }
+class "io.github.masmangan.assis.GenerateClassDiagram_EnumConstantRef" {
+  ~ ecd : EnumConstantDeclaration {final}
+  + <<create>> EnumConstantRef(ecd : EnumConstantDeclaration)
+}
+class "io.github.masmangan.assis.GenerateClassDiagram_FieldRef" {
+  ~ fd : FieldDeclaration {final}
+  ~ vd : VariableDeclarator {final}
+  ~ stereotypes : List<String> {final}
+  ~ <<create>> FieldRef(fd : FieldDeclaration, vd : VariableDeclarator)
+}
+enum "io.github.masmangan.assis.GenerateClassDiagram_Kind" {
+  CLASS
+  INTERFACE
+  ENUM
+  RECORD
+  ANNOTATION
+}
+class "io.github.masmangan.assis.GenerateClassDiagram_MethodRef" {
+  ~ method : MethodDeclaration {final}
+  ~ stereotypes : List<String> {final}
+  + <<create>> MethodRef(method : MethodDeclaration)
+}
+enum "io.github.masmangan.assis.GenerateClassDiagram_Modifier" {
+  ABSTRACT
+  FINAL
+}
+class "io.github.masmangan.assis.GenerateClassDiagram_RecordComponentRef" {
+  ~ name : String {final}
+  ~ type : com.github.javaparser.ast.type.Type {final}
+  ~ <<create>> RecordComponentRef(name : String, type : com.github.javaparser.ast.type.Type)
+}
+class "io.github.masmangan.assis.GenerateClassDiagram_TypeInfo" {
+  ~ pkg : String
+  ~ name : String
+  ~ fqn : String
+  ~ modifiers : EnumSet<Modifier>
+  ~ extendsTypes : Set<String>
+  ~ implementsTypes : Set<String>
+  ~ fields : Set<FieldRef>
+  ~ methods : Set<MethodRef>
+  ~ constructors : Set<ConstructorRef>
+  ~ enumConstants : List<EnumConstantRef>
+  ~ stereotypes : List<String>
+  ~ td : TypeDeclaration<?>
+  ~ cu : CompilationUnit
+  ~ ownerFqn : String
+  ~ recordComponents : List<RecordComponentRef>
+}
+}
+"io.github.masmangan.assis.GenerateClassDiagram" +-- "io.github.masmangan.assis.GenerateClassDiagram_Kind"
+"io.github.masmangan.assis.GenerateClassDiagram" +-- "io.github.masmangan.assis.GenerateClassDiagram_Modifier"
+"io.github.masmangan.assis.GenerateClassDiagram" +-- "io.github.masmangan.assis.GenerateClassDiagram_RecordComponentRef"
+"io.github.masmangan.assis.GenerateClassDiagram" +-- "io.github.masmangan.assis.GenerateClassDiagram_EnumConstantRef"
+"io.github.masmangan.assis.GenerateClassDiagram" +-- "io.github.masmangan.assis.GenerateClassDiagram_FieldRef"
+"io.github.masmangan.assis.GenerateClassDiagram" +-- "io.github.masmangan.assis.GenerateClassDiagram_ConstructorRef"
+"io.github.masmangan.assis.GenerateClassDiagram" +-- "io.github.masmangan.assis.GenerateClassDiagram_MethodRef"
+"io.github.masmangan.assis.GenerateClassDiagram" +-- "io.github.masmangan.assis.GenerateClassDiagram_TypeInfo"
+"io.github.masmangan.assis.GenerateClassDiagram.TypeInfo" --> "io.github.masmangan.assis.GenerateClassDiagram.Kind" : kind
 
 left to right direction
 
