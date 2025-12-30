@@ -32,12 +32,14 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.AccessSpecifier;
 
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.EnumConstantDeclaration;
@@ -86,17 +88,19 @@ public class GenerateClassDiagram {
 		ABSTRACT, FINAL
 	}
 	
+	/**
+	 * 
+	 */
 	static class RecordComponentRef {
-	    final String name;
-	    final com.github.javaparser.ast.type.Type type;
-
-	    RecordComponentRef(String name, com.github.javaparser.ast.type.Type type) {
-	        this.name = name;
-	        this.type = type;
-	    }
-	}
-	
-
+		  final Parameter param;
+		  final List<String> stereotypes;
+		  RecordComponentRef(Parameter p) {
+		    this.param = p;
+		    this.stereotypes = stereotypesOf(p);
+		  }
+		  String name() { return param.getNameAsString(); }
+		  Type type() { return param.getType(); }
+		}
 	
 	/**
 	 * 
@@ -290,24 +294,26 @@ public class GenerateClassDiagram {
 		return classifier;
 	}
 	
-	
+	/**
+	 * 
+	 * @param pw
+	 * @param types
+	 * @param t
+	 */
 	private static void writeRecordComponents(PrintWriter pw, Map<String, TypeInfo> types, TypeInfo t) {
 	    if (t.kind != Kind.RECORD) return;
 
-	   // for (var c : t.recordComponents) {
-	   //     pw.println("  " + c.name + " : " + c.type + renderStereotypes(c.stereotypes));
-	    //}
 	    for (RecordComponentRef rc : t.recordComponents) {
-	        String raw = rc.type.asString().replaceAll("<.*>", "").replace("[]", "").trim();
+	        String raw = rc.type().asString().replaceAll("<.*>", "").replace("[]", "").trim();
 	        String resolved = resolveTypeName(types, t, raw);
 
-	        // Se resolve para tipo do projeto: NÃO imprime no corpo
+	        // If resolves to project type: skip body (association will show it)
 	        if (resolved != null && !resolved.equals(t.fqn)) {
 	            continue;
 	        }
 
-	        // Caso contrário: imprime como parte do shape
-	        pw.println("  " + rc.name + " : " + rc.type.asString());
+	        pw.println("  " + rc.name() + " : " + rc.type().asString()
+	                + renderStereotypes(rc.stereotypes));
 	    }
 	}
 
@@ -434,29 +440,31 @@ public class GenerateClassDiagram {
 	}
 
 	/**
-	 * Writes associations from fields.
 	 * 
 	 * @param pw
 	 * @param types
 	 * @param t
 	 */
 	private static void writeAssociations(PrintWriter pw, Map<String, TypeInfo> types, TypeInfo t) {
-		for (FieldRef fr : t.fields) {
-			String assocFqn = assocTypeFrom(types, t, fr.vd);
-			if (assocFqn != null) {
-				pw.println("\"" + t.fqn + "\" --> \"" + assocFqn + "\" : " + fr.vd.getNameAsString());
-			}
-		}
-		
-		if (t.kind == Kind.RECORD) {
-		    for (RecordComponentRef rc : t.recordComponents) {
-		        String raw = rc.type.asString().replaceAll("<.*>", "").replace("[]", "").trim();
-		        String target = resolveTypeName(types, t, raw);
-		        if (target != null && !target.equals(t.fqn)) {
-		            pw.println("\"" + t.fqn + "\" --> \"" + target + "\" : " + rc.name);
-		        }
-		    }
-		}
+	    // existing field-based associations
+	    for (FieldRef fr : t.fields) {
+	        String assocFqn = assocTypeFrom(types, t, fr.vd);
+	        if (assocFqn != null) {
+	            pw.println("\"" + t.fqn + "\" --> \"" + assocFqn + "\" : " + fr.vd.getNameAsString());
+	        }
+	    }
+
+	    // NEW: record component associations
+	    if (t.kind == Kind.RECORD) {
+	        for (RecordComponentRef rc : t.recordComponents) {
+	            String raw = rc.type().asString().replaceAll("<.*>", "").replace("[]", "").trim();
+	            String target = resolveTypeName(types, t, raw);
+	            if (target != null && !target.equals(t.fqn)) {
+	                pw.println("\"" + t.fqn + "\" --> \"" + target + "\" : " + rc.name()
+	                        + renderStereotypes(rc.stereotypes));
+	            }
+	        }
+	    }
 	}
 
 	/**
@@ -667,11 +675,21 @@ public class GenerateClassDiagram {
 
 	}
 
+	/**
+	 * 
+	 * @param n
+	 * @return
+	 */
 	private static List<String> stereotypesOf(NodeWithAnnotations<?> n) {
 		return n.getAnnotations().stream().map(a -> a.getName().getIdentifier()) // simple name only
 				.toList();
 	}
 
+	/**
+	 * 
+	 * @param ss
+	 * @return
+	 */
 	private static String renderStereotypes(List<String> ss) {
 		if (ss == null || ss.isEmpty())
 			return "";
@@ -714,16 +732,12 @@ public class GenerateClassDiagram {
 			for (EnumConstantDeclaration c : ed.getEntries()) {
 				info.enumConstants.add(new EnumConstantRef(c));
 			}
-
 		} else if (td instanceof RecordDeclaration rd) {
 		    info.name = rd.getNameAsString();
 		    info.kind = Kind.RECORD;
 
 		    rd.getParameters().forEach(p ->
-		        info.recordComponents.add(new RecordComponentRef(
-		            p.getNameAsString(),
-		            p.getType()
-		        ))
+		        info.recordComponents.add(new RecordComponentRef(p))
 		    );
 		} else if (td instanceof AnnotationDeclaration ad) {
 			info.name = ad.getNameAsString();
@@ -749,6 +763,14 @@ public class GenerateClassDiagram {
 	    scanNestedTypes(types, cu, pkg, td, info);
 	}
 
+	/**
+	 * 
+	 * @param types
+	 * @param cu
+	 * @param pkg
+	 * @param td
+	 * @param owner
+	 */
 	private static void scanNestedTypes(
 	        Map<String, TypeInfo> types,
 	        CompilationUnit cu,
@@ -773,7 +795,11 @@ public class GenerateClassDiagram {
 	    }
 	}	
 	
-	
+	/**
+	 * 
+	 * @param t
+	 * @return
+	 */
 	private static String pumlName(TypeInfo t) {
 	    if (t.ownerFqn == null || t.ownerFqn.isBlank()) {
 	        return t.fqn;
@@ -781,6 +807,11 @@ public class GenerateClassDiagram {
 	    return t.ownerFqn + "_" + t.name; // exactly what the test expects
 	}
 	
+	/**
+	 * 
+	 * @param t
+	 * @return
+	 */
 	private static String fqn(TypeInfo t) {
 	    return "\"" + pumlName(t) + "\"";
 	}	
