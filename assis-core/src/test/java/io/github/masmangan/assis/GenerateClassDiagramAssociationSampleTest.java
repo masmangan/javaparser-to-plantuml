@@ -20,7 +20,7 @@ class GenerateClassDiagramAssociationSampleTest {
     @Test
     void generatesDiagramContainingAssociation() throws Exception {
         String puml = TestWorkbench.generatePumlFromSample(
-                "samples/association",
+                "samples/associations/association",
                 tempDir,
                 "association");
 

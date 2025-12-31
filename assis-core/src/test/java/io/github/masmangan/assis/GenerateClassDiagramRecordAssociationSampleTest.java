@@ -18,7 +18,7 @@ class GenerateClassDiagramRecordAssociationSampleTest {
     @Test
     void generatesAssociationFromRecordComponent() throws Exception {
         String puml = TestWorkbench.generatePumlFromSample(
-                "samples/rassociation",
+                "samples/associations/rassociation",
                 tempDir,
                 "ownerdto"
         );

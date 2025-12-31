@@ -9,5 +9,3 @@ class ConcreteMethods {
     public static void staticMethod() {}
     public void normalMethod() {}
 }
-
-// TODO 0.5.0: add non-public methods + synchronized/native/strictfp
