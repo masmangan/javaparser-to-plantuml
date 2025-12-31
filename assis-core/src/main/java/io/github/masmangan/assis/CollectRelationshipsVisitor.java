@@ -148,23 +148,31 @@ class CollectRelationshipsVisitor {
 	private void emitAssociations(PlantUMLWriter pw, String pkg, String ownerFqn, TypeDeclaration<?> td) {
 		if (td instanceof ClassOrInterfaceDeclaration || td instanceof EnumDeclaration) {
 			for (FieldDeclaration fd : td.getFields()) {
-				String st = GenerateClassDiagram.renderStereotypes(GenerateClassDiagram.stereotypesOf(fd));
-
-				for (VariableDeclarator vd : fd.getVariables()) {
-					String target = resolveAssocTarget(pkg, ownerFqn, vd.getType());
-					if (target != null) {
-						emitAssociation(pw, ownerFqn, target, vd.getNameAsString(), st);
-					}
-				}
+				emitFieldAssociation(pw, pkg, ownerFqn, fd);
 			}
 		} else if (td instanceof RecordDeclaration rd) {
 			for (Parameter p : rd.getParameters()) {
-				String target = resolveAssocTarget(pkg, ownerFqn, p.getType());
-				if (target != null) {
-					String st = GenerateClassDiagram.renderStereotypes(GenerateClassDiagram.stereotypesOf(p));
+				emitRecordParameterAssociation(pw, pkg, ownerFqn, p);
+			}
+		}
+	}
 
-					emitAssociation(pw, ownerFqn, target, p.getNameAsString(), st);
-				}
+	private void emitRecordParameterAssociation(PlantUMLWriter pw, String pkg, String ownerFqn, Parameter p) {
+		String target = resolveAssocTarget(pkg, ownerFqn, p.getType());
+		if (target != null) {
+			String st = GenerateClassDiagram.renderStereotypes(GenerateClassDiagram.stereotypesOf(p));
+
+			emitAssociation(pw, ownerFqn, target, p.getNameAsString(), st);
+		}
+	}
+
+	private void emitFieldAssociation(PlantUMLWriter pw, String pkg, String ownerFqn, FieldDeclaration fd) {
+		String st = GenerateClassDiagram.renderStereotypes(GenerateClassDiagram.stereotypesOf(fd));
+
+		for (VariableDeclarator vd : fd.getVariables()) {
+			String target = resolveAssocTarget(pkg, ownerFqn, vd.getType());
+			if (target != null) {
+				emitAssociation(pw, ownerFqn, target, vd.getNameAsString(), st);
 			}
 		}
 	}
