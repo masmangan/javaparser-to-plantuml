@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import static io.github.masmangan.assis.TestWorkbench.assertAnyLineContainsAll;
 import static io.github.masmangan.assis.TestWorkbench.assertPumlContains;
 import static io.github.masmangan.assis.TestWorkbench.assertPumlContainsClass;
 
@@ -30,9 +31,13 @@ class GenerateClassDiagramInheritanceSampleTest {
         assertPumlContainsClass(puml, "samples.inheritance.Base");
         assertPumlContainsClass(puml, "samples.inheritance.Child");
 
+        assertPumlContains(puml, "enum \"samples.inheritance.E\"");
+
         // relationships
         assertPumlContains(puml, "\"samples.inheritance.B\" --|> \"samples.inheritance.A\"");
         assertPumlContains(puml, "\"samples.inheritance.Child\" --|> \"samples.inheritance.Base\"");
         assertPumlContains(puml, "\"samples.inheritance.Child\" ..|> \"samples.inheritance.B\"");
+  
+        assertAnyLineContainsAll(puml, "E", "..|>", "A");
     }
 }
