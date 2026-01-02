@@ -19,6 +19,12 @@ import com.github.javaparser.ast.type.Type;
  * 
  */
 class CollectRelationshipsVisitor {
+	
+	/**
+	 * 
+	 */
+	private static final String HAS_A_INNER = " +-- ";
+
 	/**
 	 * 
 	 */
@@ -34,33 +40,41 @@ class CollectRelationshipsVisitor {
 	 */
 	private static final String IS_A_EXTENDS = " --|> ";
 
+	/**
+	 * 
+	 */
 	private final DeclaredIndex idx;
+
+	/**
+	 * 
+	 */
+	private final PlantUMLWriter pw;
 
 	/**
 	 * 
 	 * @param idx
 	 */
-	CollectRelationshipsVisitor(DeclaredIndex idx) {
+	CollectRelationshipsVisitor(final DeclaredIndex idx, final PlantUMLWriter pw) {
 		this.idx = idx;
+		this.pw = pw;
 	}
 
 	/**
 	 * 
-	 * @param pw
 	 */
-	void emitAll(PlantUMLWriter pw) {
+	void emitAll() {
 		for (var entry : idx.fqnsByPkg.entrySet()) {
 			String pkg = entry.getKey();
 			for (String fqn : entry.getValue()) {
 				TypeDeclaration<?> td = idx.byFqn.get(fqn);
-				emitExtendsImplements(pw, pkg, fqn, td);
+				emitExtendsImplements(pkg, fqn, td);
 			}
 		}
 
 		for (String fqn : idx.byFqn.keySet()) {
 			String ownerFqn = ownerFqnOf(fqn);
 			if (ownerFqn != null && idx.byFqn.containsKey(ownerFqn)) {
-				pw.println(idx.qPuml(ownerFqn) + " +-- " + idx.qPuml(fqn));
+				pw.println(idx.qPuml(ownerFqn) + HAS_A_INNER + idx.qPuml(fqn));
 			}
 		}
 
@@ -68,42 +82,40 @@ class CollectRelationshipsVisitor {
 			String pkg = entry.getKey();
 			for (String fqn : entry.getValue()) {
 				TypeDeclaration<?> td = idx.byFqn.get(fqn);
-				emitAssociations(pw, pkg, fqn, td);
+				emitAssociations(pkg, fqn, td);
 			}
 		}
 	}
 
 	/**
 	 * 
-	 * @param pw
 	 * @param pkg
 	 * @param subFqn
 	 * @param td
 	 */
-	private void emitExtendsImplements(PlantUMLWriter pw, String pkg, String subFqn, TypeDeclaration<?> td) {
+	private void emitExtendsImplements(String pkg, String subFqn, TypeDeclaration<?> td) {
 		if (td instanceof ClassOrInterfaceDeclaration cid) {
 			for (ClassOrInterfaceType ext : cid.getExtendedTypes()) {
-				emitExtends(pw, pkg, subFqn, ext);
+				emitExtends(pkg, subFqn, ext);
 			}
 
 			for (ClassOrInterfaceType impl : cid.getImplementedTypes()) {
-				emitImplements(pw, pkg, subFqn, impl);
+				emitImplements(pkg, subFqn, impl);
 			}
 		} else if (td instanceof EnumDeclaration ed) {
 			for (ClassOrInterfaceType impl : ed.getImplementedTypes()) {
-				emitImplements(pw, pkg, subFqn, impl);
+				emitImplements(pkg, subFqn, impl);
 			}
 		}
 	}
 
 	/**
 	 * 
-	 * @param pw
 	 * @param pkg
 	 * @param subFqn
 	 * @param impl
 	 */
-	private void emitImplements(PlantUMLWriter pw, String pkg, String subFqn, ClassOrInterfaceType impl) {
+	private void emitImplements(String pkg, String subFqn, ClassOrInterfaceType impl) {
 		String raw = GenerateClassDiagram.simpleName(impl.getNameWithScope());
 		String target = idx.resolveTypeName(pkg, raw);
 		if (target != null) {
@@ -113,12 +125,11 @@ class CollectRelationshipsVisitor {
 
 	/**
 	 * 
-	 * @param pw
 	 * @param pkg
 	 * @param subFqn
 	 * @param ext
 	 */
-	private void emitExtends(PlantUMLWriter pw, String pkg, String subFqn, ClassOrInterfaceType ext) {
+	private void emitExtends(String pkg, String subFqn, ClassOrInterfaceType ext) {
 		String raw = GenerateClassDiagram.simpleName(ext.getNameWithScope());
 		String target = idx.resolveTypeName(pkg, raw);
 		if (target != null) {
@@ -128,13 +139,12 @@ class CollectRelationshipsVisitor {
 
 	/**
 	 * 
-	 * @param pw
 	 * @param ownerFqn
 	 * @param targetFqn
 	 * @param role
 	 * @param stereotypes
 	 */
-	private void emitAssociation(PlantUMLWriter pw, String ownerFqn, String targetFqn, String role,
+	private void emitAssociation(String ownerFqn, String targetFqn, String role,
 			String stereotypes) {
 		pw.println(idx.qPuml(ownerFqn) + HAS_A + idx.qPuml(targetFqn) + " : " + role
 				+ (stereotypes != null ? stereotypes : ""));
@@ -142,15 +152,14 @@ class CollectRelationshipsVisitor {
 
 	/**
 	 * 
-	 * @param pw
 	 * @param pkg
 	 * @param ownerFqn
 	 * @param td
 	 */
-	private void emitAssociations(PlantUMLWriter pw, String pkg, String ownerFqn, TypeDeclaration<?> td) {
+	private void emitAssociations(String pkg, String ownerFqn, TypeDeclaration<?> td) {
 		if (td instanceof ClassOrInterfaceDeclaration || td instanceof EnumDeclaration) {
 			for (FieldDeclaration fd : td.getFields()) {
-				emitFieldAssociation(pw, pkg, ownerFqn, fd);
+				emitFieldAssociation(pkg, ownerFqn, fd);
 			}
 		} else if (td instanceof RecordDeclaration rd) {
 			for (Parameter p : rd.getParameters()) {
@@ -164,17 +173,17 @@ class CollectRelationshipsVisitor {
 		if (target != null) {
 			String st = GenerateClassDiagram.renderStereotypes(GenerateClassDiagram.stereotypesOf(p));
 
-			emitAssociation(pw, ownerFqn, target, p.getNameAsString(), st);
+			emitAssociation(ownerFqn, target, p.getNameAsString(), st);
 		}
 	}
 
-	private void emitFieldAssociation(PlantUMLWriter pw, String pkg, String ownerFqn, FieldDeclaration fd) {
+	private void emitFieldAssociation(String pkg, String ownerFqn, FieldDeclaration fd) {
 		String st = GenerateClassDiagram.renderStereotypes(GenerateClassDiagram.stereotypesOf(fd));
 
 		for (VariableDeclarator vd : fd.getVariables()) {
 			String target = resolveAssocTarget(pkg, ownerFqn, vd.getType());
 			if (target != null) {
-				emitAssociation(pw, ownerFqn, target, vd.getNameAsString(), st);
+				emitAssociation(ownerFqn, target, vd.getNameAsString(), st);
 			}
 		}
 	}

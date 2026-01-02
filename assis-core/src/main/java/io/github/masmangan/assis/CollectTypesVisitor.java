@@ -36,24 +36,29 @@ class CollectTypesVisitor {
 	 * 
 	 */
 	private final String pkg;
+	
+	/**
+	 * 
+	 */
+	private final PlantUMLWriter pw;
 
 	/**
 	 * 
 	 * @param idx
 	 * @param pkg
 	 */
-	CollectTypesVisitor(DeclaredIndex idx, String pkg) {
+	CollectTypesVisitor(final DeclaredIndex idx, final String pkg, final PlantUMLWriter pw) {
 		this.idx = idx;
 		this.pkg = (pkg == null) ? "" : pkg;
-	}
+		this.pw = pw;
+	}	
 
 	/**
 	 * 
-	 * @param pw
 	 * @param fqn
 	 * @param td
 	 */
-	void emitType(PlantUMLWriter pw, String fqn, TypeDeclaration<?> td) {
+	void emitType(String fqn, TypeDeclaration<?> td) {
 		String stereotypes = GenerateClassDiagram.renderStereotypes(GenerateClassDiagram.stereotypesOf(td));
 		String pumlName = idx.pumlName(fqn);
 
@@ -70,9 +75,9 @@ class CollectTypesVisitor {
 				pw.beginClass(pumlName, stereotypes);
 			}
 
-			emitFields(pw, fqn, cid.getFields());
-			emitConstructors(pw, cid.getConstructors());
-			emitMethods(pw, cid.getMethods());
+			emitFields(fqn, cid.getFields());
+			emitConstructors(cid.getConstructors());
+			emitMethods(cid.getMethods());
 
 			pw.endType();
 			return;
@@ -81,7 +86,7 @@ class CollectTypesVisitor {
 		if (td instanceof RecordDeclaration rd) {
 			pw.beginRecord(pumlName, stereotypes);
 
-			emitRecordComponents(pw, fqn, rd);
+			emitRecordComponents(fqn, rd);
 
 			var componentNames = rd.getParameters().stream().map(p -> p.getNameAsString())
 					.collect(java.util.stream.Collectors.toSet());
@@ -90,10 +95,10 @@ class CollectTypesVisitor {
 					fd -> fd.getVariables().stream().noneMatch(vd -> componentNames.contains(vd.getNameAsString())))
 					.toList();
 
-			emitFields(pw, fqn, extraFields);
+			emitFields(fqn, extraFields);
 
-			emitConstructors(pw, rd.getConstructors());
-			emitMethods(pw, rd.getMethods());
+			emitConstructors(rd.getConstructors());
+			emitMethods(rd.getMethods());
 
 			pw.endType();
 			return;
@@ -101,10 +106,10 @@ class CollectTypesVisitor {
 
 		if (td instanceof EnumDeclaration ed) {
 			pw.beginEnum(pumlName, stereotypes);
-			emitEnumConstants(pw, ed);
-			emitFields(pw, fqn, ed.getFields());
-			emitConstructors(pw, ed.getConstructors());
-			emitMethods(pw, ed.getMethods());
+			emitEnumConstants(ed);
+			emitFields(fqn, ed.getFields());
+			emitConstructors(ed.getConstructors());
+			emitMethods(ed.getMethods());
 			pw.endType();
 			return;
 		}
@@ -120,10 +125,9 @@ class CollectTypesVisitor {
 
 	/**
 	 * 
-	 * @param pw
 	 * @param ed
 	 */
-	private void emitEnumConstants(PlantUMLWriter pw, EnumDeclaration ed) {
+	private void emitEnumConstants(EnumDeclaration ed) {
 		for (EnumConstantDeclaration c : ed.getEntries()) {
 			pw.println(c.getNameAsString());
 		}
@@ -131,11 +135,10 @@ class CollectTypesVisitor {
 
 	/**
 	 * 
-	 * @param pw
 	 * @param ownerFqn
 	 * @param rd
 	 */
-	private void emitRecordComponents(PlantUMLWriter pw, String ownerFqn, RecordDeclaration rd) {
+	private void emitRecordComponents(String ownerFqn, RecordDeclaration rd) {
 		for (Parameter p : rd.getParameters()) {
 			List<String> ss = GenerateClassDiagram.stereotypesOf(p);
 			String raw = p.getType().asString().replaceAll("<.*>", "").replace("[]", "").trim();
@@ -151,11 +154,10 @@ class CollectTypesVisitor {
 
 	/**
 	 * 
-	 * @param pw
 	 * @param ownerFqn
 	 * @param fields
 	 */
-	private void emitFields(PlantUMLWriter pw, String ownerFqn, List<FieldDeclaration> fields) {
+	private void emitFields(String ownerFqn, List<FieldDeclaration> fields) {
 
 		List<FieldDeclaration> sorted = new ArrayList<>(fields);
 		sorted.sort((a, b) -> {
@@ -166,19 +168,18 @@ class CollectTypesVisitor {
 
 		for (FieldDeclaration fd : sorted) {
 			for (VariableDeclarator vd : fd.getVariables()) {
-				emitVariableDeclarator(pw, ownerFqn, fd, vd);
+				emitVariableDeclarator(ownerFqn, fd, vd);
 			}
 		}
 	}
 
 	/**
 	 * 
-	 * @param pw
 	 * @param ownerFqn
 	 * @param fd
 	 * @param vd
 	 */
-	private void emitVariableDeclarator(PlantUMLWriter pw, String ownerFqn, FieldDeclaration fd,
+	private void emitVariableDeclarator(String ownerFqn, FieldDeclaration fd,
 			VariableDeclarator vd) {
 		String assoc = assocTypeFrom(ownerFqn, vd);
 		if (assoc != null) {
@@ -208,10 +209,9 @@ class CollectTypesVisitor {
 
 	/**
 	 * 
-	 * @param pw
 	 * @param ctors
 	 */
-	private void emitConstructors(PlantUMLWriter pw, List<ConstructorDeclaration> ctors) {
+	private void emitConstructors(List<ConstructorDeclaration> ctors) {
 		List<ConstructorDeclaration> sorted = new ArrayList<>(ctors);
 		sorted.sort((a, b) -> a.getDeclarationAsString(false, false, false)
 				.compareTo(b.getDeclarationAsString(false, false, false)));
@@ -228,10 +228,9 @@ class CollectTypesVisitor {
 
 	/**
 	 * 
-	 * @param pw
 	 * @param methods
 	 */
-	private void emitMethods(PlantUMLWriter pw, List<MethodDeclaration> methods) {
+	private void emitMethods(List<MethodDeclaration> methods) {
 		List<MethodDeclaration> sorted = new ArrayList<>(methods);
 		sorted.sort((a, b) -> a.getDeclarationAsString(false, false, false)
 				.compareTo(b.getDeclarationAsString(false, false, false)));

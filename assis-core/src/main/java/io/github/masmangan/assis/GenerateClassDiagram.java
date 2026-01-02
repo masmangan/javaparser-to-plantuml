@@ -49,7 +49,7 @@ public class GenerateClassDiagram {
 	 * 
 	 * @return gets package information from Maven property, or dev otherwise.
 	 */
-	private static String versionOrDev() {
+	public static String versionOrDev() {
 		String v = GenerateClassDiagram.class.getPackage().getImplementationVersion();
 		return (v == null || v.isBlank()) ? "dev" : v;
 	}
@@ -62,8 +62,6 @@ public class GenerateClassDiagram {
 	 * @throws Exception
 	 */
 	public static void generate(Path src, Path out) throws IOException {
-		logger.log(Level.INFO, () -> assisLine());
-
 		ParserConfiguration config = new ParserConfiguration();
 		config.setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17);
 		StaticJavaParser.setConfiguration(config);
@@ -77,14 +75,6 @@ public class GenerateClassDiagram {
 
 		writeDiagram(out, index);
 
-	}
-
-	/**
-	 * 
-	 * @return
-	 */
-	private static String assisLine() {
-		return "ASSIS " + versionOrDev() + " (Java -> UML)";
 	}
 
 	/**
@@ -140,10 +130,14 @@ public class GenerateClassDiagram {
 					pw.println();
 					pw.beginPackage(pkg);
 				}
+				
+				//FIXME: fqn can be restored from idx and td, no need to pass it as parameter!
+				//FIXME: Use the same visitor, just emitType(td)
+				//FIXME: if the same visitor, pkg would be a parameter, BUT if we can get the same pkg from td, no need to pass it!
 
 				for (String fqn : fqns) {
 					TypeDeclaration<?> td = idx.byFqn.get(fqn);
-					new CollectTypesVisitor(idx, pkg).emitType(pw, fqn, td);
+					new CollectTypesVisitor(idx, pkg, pw).emitType(fqn, td);
 				}
 
 				if (!pkg.isEmpty()) {
@@ -152,13 +146,11 @@ public class GenerateClassDiagram {
 				}
 			}
 
-			new CollectRelationshipsVisitor(idx).emitAll(pw);
+			new CollectRelationshipsVisitor(idx, pw).emitAll();
 
 			pw.println();
 			pw.println("left to right direction");
-			
-			addFooter(pw);
-			
+						
 			pw.endDiagram();
 			
 		} catch (IOException e) {
@@ -234,18 +226,6 @@ public class GenerateClassDiagram {
 			flags += " {final}";
 		}
 		return flags;
-	}
-
-	/**
-	 * Generates a footer with Assis watermark.
-	 * 
-	 * @param pw this translation open PlantUMLWriter
-	 */
-	private static void addFooter(PlantUMLWriter pw) {
-		pw.println();
-		pw.println("' Generated with ASSIS (Java -> UML)");
-		pw.println("' https://github.com/masmangan/assis");
-		pw.println();
 	}
 
 	/**
