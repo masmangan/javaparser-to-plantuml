@@ -1,0 +1,49 @@
+@startuml
+'
+' ASSIS – C4 System Context (C1)
+'
+' Author: Marco Aurélio Souza Mangan
+' Date: 2026-01-02
+' Project: ASSIS – Java-to-PlantUML Model Extraction
+' Repository: https://github.com/masmangan/assis
+'
+' Inspired by:
+' Robert Dennyson,
+' "Creating C4 and UML diagrams using PlantUML with VS Code Extension"
+' https://medium.com/@robertdennyson/creating-c4-and-uml-diagrams-using-plantuml-with-vscode-extension-90032a21ec43
+'
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+title ASSIS - C1 System Context
+
+Person(learner, "Learner", "Teacher or student who explains and understands code collaboratively using diagrams.")
+
+Person(dev_review, "Design Reviewer", "Analyzes and evaluates design evolution across versions.")
+
+Person(dev_refactor, "Architect", "Makes decisions about design improvements and refactoring.")
+
+Person(researcher, "Researcher", "Studies model evolution and compares designs across multiple systems.")
+
+Person(contributor, "Contributor", "Evolves ASSIS itself by tailoring interpretations and slices of code into models.")
+
+System(assis, "ASSIS", "Generates UML and C4 diagrams from authored Java source code to support understanding, evolution, and communication of software design.")
+
+
+System_Ext(code_tools, "Code-to-Model Tools", "Tools that extract design models directly from source code (reverse engineering, analysis-based).")
+
+
+System_Ext(plantuml, "PlantUML Ecosystem", "Rendering and visualization tools for PlantUML diagrams (IDE plugins, online servers, Markdown renderers).")
+
+System_Ext(other_diagrams, "Other Diagram Languages and Tools", "Diagramming tools and languages outside the PlantUML ecosystem, such as Mermaid and Astah.")
+
+Rel(learner, assis, "Explains and understands code using diagrams")
+
+Rel(dev_review, assis, "Evaluates design evolution")
+Rel(dev_refactor, assis, "Makes decisions about design improvements")
+Rel(researcher, assis, "Compares designs across multiple systems")
+Rel(contributor, assis, "Evolves interpretations and slices of code into models")
+
+Rel(assis, plantuml, "Produces diagrams for")
+Rel(assis, code_tools, "Is compared with")
+Rel(assis, other_diagrams, "Complements or is compared with")
+
+@enduml

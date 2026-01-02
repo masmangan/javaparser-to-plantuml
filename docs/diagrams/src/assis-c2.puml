@@ -1,0 +1,54 @@
+@startuml
+'
+' ASSIS – C4 Container Diagram (C2)
+'
+' Author: Marco Aurélio Souza Mangan
+' Date: 2026-01-02
+' Project: ASSIS – Java-to-PlantUML Model Extraction
+' Repository: https://github.com/masmangan/assis
+'
+' Inspired by:
+' Robert Dennyson,
+' "Creating C4 and UML diagrams using PlantUML with VS Code Extension"
+' https://medium.com/@robertdennyson/creating-c4-and-uml-diagrams-using-plantuml-with-vscode-extension-90032a21ec43
+'
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+title ASSIS - C2 Container Diagram
+
+Person(user, "User", "Learner, Architect, Reviewer, Researcher or Contributor using ASSIS.")
+
+System_Boundary(assis_sys, "ASSIS") {
+
+  Container(cli, "ASSIS CLI", "Java", "Command-line interface to generate UML and C4 diagrams from Java source code.")
+
+  Container(maven, "ASSIS Maven Plugin", "Java / Maven", "Integrates ASSIS into the Maven build lifecycle to generate diagrams automatically.")
+
+  Container(core, "ASSIS Core", "Java Library", "Parses Java source code, builds internal models, and emits PlantUML diagrams.")
+
+  Container(gallery, "ASSIS Gallery", "Documentation", "Curated collection of example inputs and generated diagrams for teaching, testing, and reference.")
+}
+
+System_Ext(source, "Java Source Code", "Authored Java codebases under analysis.")
+
+System_Ext(javaparser, "JavaParser", "Library for parsing Java source code into ASTs.")
+
+System_Ext(plantuml, "PlantUML Ecosystem", "Tools that render PlantUML diagrams (IDE plugins, online servers, Markdown renderers).")
+
+System_Ext(repo, "GitHub Repository", "Hosts source code, documentation, releases, and the ASSIS Gallery.")
+
+Rel(user, cli, "Runs")
+Rel(user, maven, "Configures and runs")
+
+Rel(cli, core, "Invokes")
+Rel(maven, core, "Invokes")
+
+Rel(core, source, "Reads")
+Rel(core, javaparser, "Uses")
+
+Rel(core, plantuml, "Produces .puml for")
+Rel(gallery, plantuml, "Uses diagrams rendered by")
+
+Rel(repo, gallery, "Publishes")
+Rel(user, repo, "Browses documentation and examples")
+
+@enduml
