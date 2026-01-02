@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, Marco Mangan. All rights reserved.
+ * Copyright (c) 2025-2026, Marco Mangan. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  */
 
@@ -26,16 +26,16 @@ import com.github.javaparser.ast.body.VariableDeclarator;
  * 
  */
 class CollectTypesVisitor {
-	
+
 	/**
 	 * 
 	 */
 	private final DeclaredIndex idx;
-	
+
 	/**
 	 * 
 	 */
-	private final String pkg; 
+	private final String pkg;
 
 	/**
 	 * 
@@ -57,6 +57,8 @@ class CollectTypesVisitor {
 		String stereotypes = GenerateClassDiagram.renderStereotypes(GenerateClassDiagram.stereotypesOf(td));
 		String pumlName = idx.pumlName(fqn);
 
+		pw.println();
+
 		if (td instanceof ClassOrInterfaceDeclaration cid) {
 			if (cid.isInterface()) {
 				pw.beginInterface(pumlName, stereotypes);
@@ -77,26 +79,24 @@ class CollectTypesVisitor {
 		}
 
 		if (td instanceof RecordDeclaration rd) {
-		    pw.beginRecord(pumlName, stereotypes);
+			pw.beginRecord(pumlName, stereotypes);
 
-		    emitRecordComponents(pw, fqn, rd);
+			emitRecordComponents(pw, fqn, rd);
 
-		    var componentNames = rd.getParameters().stream()
-		        .map(p -> p.getNameAsString())
-		        .collect(java.util.stream.Collectors.toSet());
+			var componentNames = rd.getParameters().stream().map(p -> p.getNameAsString())
+					.collect(java.util.stream.Collectors.toSet());
 
-		    var extraFields = rd.getFields().stream()
-		        .filter(fd -> fd.getVariables().stream()
-		            .noneMatch(vd -> componentNames.contains(vd.getNameAsString())))
-		        .toList();
+			var extraFields = rd.getFields().stream().filter(
+					fd -> fd.getVariables().stream().noneMatch(vd -> componentNames.contains(vd.getNameAsString())))
+					.toList();
 
-		    emitFields(pw, fqn, extraFields);
+			emitFields(pw, fqn, extraFields);
 
-		    emitConstructors(pw, rd.getConstructors());
-		    emitMethods(pw, rd.getMethods());
+			emitConstructors(pw, rd.getConstructors());
+			emitMethods(pw, rd.getMethods());
 
-		    pw.endType();
-		    return;
+			pw.endType();
+			return;
 		}
 
 		if (td instanceof EnumDeclaration ed) {
@@ -141,11 +141,11 @@ class CollectTypesVisitor {
 			String raw = p.getType().asString().replaceAll("<.*>", "").replace("[]", "").trim();
 			String resolved = idx.resolveTypeName(pkg, raw);
 
-
-			if (resolved != null && !resolved.equals(ownerFqn))
+			if (resolved != null && !resolved.equals(ownerFqn)) {
 				continue;
-
-			pw.println(p.getNameAsString() + " : " + p.getType().asString() + GenerateClassDiagram.renderStereotypes(ss));
+			}
+			pw.println(
+					p.getNameAsString() + " : " + p.getType().asString() + GenerateClassDiagram.renderStereotypes(ss));
 		}
 	}
 
@@ -181,8 +181,9 @@ class CollectTypesVisitor {
 	private void emitVariableDeclarator(PlantUMLWriter pw, String ownerFqn, FieldDeclaration fd,
 			VariableDeclarator vd) {
 		String assoc = assocTypeFrom(ownerFqn, vd);
-		if (assoc != null)
+		if (assoc != null) {
 			return;
+		}
 
 		String name = vd.getNameAsString();
 		String type = vd.getType().asString();
@@ -190,12 +191,15 @@ class CollectTypesVisitor {
 		String vis = GenerateClassDiagram.visibility(fd);
 
 		List<String> mods = new ArrayList<>();
-		if (fd.isFinal())
+		if (fd.isFinal()) {
 			mods.add("final");
-		if (fd.isTransient())
+		}
+		if (fd.isTransient()) {
 			mods.add("transient");
-		if (fd.isVolatile())
+		}
+		if (fd.isVolatile()) {
 			mods.add("volatile");
+		}
 		String modBlock = mods.isEmpty() ? "" : " {" + String.join(", ", mods) + "}";
 
 		pw.println(vis + " " + staticPrefix + name + " : " + type + modBlock
@@ -214,11 +218,11 @@ class CollectTypesVisitor {
 
 		for (ConstructorDeclaration c : sorted) {
 			String name = c.getNameAsString();
-			String params = c.getParameters().stream()
-					.map(p -> p.getNameAsString() + " : " + p.getType().asString())
+			String params = c.getParameters().stream().map(p -> p.getNameAsString() + " : " + p.getType().asString())
 					.collect(Collectors.joining(", "));
 			String vis = GenerateClassDiagram.visibility(c);
-			pw.println(vis + " <<create>> " + name + "(" + params + ")" + GenerateClassDiagram.renderStereotypes(GenerateClassDiagram.stereotypesOf(c)));
+			pw.println(vis + " <<create>> " + name + "(" + params + ")"
+					+ GenerateClassDiagram.renderStereotypes(GenerateClassDiagram.stereotypesOf(c)));
 		}
 	}
 
@@ -255,10 +259,12 @@ class CollectTypesVisitor {
 	private String assocTypeFrom(String ownerFqn, VariableDeclarator vd) {
 		String raw = vd.getType().asString().replaceAll("<.*>", "").replace("[]", "").trim();
 		String resolved = idx.resolveTypeName(pkg, raw);
-		if (resolved == null)
+		if (resolved == null) {
 			return null;
-		if (resolved.equals(ownerFqn))
+		}
+		if (resolved.equals(ownerFqn)) {
 			return null;
+		}
 		return resolved;
 	}
 }

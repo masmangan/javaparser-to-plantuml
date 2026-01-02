@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, Marco Mangan. All rights reserved.
+ * Copyright (c) 2025-2026, Marco Mangan. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  */
 
@@ -7,6 +7,7 @@ package io.github.masmangan.assis;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -92,7 +93,6 @@ public class GenerateClassDiagram {
 	 * @param pw
 	 */
 	private static void addHeader(PlantUMLWriter pw) {
-		pw.println("@startuml class-diagram");
 		pw.println();
 		pw.println("hide empty members");
 		pw.println();
@@ -122,31 +122,45 @@ public class GenerateClassDiagram {
 	 * @param idx
 	 */
 	private static void writeDiagram(Path out, DeclaredIndex idx) {
-		try (PlantUMLWriter pw = new PlantUMLWriter(new PrintWriter(Files.newBufferedWriter(out)))) {
+		try (
+
+				PlantUMLWriter pw = new PlantUMLWriter(
+						new PrintWriter(Files.newBufferedWriter(out, StandardCharsets.UTF_8)));
+
+		) {
+			pw.println("@startuml class-diagram");
+
 			addHeader(pw);
 
 			for (var entry : idx.fqnsByPkg.entrySet()) {
 				String pkg = entry.getKey();
 				List<String> fqns = entry.getValue();
 
-				if (!pkg.isEmpty())
+				if (!pkg.isEmpty()) {
+					pw.println();
 					pw.beginPackage(pkg);
+				}
 
 				for (String fqn : fqns) {
 					TypeDeclaration<?> td = idx.byFqn.get(fqn);
 					new CollectTypesVisitor(idx, pkg).emitType(pw, fqn, td);
 				}
 
-				if (!pkg.isEmpty())
+				if (!pkg.isEmpty()) {
+					pw.println();
 					pw.endPackage();
+				}
 			}
 
 			new CollectRelationshipsVisitor(idx).emitAll(pw);
 
 			pw.println();
 			pw.println("left to right direction");
+			
 			addFooter(pw);
+			
 			pw.println("@enduml");
+			
 		} catch (IOException e) {
 			logger.log(Level.WARNING, () -> "Error writing diagram file: " + e.getLocalizedMessage());
 		}
@@ -193,8 +207,9 @@ public class GenerateClassDiagram {
 	 * @return
 	 */
 	static String renderStereotypes(List<String> ss) {
-		if (ss == null || ss.isEmpty())
+		if (ss == null || ss.isEmpty()) {
 			return "";
+		}
 		return " " + ss.stream().map(s -> "<<" + s + ">>").collect(Collectors.joining(" "));
 	}
 
@@ -242,11 +257,13 @@ public class GenerateClassDiagram {
 	static String simpleName(String qname) {
 		String s = qname;
 		int lt = s.lastIndexOf('.');
-		if (lt >= 0) 
-           s = s.substring(lt + 1);
+		if (lt >= 0) {
+			s = s.substring(lt + 1);
+		}
 		lt = s.lastIndexOf('$');
-		if (lt >= 0) 
-           s = s.substring(lt + 1);	
+		if (lt >= 0) {
+			s = s.substring(lt + 1);
+		}
 		return s;
 	}
 }

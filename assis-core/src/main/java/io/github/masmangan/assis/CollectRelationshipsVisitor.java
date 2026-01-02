@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, Marco Mangan. All rights reserved.
+ * Copyright (c) 2025-2026, Marco Mangan. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  */
 
@@ -23,12 +23,12 @@ class CollectRelationshipsVisitor {
 	 * 
 	 */
 	private static final String HAS_A = " --> ";
-	
+
 	/**
 	 * 
 	 */
 	private static final String IS_A_IMPLEMENTS = " ..|> ";
-	
+
 	/**
 	 * 
 	 */
@@ -57,15 +57,12 @@ class CollectRelationshipsVisitor {
 			}
 		}
 
-		// FIXME: Bug 12
 		for (String fqn : idx.byFqn.keySet()) {
 			String ownerFqn = ownerFqnOf(fqn);
-			System.out.printf("\n%s\n%s\n", fqn, ownerFqn);
 			if (ownerFqn != null && idx.byFqn.containsKey(ownerFqn)) {
 				pw.println(idx.qPuml(ownerFqn) + " +-- " + idx.qPuml(fqn));
 			}
 		}
-		//
 
 		for (var entry : idx.fqnsByPkg.entrySet()) {
 			String pkg = entry.getKey();
@@ -109,8 +106,9 @@ class CollectRelationshipsVisitor {
 	private void emitImplements(PlantUMLWriter pw, String pkg, String subFqn, ClassOrInterfaceType impl) {
 		String raw = GenerateClassDiagram.simpleName(impl.getNameWithScope());
 		String target = idx.resolveTypeName(pkg, raw);
-		if (target != null)
+		if (target != null) {
 			pw.println(idx.qPuml(subFqn) + IS_A_IMPLEMENTS + idx.qPuml(target));
+		}
 	}
 
 	/**
@@ -123,8 +121,9 @@ class CollectRelationshipsVisitor {
 	private void emitExtends(PlantUMLWriter pw, String pkg, String subFqn, ClassOrInterfaceType ext) {
 		String raw = GenerateClassDiagram.simpleName(ext.getNameWithScope());
 		String target = idx.resolveTypeName(pkg, raw);
-		if (target != null)
+		if (target != null) {
 			pw.println(idx.qPuml(subFqn) + IS_A_EXTENDS + idx.qPuml(target));
+		}
 	}
 
 	/**
@@ -188,9 +187,10 @@ class CollectRelationshipsVisitor {
 	private static String ownerFqnOf(String fqn) {
 		int lastDot = fqn.lastIndexOf('.');
 		int firstDollar = fqn.indexOf('$');
-		if (lastDot < 0 && firstDollar < 0)
+		if (lastDot < 0 && firstDollar < 0) {
 			return null;
-		
+		}
+
 		return fqn.substring(0, Math.max(lastDot, firstDollar));
 	}
 
@@ -231,8 +231,9 @@ class CollectRelationshipsVisitor {
 	private String resolveAssocTarget(String pkg, String ownerFqn, Type type) {
 		String raw = rawNameOf(type);
 		String target = idx.resolveTypeName(pkg, raw);
-		if (target == null || target.equals(ownerFqn))
+		if (target == null || target.equals(ownerFqn)) {
 			return null;
+		}
 		return target;
 	}
 
