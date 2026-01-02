@@ -59,6 +59,15 @@ mvn -q -DskipTests exec:java -Dexec.mainClass=io.github.masmangan.assis.AssisApp
 
 This project is licensed under the MIT License.
 
+## Use of Artificial Intelligence
+
+ASSIS was developed with the assistance of Artificial Intelligence tools used in a
+conversational and reflective role (e.g., architectural discussion, diagram modeling,
+and documentation), rather than as inline code generation or autonomous programming agents.
+
+All final decisions and implementations remain the responsibility of the author.
+
+
 ## References
 
 Assis uses existing open-source tools as building blocks:
