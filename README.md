@@ -53,7 +53,8 @@ mvn -q -DskipTests exec:java -Dexec.mainClass=io.github.masmangan.assis.AssisApp
 
 ## ASSIS Classes Overview
 
-![Assis](http://www.plantuml.com/plantuml/proxy?cache=no&fmt=svg&src=https://raw.githubusercontent.com/masmangan/assis/refs/heads/main/docs/diagrams/src/class-diagram.puml)
+![Assis](http://www.plantuml.com/plantuml/proxy?cache=no&fmt=svg&src=https://raw.githubusercontent.com/masmangan/assis/refs/heads/main/assis-core/docs/diagrams/src/class-diagram.puml)
+
 
 ## License
 
