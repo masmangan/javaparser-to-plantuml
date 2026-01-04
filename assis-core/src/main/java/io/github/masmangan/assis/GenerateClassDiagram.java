@@ -11,7 +11,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,13 +31,35 @@ import com.github.javaparser.ast.nodeTypes.modifiers.NodeWithAccessModifiers;
 import com.github.javaparser.utils.SourceRoot;
 
 /**
- * The {@code GenerateClassDiagram} class is a PlantUML Language class diagram
- * generator.
+ * Generates a PlantUML class diagram from one or more Java source roots.
+ *
+ * <p>
+ * This generator parses Java sources using JavaParser (configured for Java 17),
+ * indexes declared types (including nested types), and writes a PlantUML
+ * class-diagram file.
+ *
+ * <h2>Determinism</h2>
+ * <p>
+ * For reproducible output, callers should provide source roots in a stable
+ * order. If {@code sourceRoots} is an unordered set, consider sorting it before
+ * calling this method.
+ *
+ * <h2>Output</h2>
+ * <p>
+ * The diagram includes:
+ * <ul>
+ * <li>Type declarations grouped by package</li>
+ * <li>Inheritance and implementation relationships</li>
+ * <li>Nesting relationships for inner/nested types</li>
+ * <li>Associations inferred from fields and record components</li>
+ * </ul>
+ * 
+ * @author Marco Mangan
  */
 public class GenerateClassDiagram {
 
 	/**
-	 * Logs info and warnings.
+	 * Logger used by the generator to report progress and parse/write issues.
 	 */
 	static final Logger logger = Logger.getLogger(GenerateClassDiagram.class.getName());
 
@@ -46,39 +70,88 @@ public class GenerateClassDiagram {
 	}
 
 	/**
-	 * Extracts package version information.
-	 * 
-	 * @return gets package information from Maven property, or dev otherwise.
-	 */
-	public static String versionOrDev() {
-		String v = GenerateClassDiagram.class.getPackage().getImplementationVersion();
-		return (v == null || v.isBlank()) ? "dev" : v;
-	}
-
-	/**
-	 * Generates code for a given source code and output path.
-	 * 
-	 * @param src source code path
-	 * @param out output path
-	 * @throws IOException
-	 * @throws Exception
+	 * Generates a PlantUML class diagram from the given Java source roots.
+	 *
+	 * <p>
+	 * Each path in {@code sourceRoots} should point to a directory that represents
+	 * a Java source root (e.g., {@code src/main/java}). Non-existing roots are
+	 * logged as warnings.
+	 *
+	 * <p>
+	 * If {@code outDir} exists and is a directory, the output file name is fixed as
+	 * {@code class-diagram.puml} within that directory. Otherwise, output directory
+	 * is created; file paths rejected.
+	 *
+	 * @param sourceRoots one or more Java source roots; must not be {@code null}
+	 * @param outDir      output directory; must not be {@code null}
+	 * @throws NullPointerException if {@code sourceRoots} or {@code outDir} is
+	 *                              {@code null}
+	 * @throws IOException          if an I/O error occurs while reading sources or
+	 *                              writing the output file
 	 */
 	public static void generate(Set<Path> sourceRoots, Path outDir) throws IOException {
-		ParserConfiguration config = new ParserConfiguration();
-		config.setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17);
-		StaticJavaParser.setConfiguration(config);
 
 		DeclaredIndex index = new DeclaredIndex();
 		List<CompilationUnit> cus = new ArrayList<>();
 
+		scanSourceRoots(sourceRoots, index, cus);
+
+		logger.log(Level.FINE, () -> "**     byFqn    ** " + index.byFqn.toString());
+		logger.log(Level.FINE, () -> "**   fqnsByPkg  ** " + index.fqnsByPkg.toString());
+		logger.log(Level.FINE, () -> "**   pkgByFqn   ** " + index.pkgByFqn.toString());
+		logger.log(Level.FINE, () -> "**uniqueBySimple** " + index.uniqueBySimple.toString());
+
+		logger.log(Level.FINE, () -> "  **CUS** " + cus.toString());
+
+		Objects.requireNonNull(sourceRoots, "sourceRoots");
+		Objects.requireNonNull(outDir, "outDir");
+
+		Path dir = outDir.normalize(); // ok; don’t try to guess file vs dir by "."
+
+		if (Files.exists(dir) && !Files.isDirectory(dir)) {
+			throw new IllegalArgumentException("outDir must be a directory: " + dir.toAbsolutePath());
+		}
+		Files.createDirectories(dir);
+
+		Path outputFile = dir.resolve("class-diagram.puml");
+
+		logger.log(Level.INFO, () -> "Writing " + outputFile);
+
+		writeDiagram(outputFile, index);
+
+	}
+
+	/**
+	 * Scans directories on sourceRoots.
+	 * 
+	 * <p>
+	 * Best effort scanning will discard invalid and proceed with a simple warning.
+	 * This behavior can scan a large mass of files even in the presence of partial
+	 * failure.
+	 * 
+	 * @param sourceRoots one or more Java source roots; must not be {@code null}
+	 * @param index       index to be filled with compilation units scanned from
+	 *                    sources roots
+	 * @param cus         list of compilation units scanned
+	 * @throws IOException if an I/O error occurs while reading sources
+	 */
+	private static void scanSourceRoots(Set<Path> sourceRoots, DeclaredIndex index, List<CompilationUnit> cus)
+			throws IOException {
+		ParserConfiguration config = new ParserConfiguration();
+		config.setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17);
+		StaticJavaParser.setConfiguration(config);
+
 		logger.log(Level.INFO, () -> "Scanning started");
 
-		for (Path src : sourceRoots) {
+		List<Path> roots = sourceRoots.stream().sorted(Path::compareTo).toList();
+
+		for (Path src : roots) {
 
 			logger.log(Level.INFO, () -> "Scanning " + src);
 
 			if (!Files.exists(src)) {
 				logger.log(Level.WARNING, () -> "Source folder does not exist: " + src);
+				continue;
 			}
 
 			SourceRoot root = new SourceRoot(src);
@@ -89,36 +162,25 @@ public class GenerateClassDiagram {
 			}
 
 		}
+
+		cus.sort(Comparator.comparing(cu -> cu.getStorage().map(s -> s.getPath().toString()).orElse("")));
+
 		DeclaredIndex.fill(index, cus);
-
-		logger.log(Level.FINE, () -> "**     byFqn    ** " + index.byFqn.toString());
-		logger.log(Level.FINE, () -> "**   fqnsByPkg  ** " + index.fqnsByPkg.toString());
-		logger.log(Level.FINE, () -> "**   pkgByFqn   ** " + index.pkgByFqn.toString());
-		logger.log(Level.FINE, () -> "**uniqueBySimple** " + index.uniqueBySimple.toString());
-
-		logger.log(Level.FINE, () -> "  **CUS** " + cus.toString());
-
-		final Path outputFile;
-
-		// Gambiarra para o ASSIS CLI
-		if (Files.isDirectory(outDir)) {
-			logger.log(Level.INFO, () -> "Appending output file name ");
-			outputFile = outDir.resolve("class-diagram.puml");
-		} else {
-			logger.log(Level.SEVERE, () -> "***OUTDIR MUST BE A DIR!***");
-			outputFile = outDir;
-		}
-
-		logger.log(Level.INFO, () -> "Writing " + outputFile);
-
-		writeDiagram(outputFile, index);
-
 	}
 
 	/**
-	 * Adds a header to the diagram.
-	 * 
-	 * @param pw
+	 * Writes common PlantUML directives used by ASSIS diagrams.
+	 *
+	 * <p>
+	 * Current directives include:
+	 * <ul>
+	 * <li>{@code hide empty members}</li>
+	 * <li>{@code !theme blueprint}</li>
+	 * <li>{@code !pragma useIntermediatePackages false}</li>
+	 * </ul>
+	 *
+	 * @param pw writer to receive directives; must not be {@code null}
+	 * @throws NullPointerException if {@code pw} is {@code null}
 	 */
 	private static void addHeader(PlantUMLWriter pw) {
 		pw.println();
@@ -130,32 +192,29 @@ public class GenerateClassDiagram {
 	}
 
 	/**
-	 * 
-	 * @param n
-	 * @return
-	 */
-	static String visibility(NodeWithAccessModifiers<?> n) {
-		AccessSpecifier a = n.getAccessSpecifier();
-		return switch (a) {
-		case PUBLIC -> "+";
-		case PROTECTED -> "#";
-		case PRIVATE -> "-";
-		default -> "~";
-		};
-	}
-
-	/**
-	 * 
-	 * @param out
-	 * @param idx
+	 * Writes the PlantUML diagram to a file.
+	 *
+	 * <p>
+	 * This method emits:
+	 * <ol>
+	 * <li>Diagram start and header</li>
+	 * <li>Packages and types</li>
+	 * <li>Relationships (inheritance, nesting, associations)</li>
+	 * <li>Layout directives</li>
+	 * <li>Diagram end</li>
+	 * </ol>
+	 *
+	 * <p>
+	 * The output is written using UTF-8.
+	 *
+	 * @param out output file path; must not be {@code null}
+	 * @param idx index containing declared types and package grouping; must not be
+	 *            {@code null}
+	 * @throws NullPointerException if {@code out} or {@code idx} is {@code null}
 	 */
 	private static void writeDiagram(Path out, DeclaredIndex idx) {
-		try (
-
-				PlantUMLWriter pw = new PlantUMLWriter(
-						new PrintWriter(Files.newBufferedWriter(out, StandardCharsets.UTF_8)));
-
-		) {
+		try (PlantUMLWriter pw = new PlantUMLWriter(
+				new PrintWriter(Files.newBufferedWriter(out, StandardCharsets.UTF_8)));) {
 			pw.beginDiagram("class-diagram");
 
 			addHeader(pw);
@@ -168,11 +227,6 @@ public class GenerateClassDiagram {
 					pw.println();
 					pw.beginPackage(pkg);
 				}
-
-				// FIXME: fqn can be restored from idx and td, no need to pass it as parameter!
-				// FIXME: Use the same visitor, just emitType(td)
-				// FIXME: if the same visitor, pkg would be a parameter, BUT if we can get the
-				// same pkg from td, no need to pass it!
 
 				for (String fqn : fqns) {
 					TypeDeclaration<?> td = idx.byFqn.get(fqn);
@@ -198,9 +252,52 @@ public class GenerateClassDiagram {
 	}
 
 	/**
-	 * 
-	 * @param n
-	 * @return
+	 * Returns the implementation version of the running package, or {@code "dev"}
+	 * when the version metadata is not available (e.g., during local development).
+	 *
+	 * @return the implementation version from the JAR manifest, or {@code "dev"}
+	 */
+	public static String versionOrDev() {
+		String v = GenerateClassDiagram.class.getPackage().getImplementationVersion();
+		return (v == null || v.isBlank()) ? "dev" : v;
+	}
+
+	/**
+	 * Converts a JavaParser access specifier to PlantUML visibility notation.
+	 *
+	 * <p>
+	 * Mapping:
+	 * <ul>
+	 * <li>{@code public} → {@code +}</li>
+	 * <li>{@code protected} → {@code #}</li>
+	 * <li>{@code private} → {@code -}</li>
+	 * <li>package-private → {@code ~}</li>
+	 * </ul>
+	 *
+	 * @param n node providing access modifiers; must not be {@code null}
+	 * @return PlantUML visibility character
+	 * @throws NullPointerException if {@code n} is {@code null}
+	 */
+	static String visibility(NodeWithAccessModifiers<?> n) {
+		AccessSpecifier a = n.getAccessSpecifier();
+		return switch (a) {
+		case PUBLIC -> "+";
+		case PROTECTED -> "#";
+		case PRIVATE -> "-";
+		default -> "~";
+		};
+	}
+
+	/**
+	 * Returns the stereotypes (annotation simple names) declared on a node.
+	 *
+	 * <p>
+	 * This method returns annotation identifiers only (simple names), not fully
+	 * qualified names.
+	 *
+	 * @param n annotated node; must not be {@code null}
+	 * @return list of annotation identifiers (possibly empty)
+	 * @throws NullPointerException if {@code n} is {@code null}
 	 */
 	static List<String> stereotypesOf(NodeWithAnnotations<?> n) {
 		return n.getAnnotations().stream().map(a -> a.getName().getIdentifier()) // simple name only
@@ -208,9 +305,14 @@ public class GenerateClassDiagram {
 	}
 
 	/**
-	 * 
-	 * @param ss
-	 * @return
+	 * Renders a list of stereotype names into PlantUML stereotype syntax.
+	 *
+	 * <p>
+	 * Example: {@code ["Entity","Deprecated"]} becomes
+	 * {@code " <<Entity>> <<Deprecated>>"}.
+	 *
+	 * @param ss stereotype names; may be {@code null} or empty
+	 * @return a leading-space-prefixed stereotype block, or {@code ""} when none
 	 */
 	static String renderStereotypes(List<String> ss) {
 		if (ss == null || ss.isEmpty()) {
@@ -220,10 +322,19 @@ public class GenerateClassDiagram {
 	}
 
 	/**
-	 * 
-	 * @param method
-	 * @param flags
-	 * @return
+	 * Returns PlantUML method flags derived from Java modifiers.
+	 *
+	 * <p>
+	 * Current flags:
+	 * <ul>
+	 * <li>{@code {static}}</li>
+	 * <li>{@code {abstract}}</li>
+	 * <li>{@code {final}}</li>
+	 * </ul>
+	 *
+	 * @param method method declaration; must not be {@code null}
+	 * @return flags string (possibly empty)
+	 * @throws NullPointerException if {@code method} is {@code null}
 	 */
 	static String getFlags(MethodDeclaration method) {
 		String flags = "";
@@ -243,10 +354,23 @@ public class GenerateClassDiagram {
 	}
 
 	/**
-	 * Extracts name from classifier.
-	 * 
-	 * @param qname
-	 * @return
+	 * Returns the simple name of a type name that may be package-qualified and/or
+	 * nested.
+	 *
+	 * <p>
+	 * This method strips:
+	 * <ul>
+	 * <li>package qualification using {@code '.'}</li>
+	 * <li>nesting qualification using {@code '$'}</li>
+	 * </ul>
+	 *
+	 * <p>
+	 * Example: {@code "p.Outer$Inner"} becomes {@code "Inner"}.
+	 *
+	 * @param qname fully-qualified and/or nested type name; must not be
+	 *              {@code null}
+	 * @return the simple name component
+	 * @throws NullPointerException if {@code qname} is {@code null}
 	 */
 	static String simpleName(String qname) {
 		String s = qname;
