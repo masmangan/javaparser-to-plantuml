@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Set;
 
 import io.cucumber.java.After;
 import io.cucumber.java.en.Given;
@@ -63,7 +64,7 @@ public class AssisSteps {
 		Files.createDirectories(outDir);
 		Path outFile = outDir.resolve("class-diagram.puml");
 
-		GenerateClassDiagram.generate(tempProjectDir, outFile);
+		GenerateClassDiagram.generate(Set.of(tempProjectDir), outFile);
 
 		try (var stream = Files.list(outDir)) {
 			Path puml = stream.filter(p -> p.getFileName().toString().endsWith(".puml")).findFirst()
