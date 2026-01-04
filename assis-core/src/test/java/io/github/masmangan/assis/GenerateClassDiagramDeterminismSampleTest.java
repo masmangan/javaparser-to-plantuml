@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
@@ -29,8 +30,8 @@ class GenerateClassDiagramDeterminismSampleTest {
         Path out1 = tempDir.resolve("diagram-1.puml");
         Path out2 = tempDir.resolve("diagram-2.puml");
 
-        GenerateClassDiagram.generate(sampleRoot, out1);
-        GenerateClassDiagram.generate(sampleRoot, out2);
+        GenerateClassDiagram.generate(Set.of(sampleRoot), out1);
+        GenerateClassDiagram.generate(Set.of(sampleRoot), out2);
 
         String a = Files.readString(out1, StandardCharsets.UTF_8);
         String b = Files.readString(out2, StandardCharsets.UTF_8);

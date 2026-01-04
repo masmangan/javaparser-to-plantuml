@@ -42,14 +42,12 @@ class DeclaredIndex {
 	 * @param cus
 	 * @return
 	 */
-	static DeclaredIndex build(List<CompilationUnit> cus) {
-		DeclaredIndex idx = new DeclaredIndex();
+	static void fill(DeclaredIndex idx, List<CompilationUnit> cus) {
 
 		for (CompilationUnit cu : cus) {
-			String pkg = cu.getPackageDeclaration().map(pd -> pd.getNameAsString()).orElse("");
 
 			for (TypeDeclaration<?> td : cu.getTypes()) {
-				collectTypeRecursive(idx, pkg, td, null, PACKAGE_SEPARATOR);
+				collectTypeRecursive(idx, cu, td, null, PACKAGE_SEPARATOR);
 			}
 		}
 
@@ -80,21 +78,22 @@ class DeclaredIndex {
 			}
 		}
 
-		return idx;
+		//return idx;
 	}
 
 	/**
 	 * 
 	 * @param idx
-	 * @param pkg
+	 * @param cu
 	 * @param td
 	 * @param ownerFqn
 	 * @param separator
 	 */
-	private static void collectTypeRecursive(DeclaredIndex idx, String pkg, TypeDeclaration<?> td, String ownerFqn,
+	private static void collectTypeRecursive(DeclaredIndex idx, CompilationUnit cu, TypeDeclaration<?> td, String ownerFqn,
 			String separator) {
 		String name = td.getNameAsString();
 		String fqn;
+		String pkg = cu.getPackageDeclaration().map(pd -> pd.getNameAsString()).orElse("");
 
 		if (ownerFqn == null) {
 			fqn = pkg.isEmpty() ? name : pkg + separator + name;
@@ -108,13 +107,13 @@ class DeclaredIndex {
 		if (td instanceof ClassOrInterfaceDeclaration cid) {
 			cid.getMembers().forEach(m -> {
 				if (m instanceof TypeDeclaration<?> nested) {
-					collectTypeRecursive(idx, pkg, nested, fqn, "$");
+					collectTypeRecursive(idx, cu, nested, fqn, "$");
 				}
 			});
 		} else if (td instanceof EnumDeclaration ed) {
 			ed.getMembers().forEach(m -> {
 				if (m instanceof TypeDeclaration<?> nested) {
-					collectTypeRecursive(idx, pkg, nested, fqn, "$");
+					collectTypeRecursive(idx, cu, nested, fqn, "$");
 				}
 			});
 		}

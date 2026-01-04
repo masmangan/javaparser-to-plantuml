@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -59,21 +60,56 @@ public class GenerateClassDiagram {
 	 * 
 	 * @param src source code path
 	 * @param out output path
+	 * @throws IOException
 	 * @throws Exception
 	 */
-	public static void generate(Path src, Path out) throws IOException {
+	public static void generate(Set<Path> sourceRoots, Path outDir) throws IOException {
 		ParserConfiguration config = new ParserConfiguration();
 		config.setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17);
 		StaticJavaParser.setConfiguration(config);
 
-		logger.log(Level.INFO, () -> "Scanning " + src);
+		DeclaredIndex index = new DeclaredIndex();
+		List<CompilationUnit> cus = new ArrayList<>();
 
-		List<CompilationUnit> cus = scanSources(src);
-		DeclaredIndex index = DeclaredIndex.build(cus);
+		logger.log(Level.INFO, () -> "Scanning started" );
 
-		logger.log(Level.INFO, () -> "Writing " + out);
+		for (Path src : sourceRoots) {
 
-		writeDiagram(out, index);
+			logger.log(Level.INFO, () -> "Scanning " + src);
+
+			if (!Files.exists(src)) {
+				logger.log(Level.WARNING, () -> "Source folder does not exist: " + src);
+			}
+
+			SourceRoot root = new SourceRoot(src);
+			List<ParseResult<CompilationUnit>> results = root.tryToParse("");
+
+			for (ParseResult<CompilationUnit> r : results) {
+				r.getResult().ifPresent(cus::add);
+			}
+
+		}
+		DeclaredIndex.fill(index, cus);
+
+		logger.log(Level.FINE, () -> "**     byFqn    ** "+ index.byFqn.toString());
+		logger.log(Level.FINE, () -> "**   fqnsByPkg  ** "+ index.fqnsByPkg.toString());
+		logger.log(Level.FINE, () -> "**   pkgByFqn   ** "+ index.pkgByFqn.toString());
+		logger.log(Level.FINE, () -> "**uniqueBySimple** "+ index.uniqueBySimple.toString());
+
+		
+		
+		logger.log(Level.FINE, () -> "  **CUS** "+cus.toString());
+
+		logger.log(Level.INFO, () -> "Writing " + outDir);
+
+		// Gambiarra para o ASSIS CLI
+		if (Files.isDirectory(outDir)) {
+			Path outputFile = outDir.resolve("class-diagram.puml");
+			writeDiagram(outputFile, index);
+
+		} else {
+			writeDiagram(outDir, index);
+		}
 
 	}
 
@@ -130,10 +166,11 @@ public class GenerateClassDiagram {
 					pw.println();
 					pw.beginPackage(pkg);
 				}
-				
-				//FIXME: fqn can be restored from idx and td, no need to pass it as parameter!
-				//FIXME: Use the same visitor, just emitType(td)
-				//FIXME: if the same visitor, pkg would be a parameter, BUT if we can get the same pkg from td, no need to pass it!
+
+				// FIXME: fqn can be restored from idx and td, no need to pass it as parameter!
+				// FIXME: Use the same visitor, just emitType(td)
+				// FIXME: if the same visitor, pkg would be a parameter, BUT if we can get the
+				// same pkg from td, no need to pass it!
 
 				for (String fqn : fqns) {
 					TypeDeclaration<?> td = idx.byFqn.get(fqn);
@@ -150,37 +187,12 @@ public class GenerateClassDiagram {
 
 			pw.println();
 			pw.println("left to right direction");
-						
+
 			pw.endDiagram("class-diagram");
-			
+
 		} catch (IOException e) {
 			logger.log(Level.WARNING, () -> "Error writing diagram file: " + e.getLocalizedMessage());
 		}
-	}
-
-	/**
-	 * 
-	 * @param src
-	 * @return
-	 * @throws IOException
-	 */
-	private static List<CompilationUnit> scanSources(Path src) throws IOException {
-		if (!Files.exists(src)) {
-			logger.log(Level.WARNING, () -> "Source folder does not exist: " + src);
-			return List.of();
-		}
-
-		SourceRoot root = new SourceRoot(src);
-		root.getParserConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17);
-
-		List<CompilationUnit> cus = new ArrayList<>();
-		List<ParseResult<CompilationUnit>> results = root.tryToParse("");
-
-		for (ParseResult<CompilationUnit> r : results) {
-			r.getResult().ifPresent(cus::add);
-		}
-
-		return cus;
 	}
 
 	/**
@@ -246,4 +258,5 @@ public class GenerateClassDiagram {
 		}
 		return s;
 	}
+
 }
