@@ -1,0 +1,3 @@
+package pb;
+
+interface B { }
