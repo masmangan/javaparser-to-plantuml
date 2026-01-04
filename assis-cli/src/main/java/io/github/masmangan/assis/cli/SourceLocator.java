@@ -36,26 +36,17 @@ final class SourceLocator {
      *   - returns singleton set containing the chosen directory (normalized absolute).
      */
     static Set<Path> resolve(Set<Path> requested) throws IOException {
+    	
         if (requested != null) {
-            LinkedHashSet<Path> out = new LinkedHashSet<>();
-            for (Path dir : requested) {
-                if (dir == null) continue;
-
-                Path abs = dir.toAbsolutePath().normalize();
-                LOG.info(() -> "Using explicit source path (javac-like): " + abs);
-
-                validateHasJavaOrThrow(abs, /*isExplicit*/ true);
-                out.add(abs);
-            }
-
-            if (out.isEmpty()) {
-                throw new IllegalArgumentException("No valid source directories provided.");
-            }
-
-            return out;
+            return extractRequested(requested);
         }
 
-        boolean mavenDirExists = Files.isDirectory(MAVEN);
+        return extractFirstDefault();
+
+     }
+
+	private static Set<Path> extractFirstDefault() throws IOException {
+		boolean mavenDirExists = Files.isDirectory(MAVEN);
         boolean mavenHasJava = mavenDirExists && containsJava(MAVEN);
         boolean dotHasJava = Files.isDirectory(DOT) && containsJava(DOT);
 
@@ -85,10 +76,29 @@ final class SourceLocator {
 
             return Set.of(abs);
         }
-
         LOG.severe("No Java source directory found. Tried: src/main/java, src, .");
         throw new IllegalStateException("No Java source directory found (tried: src/main/java, src, .)");
-    }
+
+	}
+
+	private static Set<Path> extractRequested(Set<Path> requested) throws IOException {
+		LinkedHashSet<Path> out = new LinkedHashSet<>();
+		for (Path dir : requested) {
+		    if (dir == null) continue;
+
+		    Path abs = dir.toAbsolutePath().normalize();
+		    LOG.info(() -> "Using explicit source path (javac-like): " + abs);
+
+		    validateHasJavaOrThrow(abs, /*isExplicit*/ true);
+		    out.add(abs);
+		}
+
+		if (out.isEmpty()) {
+		    throw new IllegalArgumentException("No valid source directories provided.");
+		}
+
+		return out;
+	}
 
     private static void validateHasJavaOrThrow(Path dir, boolean isExplicit) throws IOException {
         if (!Files.exists(dir)) {

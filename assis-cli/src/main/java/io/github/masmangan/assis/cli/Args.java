@@ -48,44 +48,58 @@ final class CliArgs {
 		for (int i = 0; i < args.length; i++) {
 			String a = args[i];
 
-			if ("--help".equals(a) || "-help".equals(a) || "-?".equals(a)) {
+			if (isHelp(a)) {
 				return new CliArgs(Mode.HELP, null, null);
 			}
 
-			if ("--version".equals(a) || "-version".equals(a)) {
+			if (isVersion(a)) {
 				return new CliArgs(Mode.VERSION, null, null);
 			}
 
-			if ("--source-path".equals(a) || "-sourcepath".equals(a)) {
+			if (isSourcePath(a)) {
 				requireValue(args, i, a);
 				String raw = args[++i];
-			    Set<Path> parsed = parsePathList(raw);
+				Set<Path> parsed = parsePathList(raw);
 
-			    if (srcRoots == null) {
-			        srcRoots = new LinkedHashSet<>();
-			    }
-			    srcRoots.addAll(parsed);
-			    continue;			
-			} else if ("-d".equals(a)) {
-			    requireValue(args, i, a);
+				if (srcRoots == null) {
+					srcRoots = new LinkedHashSet<>();
+				}
+				srcRoots.addAll(parsed);
+			} else if (isOutputDirectory(a)) {
+				requireValue(args, i, a);
 
-			    if (outDir != null) {
-			        throw new IllegalArgumentException("Duplicate option: -d\n\n" + usage());
-			    }
+				if (outDir != null) {
+					throw new IllegalArgumentException("Duplicate option: -d\n\n" + usage);
+				}
 
-			    outDir = Path.of(args[++i]);
-			    continue;
+				outDir = Path.of(args[++i]);
 			} else {
-				throw new IllegalArgumentException("Unknown option: " + a + "\n\n" + usage());
+				throw new IllegalArgumentException("Unknown option: " + a + "\n\n" + usage);
 			}
 		}
 
 		return new CliArgs(Mode.RUN, srcRoots, outDir);
 	}
 
+	private static boolean isOutputDirectory(String a) {
+		return "-d".equals(a);
+	}
+
+	private static boolean isSourcePath(String a) {
+		return "--source-path".equals(a) || "-sourcepath".equals(a);
+	}
+
+	private static boolean isVersion(String a) {
+		return "--version".equals(a) || "-version".equals(a);
+	}
+
+	private static boolean isHelp(String a) {
+		return "--help".equals(a) || "-help".equals(a) || "-?".equals(a);
+	}
+
 	private static Set<Path> parsePathList(String raw) {
 		if (raw == null || raw.isBlank()) {
-			throw new IllegalArgumentException("Empty value for --source-path/-sourcepath\n\n" + usage());
+			throw new IllegalArgumentException("Empty value for --source-path/-sourcepath\n\n" + usage);
 		}
 
 		String sep = File.pathSeparator;
@@ -99,7 +113,7 @@ final class CliArgs {
 		}
 
 		if (out.isEmpty()) {
-			throw new IllegalArgumentException("No source directories provided in --source-path\n\n" + usage());
+			throw new IllegalArgumentException("No source directories provided in --source-path\n\n" + usage);
 		}
 
 		return out;
@@ -107,35 +121,33 @@ final class CliArgs {
 
 	private static void requireValue(String[] args, int i, String opt) {
 		if (i + 1 >= args.length) {
-			throw new IllegalArgumentException("Missing value for " + opt + "\n\n" + usage());
+			throw new IllegalArgumentException("Missing value for " + opt + "\n\n" + usage);
 		}
 	}
 
-	static String usage() {
-		return """
-				Usage: assis <options>
+	static String usage = """
+			Usage: java -jar assis.jar <options>
 
-				where possible options include:
-				  --help, -help, -?
-				        Print this help message
-				  --version, -version
-				        Version information
-				  --source-path <path>, -sourcepath <path>
-				        Specify where to find input source files
-				  -d <directory>
-				        Specify where to place generated .puml files
+			where possible options include:
+			  --help, -help, -?
+			        Print this help message
+			  --version, -version
+			        Version information
+			  --source-path <path>, -sourcepath <path>
+			        Specify where to find input source files
+			  -d <directory>
+			        Specify where to place generated .puml files
 
-				Defaults:
+			Defaults:
 
-				  Source path auto-discovery defaults to the first available:
-				      --source-path src/main/java/
-				      --source-path src/
-				      --source-path .
+			  Source path auto-discovery defaults to the first available:
+			      --source-path src/main/java/
+			      --source-path src/
+			      --source-path .
 
-				  Generation defaults to:
-				      -d docs/diagrams/src/
-				""";
-	}
+			  Generation defaults to:
+			      -d docs/diagrams/src/
+			""";
 
 	private CliArgs() {
 		throw new AssertionError();

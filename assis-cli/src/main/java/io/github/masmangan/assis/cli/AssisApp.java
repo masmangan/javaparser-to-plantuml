@@ -55,7 +55,7 @@ public final class AssisApp {
 		}
 
 		if (cli.mode == CliArgs.Mode.HELP) {
-			out.println(CliArgs.usage());
+			out.println(CliArgs.usage);
 			return 0;
 		}
 
