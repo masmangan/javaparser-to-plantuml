@@ -74,4 +74,37 @@ class AssisAppTest {
         String err = errBuf.toString(UTF_8);
         assertTrue(err.contains("Unknown option"), "Expected error message. Got:\n" + err);
     }
+    
+    @Test
+    void checkHelpKnobExists() throws Exception {
+        var outBuf = new ByteArrayOutputStream();
+        var errBuf = new ByteArrayOutputStream();
+
+        int code = AssisApp.run(
+            new String[] { "--help" },
+            new PrintStream(outBuf, true, UTF_8),
+            new PrintStream(errBuf, true, UTF_8)
+        );
+
+        assertTrue(code == 0, "Expected non-zero exit code for invalid arg");
+        String out = outBuf.toString(UTF_8);
+        assertTrue(out.contains("Usage"), "Expected error message. Got:\n" + out);
+    }
+    
+    @Test
+    void checkHelpVersionExists() throws Exception {
+        var outBuf = new ByteArrayOutputStream();
+        var errBuf = new ByteArrayOutputStream();
+
+        int code = AssisApp.run(
+            new String[] { "--version" },
+            new PrintStream(outBuf, true, UTF_8),
+            new PrintStream(errBuf, true, UTF_8)
+        );
+
+        assertTrue(code == 0, "Expected non-zero exit code for invalid arg");
+        String out = outBuf.toString(UTF_8);
+        assertTrue(out.contains("ASSIS"), "Expected error message. Got:\n" + out);
+    }
+    
 }
