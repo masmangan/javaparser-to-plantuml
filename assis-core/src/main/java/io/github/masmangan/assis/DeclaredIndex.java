@@ -11,6 +11,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import com.github.javaparser.ast.CompilationUnit;
@@ -22,6 +24,11 @@ import com.github.javaparser.ast.body.TypeDeclaration;
  * Index of declared types (top-level and nested).
  */
 class DeclaredIndex {
+
+	/**
+	 * Logger used by index to warn about type redefinition.
+	 */
+	static final Logger logger = Logger.getLogger(DeclaredIndex.class.getName());
 
 	private static final String PACKAGE_SEPARATOR = ".";
 
@@ -38,6 +45,7 @@ class DeclaredIndex {
 	final Map<String, String> uniqueBySimple = new LinkedHashMap<>();
 
 	/**
+	 * Populates idx with declared types from compilation units.
 	 * 
 	 * @param cus
 	 * @return
@@ -88,8 +96,8 @@ class DeclaredIndex {
 	 * @param ownerFqn
 	 * @param separator
 	 */
-	private static void collectTypeRecursive(DeclaredIndex idx, CompilationUnit cu, TypeDeclaration<?> td, String ownerFqn,
-			String separator) {
+	private static void collectTypeRecursive(DeclaredIndex idx, CompilationUnit cu, TypeDeclaration<?> td,
+			String ownerFqn, String separator) {
 		String name = td.getNameAsString();
 		String fqn;
 		String pkg = cu.getPackageDeclaration().map(pd -> pd.getNameAsString()).orElse("");
@@ -98,6 +106,13 @@ class DeclaredIndex {
 			fqn = pkg.isEmpty() ? name : pkg + separator + name;
 		} else {
 			fqn = ownerFqn + separator + name;
+		}
+		if (idx.byFqn.containsKey(fqn)) {
+			logger.log(Level.WARNING, () -> "Attempt to redefine " + fqn);
+			logger.log(Level.WARNING, () -> cu.toString());
+			logger.log(Level.WARNING, () -> td.toString());
+			logger.log(Level.WARNING, () -> "Keeping first definition.");
+			return;
 		}
 
 		idx.byFqn.put(fqn, td);

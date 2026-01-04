@@ -16,7 +16,23 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 
 /**
- * 
+ * Emits PlantUML relationship edges for all declared types in a {@link DeclaredIndex}.
+ *
+ * <p>This visitor is responsible only for relationships (edges). Type declarations
+ * (nodes) are emitted by {@link CollectTypesVisitor}.
+ *
+ * <h2>Relationships</h2>
+ * <ul>
+ *   <li><b>Inheritance</b>: {@code "Sub" --|> "Super"}</li>
+ *   <li><b>Implementation</b>: {@code "Sub" ..|> "Interface"}</li>
+ *   <li><b>Nesting</b> (inner/nested types): {@code "Outer" +-- "Outer$Inner"}</li>
+ *   <li><b>Association</b> (has-a): {@code "Owner" --> "Target" : role <<Stereo>>}</li>
+ * </ul>
+ *
+ * <h2>No duplicate rendering</h2>
+ * <p>ASSIS emits a field/record component either as an attribute/component
+ * (in {@link CollectTypesVisitor}) or as an association here, never both.
+ * The decision is made by resolving the declared type name using {@link DeclaredIndex#resolveTypeName(String, String)}.
  */
 class CollectRelationshipsVisitor {
 	
@@ -60,7 +76,14 @@ class CollectRelationshipsVisitor {
 	}
 
 	/**
-	 * 
+	 * Emits all relationship edges in three passes:
+	 * <ol>
+	 *   <li>extends/implements edges</li>
+	 *   <li>nesting edges for inner/nested types</li>
+	 *   <li>association edges for fields and record components</li>
+	 * </ol>
+	 *
+	 * <p>Ordering is chosen to keep the output stable and readable.
 	 */
 	void emitAll() {
 		for (var entry : idx.fqnsByPkg.entrySet()) {
@@ -138,11 +161,13 @@ class CollectRelationshipsVisitor {
 	}
 
 	/**
-	 * 
-	 * @param ownerFqn
-	 * @param targetFqn
-	 * @param role
-	 * @param stereotypes
+	 * Emits an association edge in PlantUML "has-a" form:
+	 * {@code "Owner" --> "Target" : role <<Stereo>>}.
+	 *
+	 * @param ownerFqn  owner type FQN
+	 * @param targetFqn target type FQN
+	 * @param role      role label (field name or record component name)
+	 * @param stereotypes already rendered stereotype block (may be {@code null})
 	 */
 	private void emitAssociation(String ownerFqn, String targetFqn, String role,
 			String stereotypes) {
@@ -189,18 +214,26 @@ class CollectRelationshipsVisitor {
 	}
 
 	/**
-	 * 
-	 * @param fqn
-	 * @return
+	 * Returns the immediate lexical owner FQN for a nested type name.
+	 *
+	 * <p>Examples:
+	 * <ul>
+	 *   <li>{@code "p.Outer$Inner"} -> {@code "p.Outer"}</li>
+	 *   <li>{@code "p.A$B$C"} -> {@code "p.A$B"}</li>
+	 * </ul>
+	 *
+	 * <p>This method uses the last {@code '$'} to support multi-level nesting.
+	 *
+	 * @param fqn fully qualified name (may include {@code '$'} for nesting)
+	 * @return owner FQN, or {@code null} when the type is top-level
 	 */
 	private static String ownerFqnOf(String fqn) {
-		int lastDot = fqn.lastIndexOf('.');
-		int firstDollar = fqn.indexOf('$');
-		if (lastDot < 0 && firstDollar < 0) {
-			return null;
-		}
-
-		return fqn.substring(0, Math.max(lastDot, firstDollar));
+	    int lastDot = fqn.lastIndexOf('.');
+	    int lastDollar = fqn.lastIndexOf('$'); // was firstDollar = fqn.indexOf('$')
+	    if (lastDot < 0 && lastDollar < 0) {
+	        return null;
+	    }
+	    return fqn.substring(0, Math.max(lastDot, lastDollar));
 	}
 
 	/**
@@ -208,7 +241,7 @@ class CollectRelationshipsVisitor {
 	 * @param type
 	 * @return
 	 */
-	private Type peelArrays(Type type) {
+	private static Type peelArrays(Type type) {
 		Type t = type;
 		while (t.isArrayType()) {
 			t = t.asArrayType().getComponentType();
