@@ -19,9 +19,11 @@ import java.nio.file.StandardCopyOption;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
+import java.util.Set;
 
 public class TestWorkbench {
     static final Path GALLERY_ROOT = Paths.get("target", "assis-gallery");
+
 
     static Path copySampleProjectToTemp(String resourcePath, Path targetDir)
             throws IOException, URISyntaxException {
@@ -58,10 +60,20 @@ public class TestWorkbench {
         return targetDir;
     }
 
+    static String generatePumlFromSample(String rp1, String rp2, Path tempDir, String tempFolderName) throws IOException, URISyntaxException {
+        Path pa = copySampleProjectToTemp(rp1, tempDir.resolve(tempFolderName+"1"));
+        Path pb = copySampleProjectToTemp(rp2, tempDir.resolve(tempFolderName+ "2"));
+
+        Path outputFile = tempDir.resolve("diagram.puml");
+        GenerateClassDiagram.generate(Set.of(pa, pb), outputFile);
+        //saveToGallery(outputFile, rp1, tempFolderName);
+        return Files.readString(outputFile, StandardCharsets.UTF_8);
+	}
+    
     static String generatePumlFromSample(String resourcePath, Path tempDir, String tempFolderName) throws Exception {
         Path sampleRoot = copySampleProjectToTemp(resourcePath, tempDir.resolve(tempFolderName));
         Path outputFile = tempDir.resolve("diagram.puml");
-        GenerateClassDiagram.generate(sampleRoot, outputFile);
+        GenerateClassDiagram.generate(Set.of(sampleRoot), outputFile);
         saveToGallery(outputFile, resourcePath, tempFolderName);
         return Files.readString(outputFile, StandardCharsets.UTF_8);
     }
@@ -114,19 +126,19 @@ public class TestWorkbench {
     static void assertPumlContainsName(String puml, String name) {
         assertTrue(
                 puml.contains(name) || puml.contains("\"" + name + "\""),
-                "Expected diagram to contain name: " + name);
+                "Expected diagram to contain name: " + name + ". Content:\n" + puml);
     }
 
     static void assertPumlContainsPackage(String puml, String name) {
         assertTrue(
                 puml.contains(name) || puml.contains("package \"" + name + "\""),
-                "Expected diagram to contain package: " + name);
+                "Expected diagram to contain package: " + name + ". Content:\n" + puml);
     }
 
     static void assertPumlContainsClass(String puml, String name) {
         assertTrue(
                 puml.contains(name) || puml.contains("class \"" + name + "\""),
-                "Expected diagram to contain class: " + name);
+                "Expected diagram to contain class: " + name + ". Content:\n" + puml);
     }
 
     static void assertAnyLineContainsAll(String puml, String... tokens) {
