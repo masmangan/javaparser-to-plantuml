@@ -16,119 +16,114 @@ import java.util.stream.Stream;
 
 final class SourceLocator {
 
-    private static final Logger LOG = Logger.getLogger(SourceLocator.class.getName());
+	private static final Logger LOG = Logger.getLogger(SourceLocator.class.getName());
 
-    static final Path MAVEN = Path.of("src/main/java");
-    static final Path SRC   = Path.of("src");
-    static final Path DOT   = Path.of(".");
+	static final Path MAVEN = Path.of("src/main/java");
+	static final Path SRC = Path.of("src");
+	static final Path DOT = Path.of(".");
 
-    private static final List<Path> CANDIDATES = List.of(MAVEN, SRC, DOT);
+	private static final List<Path> CANDIDATES = List.of(MAVEN, SRC, DOT);
 
-    /**
-     * Resolves source roots (directories only).
-     *
-     * If requested != null:
-     *   - validates each directory exists and contains at least one .java somewhere under it.
-     *   - returns normalized absolute paths (stable for downstream).
-     *
-     * Else:
-     *   - auto-discovery chooses first of: src/main/java, src, .
-     *   - returns singleton set containing the chosen directory (normalized absolute).
-     */
-    static Set<Path> resolve(Set<Path> requested) throws IOException {
+	/**
+	 * Resolves source roots (directories only).
+	 *
+	 * If requested is not empty: - validates each directory exists and contains at
+	 * least one .java somewhere under it. - returns normalized absolute paths
+	 * (stable for downstream).
+	 *
+	 * Else: - auto-discovery chooses first of: src/main/java, src, . - returns
+	 * singleton set containing the chosen directory (normalized absolute).
+	 */
+	static Set<Path> resolve(Set<Path> requested) throws IOException {
 
-        if (requested != null) {
-            return extractRequested(requested);
-        }
+		if (!requested.isEmpty()) {
+			return extractRequested(requested);
+		}
 
-        return extractFirstDefault();
+		return extractFirstDefault();
 
-     }
+	}
 
 	private static Set<Path> extractFirstDefault() throws IOException {
 		boolean mavenDirExists = Files.isDirectory(MAVEN);
-        boolean mavenHasJava = mavenDirExists && containsJava(MAVEN);
-        boolean dotHasJava = Files.isDirectory(DOT) && containsJava(DOT);
+		boolean mavenHasJava = mavenDirExists && containsJava(MAVEN);
+		boolean dotHasJava = Files.isDirectory(DOT) && containsJava(DOT);
 
-        for (Path candidate : CANDIDATES) {
-            Path abs = candidate.toAbsolutePath().normalize();
-            LOG.info(() -> "Trying source directory: " + abs);
+		for (Path candidate : CANDIDATES) {
+			Path abs = candidate.toAbsolutePath().normalize();
+			LOG.info(() -> "Trying source directory: " + abs);
 
-            if (!Files.isDirectory(candidate)) {
-            	LOG.info(() -> "Not a directory. Skipping: " + candidate.toString());
-            	continue;
-            }
+			if (!Files.isDirectory(candidate)) {
+				LOG.info(() -> "Not a directory. Skipping: " + candidate.toString());
+				continue;
+			}
 
-            if (!containsJava(candidate)) {
-            	LOG.info(() -> "No source code inside. Skipping: " + candidate.toString());
-            	continue;
-            }
+			if (!containsJava(candidate)) {
+				LOG.info(() -> "No source code inside. Skipping: " + candidate.toString());
+				continue;
+			}
 
-            LOG.info(() -> "Using source directory: " + abs);
+			LOG.info(() -> "Using source directory: " + abs);
 
-            if (candidate.equals(DOT)) {
-                LOG.warning(() ->
-                    "Falling back to '.' as source root. " +
-                    "If you expected Maven layout, run ASSIS from the project root, " +
-                    "or use -sourcepath/--source-path to point to the desired folder."
-                );
+			if (candidate.equals(DOT)) {
+				LOG.warning(() -> "Falling back to '.' as source root. "
+						+ "If you expected Maven layout, run ASSIS from the project root, "
+						+ "or use -sourcepath/--source-path to point to the desired folder.");
 
-                if (mavenDirExists && !mavenHasJava && dotHasJava) {
-                    LOG.warning(() ->
-                        "Note: 'src/main/java' exists but contains no .java files; '.' does. " +
-                        "This often happens with BlueJ/intro projects or when running from a subfolder."
-                    );
-                }
-            }
+				if (mavenDirExists && !mavenHasJava && dotHasJava) {
+					LOG.warning(() -> "Note: 'src/main/java' exists but contains no .java files; '.' does. "
+							+ "This often happens with BlueJ/intro projects or when running from a subfolder.");
+				}
+			}
 
-            return Set.of(abs);
-        }
-        LOG.severe("No Java source directory found. Tried: src/main/java, src, .");
-        throw new IllegalStateException("No Java source directory found (tried: src/main/java, src, .)");
+			return Set.of(abs);
+		}
+		LOG.severe("No Java source directory found. Tried: src/main/java, src, .");
+		throw new IllegalStateException("No Java source directory found (tried: src/main/java, src, .)");
 
 	}
 
 	private static Set<Path> extractRequested(Set<Path> requested) throws IOException {
 		LinkedHashSet<Path> out = new LinkedHashSet<>();
 		for (Path dir : requested) {
-		    if (dir == null) {
+			if (dir == null) {
 				continue;
 			}
 
-		    Path abs = dir.toAbsolutePath().normalize();
-		    LOG.info(() -> "Using explicit source path (javac-like): " + abs);
+			Path abs = dir.toAbsolutePath().normalize();
+			LOG.info(() -> "Using explicit source path (javac-like): " + abs);
 
-		    validateHasJavaOrThrow(abs, /*isExplicit*/ true);
-		    out.add(abs);
+			validateHasJavaOrThrow(abs, /* isExplicit */ true);
+			out.add(abs);
 		}
 
 		if (out.isEmpty()) {
-		    throw new IllegalArgumentException("No valid source directories provided.");
+			throw new IllegalArgumentException("No valid source directories provided.");
 		}
 
 		return out;
 	}
 
-    private static void validateHasJavaOrThrow(Path dir, boolean isExplicit) throws IOException {
-        if (!Files.exists(dir)) {
-            throw new IllegalArgumentException("Source path does not exist: " + dir);
-        }
-        if (!Files.isDirectory(dir)) {
-            throw new IllegalArgumentException("Source path is not a directory: " + dir);
-        }
-        if (!containsJava(dir)) {
-            String hint = isExplicit
-                ? "No .java files found under -sourcepath/--source-path: " + dir
-                : "No .java files found under: " + dir;
-            throw new IllegalArgumentException(hint);
-        }
-    }
+	private static void validateHasJavaOrThrow(Path dir, boolean isExplicit) throws IOException {
+		if (!Files.exists(dir)) {
+			throw new IllegalArgumentException("Source path does not exist: " + dir);
+		}
+		if (!Files.isDirectory(dir)) {
+			throw new IllegalArgumentException("Source path is not a directory: " + dir);
+		}
+		if (!containsJava(dir)) {
+			String hint = isExplicit ? "No .java files found under -sourcepath/--source-path: " + dir
+					: "No .java files found under: " + dir;
+			throw new IllegalArgumentException(hint);
+		}
+	}
 
-    private static boolean containsJava(Path dir) throws IOException {
-        try (Stream<Path> walk = Files.walk(dir)) {
-            return walk.anyMatch(p -> p.toString().endsWith(".java"));
-        }
-    }
+	private static boolean containsJava(Path dir) throws IOException {
+		try (Stream<Path> walk = Files.walk(dir)) {
+			return walk.anyMatch(p -> p.toString().endsWith(".java"));
+		}
+	}
 
-    private SourceLocator() {}
+	private SourceLocator() {
+	}
 }

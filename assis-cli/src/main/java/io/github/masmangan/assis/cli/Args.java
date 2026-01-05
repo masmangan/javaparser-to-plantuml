@@ -48,7 +48,8 @@ final class CliArgs {
 			args = new String[0];
 		}
 
-		Set<Path> srcRoots = null;
+		Set<Path> srcRoots = new LinkedHashSet<>();
+		;
 		Path outDir = null;
 
 		boolean skip = false;
@@ -69,32 +70,35 @@ final class CliArgs {
 
 			if (isSourcePath(a)) {
 				skip = true;
-				
-				requireValue(args, i, a);
-				String raw = args[i + 1];
-
-				// another parse option
-				Set<Path> parsed = parsePathList(raw);
-
-				if (srcRoots == null) {
-					srcRoots = new LinkedHashSet<>();
-				}
-				srcRoots.addAll(parsed);
+				srcRoots.addAll(parseSourcePath(args, i, a));
 			} else if (isOutputDirectory(a)) {
 				skip = true;
-
-				if (outDir != null) {
-					throw new IllegalArgumentException("Duplicate option: -d\n\n" + usage);
-				}
-				
-				requireValue(args, i, a);
-				outDir = Path.of(args[i + 1]);
+				outDir = parseOutputDirectory(args, outDir, i, a);
 			} else {
 				throw new IllegalArgumentException("Unknown option: " + a + "\n\n" + usage);
 			}
 		}
 
 		return new CliArgs(Mode.RUN, srcRoots, outDir);
+	}
+
+	private static Path parseOutputDirectory(String[] args, Path outDir, int i, String a) {
+		if (outDir != null) {
+			throw new IllegalArgumentException("Duplicate option: -d\n\n" + usage);
+		}
+
+		requireValue(args, i, a);
+		outDir = Path.of(args[i + 1]);
+		return outDir;
+	}
+
+	private static Set<Path> parseSourcePath(String[] args, int i, String a) {
+		requireValue(args, i, a);
+		String raw = args[i + 1];
+
+		// another parse option
+		Set<Path> parsed = parsePathList(raw);
+		return parsed;
 	}
 
 	private static boolean isOutputDirectory(String a) {
