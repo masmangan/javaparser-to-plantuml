@@ -42,6 +42,6 @@ class GenerateClassDiagramFieldModifiersSampleTest {
          assertPumlContains(puml, "{final}");
 
         assertPumlContains(puml, "id");
-        assertPumlContains(puml, "{static}");       
+        assertPumlContains(puml, "{static}");
     }
 }

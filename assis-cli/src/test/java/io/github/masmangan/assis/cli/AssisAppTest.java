@@ -80,7 +80,7 @@ class AssisAppTest {
 		try (
 				var outBuf = new ByteArrayOutputStream();
 				var errBuf = new ByteArrayOutputStream();
-				
+
 				) {
 			int code = AssisApp.run(new String[] { "-sourcepath", sourcePath.toString() },
 					new PrintStream(outBuf, true, UTF_8), new PrintStream(errBuf, true, UTF_8));
@@ -114,7 +114,7 @@ class AssisAppTest {
 		try (
 				var outBuf = new ByteArrayOutputStream();
 				var errBuf = new ByteArrayOutputStream();
-				
+
 				) {
 			int code = AssisApp.run(new String[] { },
 					new PrintStream(outBuf, true, UTF_8), new PrintStream(errBuf, true, UTF_8));
@@ -135,8 +135,8 @@ class AssisAppTest {
 				throw new IllegalStateException("Clean up failed.");
 			}
 		}
-	}	
-	
+	}
+
 	@Test
 	void generatesDiagramFromCompositeSourcepathAndOutputDirectory() throws Exception {
 		Path sp1 = tempDir.resolve("p1");

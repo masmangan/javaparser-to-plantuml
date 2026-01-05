@@ -26,13 +26,13 @@ public final class AssisApp {
 	static final String DEFAULT_OUT_DIR = "docs/diagrams/src";
 
 	/**
-	 * 
+	 *
 	 */
 	private AssisApp() {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param args
 	 */
 	public static void main(String[] args) {

@@ -5,14 +5,14 @@
 
 package io.github.masmangan.assis;
 
+import static io.github.masmangan.assis.TestWorkbench.assertAnyLineContainsAll;
+import static io.github.masmangan.assis.TestWorkbench.assertPumlContains;
+import static io.github.masmangan.assis.TestWorkbench.assertPumlContainsClass;
+
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
-import static io.github.masmangan.assis.TestWorkbench.assertAnyLineContainsAll;
-import static io.github.masmangan.assis.TestWorkbench.assertPumlContains;
-import static io.github.masmangan.assis.TestWorkbench.assertPumlContainsClass;
 
 class GenerateClassDiagramInheritanceSampleTest {
     @TempDir
@@ -37,7 +37,7 @@ class GenerateClassDiagramInheritanceSampleTest {
         assertPumlContains(puml, "\"samples.inheritance.B\" --|> \"samples.inheritance.A\"");
         assertPumlContains(puml, "\"samples.inheritance.Child\" --|> \"samples.inheritance.Base\"");
         assertPumlContains(puml, "\"samples.inheritance.Child\" ..|> \"samples.inheritance.B\"");
-  
+
         assertAnyLineContainsAll(puml, "E", "..|>", "A");
     }
 }

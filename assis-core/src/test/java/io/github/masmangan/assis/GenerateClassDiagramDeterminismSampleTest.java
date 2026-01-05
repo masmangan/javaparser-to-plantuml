@@ -29,7 +29,7 @@ class GenerateClassDiagramDeterminismSampleTest {
 
         Path outDir1 = tempDir.resolve("out-" + "diagram1");
         Files.createDirectories(outDir1);
- 
+
         Path outDir2 = tempDir.resolve("out-" + "diagram2");
         Files.createDirectories(outDir2);
 

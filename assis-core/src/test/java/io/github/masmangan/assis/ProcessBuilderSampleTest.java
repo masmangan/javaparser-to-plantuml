@@ -17,7 +17,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 /**
  * This regression test is related to Issue #12.
- * 
+ *
  */
 class ProcessBuilderSampleTest {
 
@@ -36,6 +36,6 @@ class ProcessBuilderSampleTest {
         assertPumlContainsClass(puml, "java.lang.ProcessBuilder$Redirect");
         assertAnyLineContainsAll(puml,"java.lang.ProcessBuilder$Redirect$Type" );
     }
- 
-   
+
+
 }

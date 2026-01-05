@@ -5,7 +5,8 @@
 
 package io.github.masmangan.assis;
 
-import static io.github.masmangan.assis.TestWorkbench.*;
+import static io.github.masmangan.assis.TestWorkbench.assertAnyLineContainsAll;
+import static io.github.masmangan.assis.TestWorkbench.generatePumlFromSample;
 
 import java.nio.file.Path;
 

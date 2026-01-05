@@ -5,13 +5,13 @@
 
 package io.github.masmangan.assis;
 
+import static io.github.masmangan.assis.TestWorkbench.assertPumlContains;
+import static io.github.masmangan.assis.TestWorkbench.assertPumlContainsClass;
+
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
-import static io.github.masmangan.assis.TestWorkbench.assertPumlContains;
-import static io.github.masmangan.assis.TestWorkbench.assertPumlContainsClass;
 
 class GenerateClassDiagramHelloSampleTest {
 

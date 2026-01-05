@@ -5,16 +5,20 @@
 
 package io.github.masmangan.assis;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import static io.github.masmangan.assis.TestWorkbench.assertAnyLineContainsAll;
+import static io.github.masmangan.assis.TestWorkbench.assertAppearsInOrder;
+import static io.github.masmangan.assis.TestWorkbench.assertPumlContains;
+import static io.github.masmangan.assis.TestWorkbench.generatePumlFromSample;
 
 import java.nio.file.Path;
-import static io.github.masmangan.assis.TestWorkbench.*;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class GenerateClassDiagramRecordNotNullSampleTest {
     @TempDir
     Path tempDir;
-    
+
     @Test
     void generatesRecordWithStereotypeOnExternalTypeComponent() throws Exception {
         String puml = generatePumlFromSample(

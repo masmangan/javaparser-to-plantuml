@@ -46,7 +46,7 @@ class DeclaredIndex {
 
 	/**
 	 * Populates idx with declared types from compilation units.
-	 * 
+	 *
 	 * @param cus
 	 * @return
 	 */
@@ -89,7 +89,7 @@ class DeclaredIndex {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param idx
 	 * @param cu
 	 * @param td
@@ -134,7 +134,7 @@ class DeclaredIndex {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param byPkg
 	 * @return
 	 */
@@ -144,7 +144,7 @@ class DeclaredIndex {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param ownerPkg
 	 * @param rawName
 	 * @return
@@ -174,7 +174,7 @@ class DeclaredIndex {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param fqn
 	 * @return
 	 */
@@ -183,7 +183,7 @@ class DeclaredIndex {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param fqn
 	 * @return
 	 */

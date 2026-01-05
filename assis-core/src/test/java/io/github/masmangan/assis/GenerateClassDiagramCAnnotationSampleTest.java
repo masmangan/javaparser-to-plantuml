@@ -4,9 +4,11 @@
  */
 
 package io.github.masmangan.assis;
- 
+
 import static io.github.masmangan.assis.TestWorkbench.assertAnyLineContainsAll;
+
 import java.nio.file.Paths;
+
 import org.junit.jupiter.api.Test;
 
 class GenerateClassDiagramCAnnotationSampleTest {

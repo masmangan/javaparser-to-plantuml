@@ -36,7 +36,7 @@ final class SourceLocator {
      *   - returns singleton set containing the chosen directory (normalized absolute).
      */
     static Set<Path> resolve(Set<Path> requested) throws IOException {
-    	
+
         if (requested != null) {
             return extractRequested(requested);
         }
@@ -58,9 +58,9 @@ final class SourceLocator {
             	LOG.info(() -> "Not a directory. Skipping: " + candidate.toString());
             	continue;
             }
-            
+
             if (!containsJava(candidate)) {
-            	LOG.info(() -> "No source code inside. Skipping: " + candidate.toString());  
+            	LOG.info(() -> "No source code inside. Skipping: " + candidate.toString());
             	continue;
             }
 
@@ -91,7 +91,9 @@ final class SourceLocator {
 	private static Set<Path> extractRequested(Set<Path> requested) throws IOException {
 		LinkedHashSet<Path> out = new LinkedHashSet<>();
 		for (Path dir : requested) {
-		    if (dir == null) continue;
+		    if (dir == null) {
+				continue;
+			}
 
 		    Path abs = dir.toAbsolutePath().normalize();
 		    LOG.info(() -> "Using explicit source path (javac-like): " + abs);

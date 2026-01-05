@@ -35,8 +35,8 @@ class GenerateClassDiagramEnumCoverageSampleTest {
         assertAnyLineContainsAll(puml, "ENUM");
         assertAnyLineContainsAll(puml, "RECORD");
         assertAnyLineContainsAll(puml, "ANNOTATION");
-    }    
-    
+    }
+
     @Test
     void generatesEnumWithTypeStereotypeAndOrderedConstants() throws Exception {
         String puml = generatePumlFromSample(

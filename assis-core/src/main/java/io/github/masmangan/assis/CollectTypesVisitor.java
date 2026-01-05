@@ -198,7 +198,7 @@ class CollectTypesVisitor {
 
 	/**
 	 * Emits annotation members as lines inside the record block.
-	 * 
+	 *
 	 * @param ad annotation declaration
 	 */
 	private void emitAnnotationMembers(AnnotationDeclaration ad) {
@@ -425,10 +425,7 @@ class CollectTypesVisitor {
 	private String assocTypeFrom(String ownerFqn, VariableDeclarator vd) {
 		String raw = rawTypeName(vd.getType().asString());
 		String resolved = idx.resolveTypeName(pkg, raw);
-		if (resolved == null) {
-			return null;
-		}
-		if (resolved.equals(ownerFqn)) {
+		if ((resolved == null) || resolved.equals(ownerFqn)) {
 			return null;
 		}
 		return resolved;

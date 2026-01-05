@@ -7,7 +7,9 @@ package io.github.masmangan.assis;
 
 import static io.github.masmangan.assis.TestWorkbench.assertAnyLineContainsAll;
 import static io.github.masmangan.assis.TestWorkbench.assertPumlContains;
+
 import java.nio.file.Paths;
+
 import org.junit.jupiter.api.Test;
 
 class GenerateClassDiagramPAnnotationSampleTest {

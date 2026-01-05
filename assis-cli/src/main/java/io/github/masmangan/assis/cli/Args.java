@@ -11,7 +11,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
- * 
+ *
  */
 final class CliArgs {
 
@@ -39,8 +39,9 @@ final class CliArgs {
 	}
 
 	static CliArgs parse(String[] args) {
-		if (args == null)
+		if (args == null) {
 			args = new String[0];
+		}
 
 		Set<Path> srcRoots = null;
 		Path outDir = null;
@@ -107,8 +108,9 @@ final class CliArgs {
 
 		LinkedHashSet<Path> out = new LinkedHashSet<>();
 		for (String p : parts) {
-			if (p == null || p.isBlank())
+			if (p == null || p.isBlank()) {
 				continue;
+			}
 			out.add(Path.of(p.trim()));
 		}
 

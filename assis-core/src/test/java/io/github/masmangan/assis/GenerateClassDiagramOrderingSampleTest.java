@@ -5,8 +5,8 @@
 
 package io.github.masmangan.assis;
 
-import static io.github.masmangan.assis.TestWorkbench.generatePumlFromSample;
 import static io.github.masmangan.assis.TestWorkbench.assertAppearsInOrder;
+import static io.github.masmangan.assis.TestWorkbench.generatePumlFromSample;
 
 import java.nio.file.Path;
 

@@ -35,39 +35,39 @@ import com.github.javaparser.ast.type.Type;
  * The decision is made by resolving the declared type name using {@link DeclaredIndex#resolveTypeName(String, String)}.
  */
 class CollectRelationshipsVisitor {
-	
+
 	/**
-	 * 
+	 *
 	 */
 	private static final String HAS_A_INNER = " +-- ";
 
 	/**
-	 * 
+	 *
 	 */
 	private static final String HAS_A = " --> ";
 
 	/**
-	 * 
+	 *
 	 */
 	private static final String IS_A_IMPLEMENTS = " ..|> ";
 
 	/**
-	 * 
+	 *
 	 */
 	private static final String IS_A_EXTENDS = " --|> ";
 
 	/**
-	 * 
+	 *
 	 */
 	private final DeclaredIndex idx;
 
 	/**
-	 * 
+	 *
 	 */
 	private final PlantUMLWriter pw;
 
 	/**
-	 * 
+	 *
 	 * @param idx
 	 */
 	CollectRelationshipsVisitor(final DeclaredIndex idx, final PlantUMLWriter pw) {
@@ -111,7 +111,7 @@ class CollectRelationshipsVisitor {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param pkg
 	 * @param subFqn
 	 * @param td
@@ -133,7 +133,7 @@ class CollectRelationshipsVisitor {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param pkg
 	 * @param subFqn
 	 * @param impl
@@ -147,7 +147,7 @@ class CollectRelationshipsVisitor {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param pkg
 	 * @param subFqn
 	 * @param ext
@@ -176,7 +176,7 @@ class CollectRelationshipsVisitor {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param pkg
 	 * @param ownerFqn
 	 * @param td
@@ -237,7 +237,7 @@ class CollectRelationshipsVisitor {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param type
 	 * @return
 	 */
@@ -250,7 +250,7 @@ class CollectRelationshipsVisitor {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param type
 	 * @return
 	 */
@@ -264,7 +264,7 @@ class CollectRelationshipsVisitor {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param pkg
 	 * @param ownerFqn
 	 * @param type

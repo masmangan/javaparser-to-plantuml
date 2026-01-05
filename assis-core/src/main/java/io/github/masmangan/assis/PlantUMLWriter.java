@@ -62,7 +62,7 @@ import java.util.Objects;
  *
  * pw.beginClass("p.A$B", null); // A different separator than ".".
  * pw.endClass("p.A$B");
- * 
+ *
  * pw.println("\"p.A\" +-- \"p.A$B\""); // Raw PlantUML: caller provides correct quoting.
  * }</pre>
  * <p>
@@ -163,11 +163,11 @@ public final class PlantUMLWriter implements AutoCloseable {
 	 * <p>
 	 * The caller is responsible for matching each {@link #beginDiagram(String)}
 	 * with exactly one call to this method.
-	 * 
+	 *
 	 * <p>
 	 * NOTE: the name will not be printed because PlantUML grammar does not allow
 	 * text after @enduml.
-	 * 
+	 *
 	 * @param name diagram name to quote in the emitted statement; must not be
 	 *             {@code null}
 	 * @throws NullPointerException     if {@code name} is {@code null}
@@ -201,7 +201,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	 * This method decreases indentation by one level (if greater than zero) and
 	 * emits {@code }}. The caller is responsible for matching each
 	 * {@link #beginPackage(String)} with exactly one call to this method.
-	 * 
+	 *
 	 * @param name package name to quote in the emitted statement; must not be
 	 *             {@code null}
 	 * @throws NullPointerException     if {@code name} is {@code null}
@@ -235,7 +235,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	 * This method decreases indentation by one level (if greater than zero) and
 	 * emits {@code }}. The caller is responsible for matching each
 	 * {@link #beginClass(String)} with exactly one call to this method.
-	 * 
+	 *
 	 * @param name type name to quote in the emitted statement; must not be
 	 *             {@code null}
 	 * @throws NullPointerException     if {@code name} is {@code null}
@@ -267,7 +267,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	 * This method decreases indentation by one level (if greater than zero) and
 	 * emits {@code }}. The caller is responsible for matching each
 	 * {@link #beginAbstractClass(String)} with exactly one call to this method.
-	 * 
+	 *
 	 * @param name type name to quote in the emitted statement; must not be
 	 *             {@code null}
 	 * @throws NullPointerException     if {@code name} is {@code null}
@@ -300,7 +300,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	 * This method decreases indentation by one level (if greater than zero) and
 	 * emits {@code }}. The caller is responsible for matching each
 	 * {@link #beginInterface(String)} with exactly one call to this method.
-	 * 
+	 *
 	 * @param name type name to quote in the emitted statement; must not be
 	 *             {@code null}
 	 * @throws NullPointerException     if {@code name} is {@code null}
@@ -331,7 +331,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	 * This method decreases indentation by one level (if greater than zero) and
 	 * emits {@code }}. The caller is responsible for matching each
 	 * {@link #beginRecord(String)} with exactly one call to this method.
-	 * 
+	 *
 	 * @param name type name to quote in the emitted statement; must not be
 	 *             {@code null}
 	 * @throws NullPointerException     if {@code name} is {@code null}
@@ -362,7 +362,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	 * This method decreases indentation by one level (if greater than zero) and
 	 * emits {@code }}. The caller is responsible for matching each
 	 * {@link #beginEnum(String)} with exactly one call to this method.
-	 * 
+	 *
 	 * @param name type name to quote in the emitted statement; must not be
 	 *             {@code null}
 	 * @throws NullPointerException     if {@code name} is {@code null}
@@ -393,7 +393,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	 * This method decreases indentation by one level (if greater than zero) and
 	 * emits {@code }}. The caller is responsible for matching each
 	 * {@link #beginAnnotation(String)} with exactly one call to this method.
-	 * 
+	 *
 	 * @param name type name to quote in the emitted statement; must not be
 	 *             {@code null}
 	 * @throws NullPointerException     if {@code name} is {@code null}
@@ -407,7 +407,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	private void beginType(final String keyword, final String name, final String stereotypes) {
 		checkName(name);
 		requireSingleLine(stereotypes, "stereotypes");
-		requireNotContainsQuote(stereotypes, "stereotypes");		
+		requireNotContainsQuote(stereotypes, "stereotypes");
 		println(keyword + " " + quote(name) + stereotypesSuffix(stereotypes) + " {");
 		indent();
 	}

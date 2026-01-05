@@ -5,13 +5,13 @@
 
 package io.github.masmangan.assis;
 
+import static io.github.masmangan.assis.TestWorkbench.assertPumlContains;
+import static io.github.masmangan.assis.TestWorkbench.assertPumlContainsClass;
+
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
-import static io.github.masmangan.assis.TestWorkbench.assertPumlContains;
-import static io.github.masmangan.assis.TestWorkbench.assertPumlContainsClass;
 
 class GenerateClassDiagramClassModifiersSampleTest {
     @TempDir
@@ -25,9 +25,9 @@ class GenerateClassDiagramClassModifiersSampleTest {
                 "cmodifiers");
 
         assertPumlContains(puml,"abstract class \"samples.cmodifiers.AbstractClass\"");
-        assertPumlContains(puml, 
+        assertPumlContains(puml,
             "class \"samples.cmodifiers.FinalClass\" <<final>>");
-        assertPumlContainsClass(puml, 
+        assertPumlContainsClass(puml,
             "samples.cmodifiers.PlainClass");
 
     }

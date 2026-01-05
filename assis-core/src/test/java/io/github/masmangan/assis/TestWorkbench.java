@@ -5,8 +5,8 @@
 
 package io.github.masmangan.assis;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -74,7 +74,7 @@ public class TestWorkbench {
         Path outputFile = outDir.resolve("class-diagram.puml");
         return Files.readString(outputFile, StandardCharsets.UTF_8);
     }
-    
+
     static String generatePumlFromSample(String resourcePath, Path tempDir, String tempFolderName) throws Exception {
         Path sampleRoot = copySampleProjectToTemp(resourcePath, tempDir.resolve(tempFolderName));
 
@@ -103,14 +103,16 @@ public class TestWorkbench {
     }
 
     static String safeFileName(String s) {
-        if (s == null || s.isBlank())
-            return "_";
+        if (s == null || s.isBlank()) {
+			return "_";
+		}
         return s.replaceAll("[^a-zA-Z0-9._-]+", "_");
     }
 
     static void deleteRecursively(Path path) throws IOException {
-        if (!Files.exists(path))
-            return;
+        if (!Files.exists(path)) {
+			return;
+		}
 
         try (var walk = Files.walk(path)) {
             walk.sorted(Comparator.reverseOrder())
@@ -155,8 +157,9 @@ public class TestWorkbench {
     static void assertAnyLineContainsAll(String puml, String... tokens) {
         boolean ok = puml.lines().anyMatch(line -> {
             for (String t : tokens) {
-                if (!line.contains(t))
-                    return false;
+                if (!line.contains(t)) {
+					return false;
+				}
             }
             return true;
         });
@@ -167,10 +170,12 @@ public class TestWorkbench {
         int pos = -1;
         for (String f : fragments) {
             int next = text.indexOf(f);
-            if (next < 0)
-                throw new AssertionError("Missing fragment: " + f + "\n" + text);
-            if (next <= pos)
-                throw new AssertionError("Out of order: " + f + "\n" + text);
+            if (next < 0) {
+				throw new AssertionError("Missing fragment: " + f + "\n" + text);
+			}
+            if (next <= pos) {
+				throw new AssertionError("Out of order: " + f + "\n" + text);
+			}
             pos = next;
         }
     }

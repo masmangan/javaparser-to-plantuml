@@ -6,11 +6,11 @@
 package io.github.masmangan.assis;
 
 import static io.github.masmangan.assis.TestWorkbench.assertAnyLineContainsAll;
+import static io.github.masmangan.assis.TestWorkbench.assertPumlContains;
+import static io.github.masmangan.assis.TestWorkbench.assertPumlContainsClass;
 import static io.github.masmangan.assis.TestWorkbench.assertPumlContainsName;
 import static io.github.masmangan.assis.TestWorkbench.assertPumlNotContains;
 import static io.github.masmangan.assis.TestWorkbench.generatePumlFromSample;
-import static io.github.masmangan.assis.TestWorkbench.assertPumlContains;
-import static io.github.masmangan.assis.TestWorkbench.assertPumlContainsClass;
 
 import java.nio.file.Path;
 
