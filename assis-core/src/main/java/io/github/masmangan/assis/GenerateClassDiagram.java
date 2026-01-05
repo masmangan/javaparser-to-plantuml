@@ -101,12 +101,12 @@ public class GenerateClassDiagram {
 		logger.log(Level.FINE, () -> "**   pkgByFqn   ** " + index.pkgByFqn.toString());
 		logger.log(Level.FINE, () -> "**uniqueBySimple** " + index.uniqueBySimple.toString());
 
-		logger.log(Level.FINE, () -> "  **CUS** " + cus.toString());
+		logger.log(Level.FINE, () -> "**      CUS     **" + cus.toString());
 
 		Objects.requireNonNull(sourceRoots, "sourceRoots");
 		Objects.requireNonNull(outDir, "outDir");
 
-		Path dir = outDir.normalize(); // ok; don’t try to guess file vs dir by "."
+		Path dir = outDir.normalize();
 
 		if (Files.exists(dir) && !Files.isDirectory(dir)) {
 			throw new IllegalArgumentException("outDir must be a directory: " + dir.toAbsolutePath());
@@ -138,11 +138,10 @@ public class GenerateClassDiagram {
 	private static void scanSourceRoots(Set<Path> sourceRoots, DeclaredIndex index, List<CompilationUnit> cus)
 			throws IOException {
 
-		// Stripping no structural data: comments and tokens
-		ParserConfiguration cfg = new ParserConfiguration()
-		    .setAttributeComments(false)
-		    .setStoreTokens(false)
-			.setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17);
+		ParserConfiguration cfg = new ParserConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17)
+				// MEMORY: Stripping no structural data to save memory space: comments and
+				// tokens
+				.setAttributeComments(false).setStoreTokens(false);
 
 		StaticJavaParser.setConfiguration(cfg);
 
@@ -165,12 +164,11 @@ public class GenerateClassDiagram {
 			for (ParseResult<CompilationUnit> r : results) {
 
 				r.getResult().ifPresent(cu -> {
-					// Stripping no structural data: method body
-					cu.findAll(com.github.javaparser.ast.body.MethodDeclaration.class)
-					  .forEach(m -> m.removeBody());
-					// Stripping no structural data: constructor body
+					// MEMORY: Stripping no structural data to save memory space: method body
+					cu.findAll(com.github.javaparser.ast.body.MethodDeclaration.class).forEach(m -> m.removeBody());
+					// MEMORY: Stripping no structural data to save memory space: constructor body
 					cu.findAll(com.github.javaparser.ast.body.ConstructorDeclaration.class)
-					.forEach(c -> c.getBody().getStatements().clear());
+							.forEach(c -> c.getBody().getStatements().clear());
 
 					cus.add(cu);
 				});
@@ -315,10 +313,7 @@ public class GenerateClassDiagram {
 	 * @throws NullPointerException if {@code n} is {@code null}
 	 */
 	static List<String> stereotypesOf(NodeWithAnnotations<?> n) {
-	    return n.getAnnotations().stream()
-	        .map(a -> a.getName().getIdentifier())
-	        .sorted()
-	        .toList();
+		return n.getAnnotations().stream().map(a -> a.getName().getIdentifier()).sorted().toList();
 	}
 
 	/**

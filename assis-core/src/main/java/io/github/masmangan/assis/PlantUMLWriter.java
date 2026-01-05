@@ -74,6 +74,10 @@ import java.util.Objects;
  */
 public final class PlantUMLWriter implements AutoCloseable {
 
+	private static final String SPACE_STRING = " ";
+
+	private static final String EMPTY_STRING = "";
+
 	private static final String INDENT_UNIT = "  ";
 
 	private final PrintWriter out;
@@ -106,7 +110,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	 * Writes an empty line.
 	 */
 	public void println() {
-		println("");
+		println(EMPTY_STRING);
 	}
 
 	/**
@@ -154,7 +158,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	 */
 	public void beginDiagram(final String name) {
 		checkName(name);
-		println("@startuml " + name);
+		println("@startuml \"%s\"".formatted(name.strip()));
 	}
 
 	/**
@@ -190,7 +194,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	 */
 	public void beginPackage(final String name) {
 		checkName(name);
-		println("package " + quote(name) + " {");
+		println("package \"%s\" {".formatted(name.strip()));
 		indent();
 	}
 
@@ -211,7 +215,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	public void endPackage(final String name) {
 		checkName(name);
 		dedent();
-		println("} /' @assis:end package " + quote(name) + " '/");
+		println("} /' @assis:end package \"%s\" '/".formatted(name.strip()));
 	}
 
 	/**
@@ -406,16 +410,20 @@ public final class PlantUMLWriter implements AutoCloseable {
 
 	private void beginType(final String keyword, final String name, final String stereotypes) {
 		checkName(name);
-		requireSingleLine(stereotypes, "stereotypes");
-		requireNotContainsQuote(stereotypes, "stereotypes");
-		println(keyword + " " + quote(name) + stereotypesSuffix(stereotypes) + " {");
+		checkStereotypes(stereotypes);
+		println("%s \"%s\"%s {".formatted(keyword, name.strip(), stereotypesSuffix(stereotypes.strip())));
 		indent();
 	}
 
 	private void endType(final String keyword, final String name) {
 		checkName(name);
 		dedent();
-		println("} /' @assis:end " + keyword + " " + quote(name) + "'/");
+		println("/' @assis:end %s \"%s\"'/".formatted(keyword, name.strip()));
+	}
+
+	private static void checkStereotypes(final String stereotypes) {
+		requireSingleLine(stereotypes, "stereotypes");
+		requireNotContainsQuote(stereotypes, "stereotypes");
 	}
 
 	private static void checkName(final String name) {
@@ -436,17 +444,18 @@ public final class PlantUMLWriter implements AutoCloseable {
 		}
 	}
 
-	private static String quote(final String name) {
-		checkName(name);
-		return "\"" + name.trim() + "\"";
-	}
-
+	/**
+	 * Returns an empty string if stereotypes is blank; or adds space before stereotypes.
+	 * <p>
+	 * This avoids an empty space as a separator for an empty string.
+	 * @param stereotypes
+	 * @return an empty string or a string with a space before stereotypes 
+	 */
 	private static String stereotypesSuffix(final String stereotypes) {
 		if (stereotypes == null) {
-			return "";
+			return EMPTY_STRING;
 		}
-		final String s = stereotypes.trim();
-		return s.isEmpty() ? "" : " " + s;
+		return stereotypes.isBlank() ? EMPTY_STRING : SPACE_STRING + stereotypes;
 	}
 
 }

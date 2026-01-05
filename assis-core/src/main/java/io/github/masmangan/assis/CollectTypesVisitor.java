@@ -60,6 +60,12 @@ import com.github.javaparser.ast.body.VariableDeclarator;
  */
 class CollectTypesVisitor {
 
+	private static final String SPACE_STRING = " ";
+
+	private static final String EMPTY_STRING = "";
+
+	private static final String FINAL_MODIFIER = "<<final>>";
+
 	/**
 	 * Index of declared types and name-resolution helpers.
 	 */
@@ -93,7 +99,7 @@ class CollectTypesVisitor {
 	 */
 	CollectTypesVisitor(final DeclaredIndex idx, final String pkg, final PlantUMLWriter pw) {
 		this.idx = idx;
-		this.pkg = (pkg == null) ? "" : pkg;
+		this.pkg = (pkg == null) ? EMPTY_STRING : pkg;
 		this.pw = pw;
 	}
 
@@ -137,7 +143,7 @@ class CollectTypesVisitor {
 
 				pw.endAbstractClass(pumlName);
 			} else if (cid.isFinal()) {
-				pw.beginClass(pumlName, "<<final>>" + (stereotypes.isBlank() ? "" : " " + stereotypes.trim()));
+				pw.beginClass(pumlName, FINAL_MODIFIER + (stereotypes.isBlank() ? EMPTY_STRING : SPACE_STRING + stereotypes.trim()));
 				emitFields(fqn, cid.getFields());
 				emitConstructors(cid.getConstructors());
 				emitMethods(cid.getMethods());
@@ -208,7 +214,7 @@ class CollectTypesVisitor {
 					String name = amd.getNameAsString();
 					String type = amd.getType().asString();
 
-					String defaultValue = amd.getDefaultValue().map(v -> " = " + v).orElse("");
+					String defaultValue = amd.getDefaultValue().map(v -> " = " + v).orElse(EMPTY_STRING);
 
 					pw.println(name + "() : " + type + defaultValue
 							+ GenerateClassDiagram.renderStereotypes(GenerateClassDiagram.stereotypesOf(amd)));
@@ -246,7 +252,7 @@ class CollectTypesVisitor {
 	 * @throws NullPointerException if {@code typeAsString} is {@code null}
 	 */
 	private static String rawTypeName(String typeAsString) {
-		return typeAsString.replaceAll("<[^>]*>", "").replace("[]", "").trim();
+		return typeAsString.replaceAll("<[^>]*>", EMPTY_STRING).replace("[]", EMPTY_STRING).trim();
 	}
 
 	/**
@@ -298,8 +304,8 @@ class CollectTypesVisitor {
 
 		List<FieldDeclaration> sorted = new ArrayList<>(fields);
 		sorted.sort((a, b) -> {
-			String an = a.getVariables().isEmpty() ? "" : a.getVariable(0).getNameAsString();
-			String bn = b.getVariables().isEmpty() ? "" : b.getVariable(0).getNameAsString();
+			String an = a.getVariables().isEmpty() ? EMPTY_STRING : a.getVariable(0).getNameAsString();
+			String bn = b.getVariables().isEmpty() ? EMPTY_STRING : b.getVariable(0).getNameAsString();
 			return an.compareTo(bn);
 		});
 
@@ -332,7 +338,7 @@ class CollectTypesVisitor {
 
 		String name = vd.getNameAsString();
 		String type = vd.getType().asString();
-		String staticPrefix = fd.isStatic() ? "{static} " : "";
+		String staticPrefix = fd.isStatic() ? "{static}" : EMPTY_STRING;
 		String vis = GenerateClassDiagram.visibility(fd);
 
 		List<String> mods = new ArrayList<>();
@@ -345,9 +351,9 @@ class CollectTypesVisitor {
 		if (fd.isVolatile()) {
 			mods.add("volatile");
 		}
-		String modBlock = mods.isEmpty() ? "" : " {" + String.join(", ", mods) + "}";
+		String modBlock = mods.isEmpty() ? EMPTY_STRING : " {" + String.join(", ", mods) + "}";
 
-		pw.println(vis + " " + staticPrefix + name + " : " + type + modBlock
+		pw.println(vis + SPACE_STRING + staticPrefix + SPACE_STRING + name + " : " + type + modBlock
 				+ GenerateClassDiagram.renderStereotypes(GenerateClassDiagram.stereotypesOf(fd)));
 	}
 
@@ -396,12 +402,12 @@ class CollectTypesVisitor {
 			String name = m.getNameAsString();
 			String params = m.getParameters().stream().map(p -> {
 				String anns = GenerateClassDiagram.renderStereotypes(GenerateClassDiagram.stereotypesOf(p));
-				return (anns + " " + p.getNameAsString() + " : " + p.getType().asString()).trim();
+				return (anns + SPACE_STRING + p.getNameAsString() + " : " + p.getType().asString()).trim();
 			}).collect(Collectors.joining(", "));
 			String flags = GenerateClassDiagram.getFlags(m);
 			String vis = GenerateClassDiagram.visibility(m);
 
-			pw.println(vis + " " + name + "(" + params + ") : " + returnType + flags
+			pw.println(vis + SPACE_STRING + name + "(" + params + ") : " + returnType + flags
 					+ GenerateClassDiagram.renderStereotypes(GenerateClassDiagram.stereotypesOf(m)));
 		}
 	}

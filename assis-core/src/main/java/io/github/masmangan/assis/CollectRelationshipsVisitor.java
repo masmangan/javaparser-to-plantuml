@@ -16,30 +16,40 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 
 /**
- * Emits PlantUML relationship edges for all declared types in a {@link DeclaredIndex}.
+ * Emits PlantUML relationship edges for all declared types in a
+ * {@link DeclaredIndex}.
  *
- * <p>This visitor is responsible only for relationships (edges). Type declarations
+ * <p>
+ * This visitor is responsible only for relationships (edges). Type declarations
  * (nodes) are emitted by {@link CollectTypesVisitor}.
  *
  * <h2>Relationships</h2>
  * <ul>
- *   <li><b>Inheritance</b>: {@code "Sub" --|> "Super"}</li>
- *   <li><b>Implementation</b>: {@code "Sub" ..|> "Interface"}</li>
- *   <li><b>Nesting</b> (inner/nested types): {@code "Outer" +-- "Outer$Inner"}</li>
- *   <li><b>Association</b> (has-a): {@code "Owner" --> "Target" : role <<Stereo>>}</li>
+ * <li><b>Inheritance</b>: {@code "Sub" --|> "Super"}</li>
+ * <li><b>Implementation</b>: {@code "Sub" ..|> "Interface"}</li>
+ * <li><b>Nesting</b> (inner/nested types):
+ * {@code "Outer" +-- "Outer$Inner"}</li>
+ * <li><b>Association</b> (has-a):
+ * {@code "Owner" --> "Target" : role <<Stereo>>}</li>
  * </ul>
  *
  * <h2>No duplicate rendering</h2>
- * <p>ASSIS emits a field/record component either as an attribute/component
- * (in {@link CollectTypesVisitor}) or as an association here, never both.
- * The decision is made by resolving the declared type name using {@link DeclaredIndex#resolveTypeName(String, String)}.
+ * <p>
+ * ASSIS emits a field/record component either as an attribute/component (in
+ * {@link CollectTypesVisitor}) or as an association here, never both. The
+ * decision is made by resolving the declared type name using
+ * {@link DeclaredIndex#resolveTypeName(String, String)}.
  */
 class CollectRelationshipsVisitor {
+
+	private static final char CHAR_INNER_TYPE_SEPARATOR = '$';
+
+	private static final char CHAR_PACKAGE_SEPARATOR = '.';
 
 	/**
 	 *
 	 */
-	private static final String HAS_A_INNER = " +-- ";
+	private static final String HAS_A_INNER = "+--";
 
 	/**
 	 *
@@ -78,34 +88,51 @@ class CollectRelationshipsVisitor {
 	/**
 	 * Emits all relationship edges in three passes:
 	 * <ol>
-	 *   <li>extends/implements edges</li>
-	 *   <li>nesting edges for inner/nested types</li>
-	 *   <li>association edges for fields and record components</li>
+	 * <li>extends/implements edges</li>
+	 * <li>nesting edges for inner/nested types</li>
+	 * <li>association edges for fields and record components</li>
 	 * </ol>
 	 *
-	 * <p>Ordering is chosen to keep the output stable and readable.
+	 * <p>
+	 * Ordering is chosen to keep the output stable and readable.
 	 */
 	void emitAll() {
-		for (var entry : idx.fqnsByPkg.entrySet()) {
-			String pkg = entry.getKey();
-			for (String fqn : entry.getValue()) {
-				TypeDeclaration<?> td = idx.byFqn.get(fqn);
-				emitExtendsImplements(pkg, fqn, td);
-			}
-		}
+		emitInheritanceRelations();
 
-		for (String fqn : idx.byFqn.keySet()) {
-			String ownerFqn = ownerFqnOf(fqn);
-			if (ownerFqn != null && idx.byFqn.containsKey(ownerFqn)) {
-				pw.println(idx.qPuml(ownerFqn) + HAS_A_INNER + idx.qPuml(fqn));
-			}
-		}
+		emitInnerClassRelations();
 
+		emitAssociationRelations();
+	}
+
+	private void emitAssociationRelations() {
 		for (var entry : idx.fqnsByPkg.entrySet()) {
 			String pkg = entry.getKey();
 			for (String fqn : entry.getValue()) {
 				TypeDeclaration<?> td = idx.byFqn.get(fqn);
 				emitAssociations(pkg, fqn, td);
+			}
+		}
+	}
+
+	private void emitInnerClassRelations() {
+		for (String fqn : idx.byFqn.keySet()) {
+			emitInnerTypes(fqn);
+		}
+	}
+
+	private void emitInnerTypes(String fqn) {
+		String ownerFqn = ownerFqnOf(fqn);
+		if (ownerFqn != null && idx.byFqn.containsKey(ownerFqn)) {
+			pw.println("%s %s %s".formatted(idx.qPuml(ownerFqn), HAS_A_INNER, idx.qPuml(fqn)));
+		}
+	}
+
+	private void emitInheritanceRelations() {
+		for (var entry : idx.fqnsByPkg.entrySet()) {
+			String pkg = entry.getKey();
+			for (String fqn : entry.getValue()) {
+				TypeDeclaration<?> td = idx.byFqn.get(fqn);
+				emitExtendsImplements(pkg, fqn, td);
 			}
 		}
 	}
@@ -164,13 +191,12 @@ class CollectRelationshipsVisitor {
 	 * Emits an association edge in PlantUML "has-a" form:
 	 * {@code "Owner" --> "Target" : role <<Stereo>>}.
 	 *
-	 * @param ownerFqn  owner type FQN
-	 * @param targetFqn target type FQN
-	 * @param role      role label (field name or record component name)
+	 * @param ownerFqn    owner type FQN
+	 * @param targetFqn   target type FQN
+	 * @param role        role label (field name or record component name)
 	 * @param stereotypes already rendered stereotype block (may be {@code null})
 	 */
-	private void emitAssociation(String ownerFqn, String targetFqn, String role,
-			String stereotypes) {
+	private void emitAssociation(String ownerFqn, String targetFqn, String role, String stereotypes) {
 		pw.println(idx.qPuml(ownerFqn) + HAS_A + idx.qPuml(targetFqn) + " : " + role
 				+ (stereotypes != null ? stereotypes : ""));
 	}
@@ -196,12 +222,22 @@ class CollectRelationshipsVisitor {
 	private void emitRecordParameterAssociation(String pkg, String ownerFqn, Parameter p) {
 		String target = resolveAssocTarget(pkg, ownerFqn, p.getType());
 		if (target != null) {
-			String st = GenerateClassDiagram.renderStereotypes(GenerateClassDiagram.stereotypesOf(p));
+			String st = stereotypesToString(p);
 
 			emitAssociation(ownerFqn, target, p.getNameAsString(), st);
 		}
 	}
 
+	private String stereotypesToString(Parameter p) {
+		return GenerateClassDiagram.renderStereotypes(GenerateClassDiagram.stereotypesOf(p));
+	}
+
+	/**
+	 * 
+	 * @param pkg
+	 * @param ownerFqn
+	 * @param fd
+	 */
 	private void emitFieldAssociation(String pkg, String ownerFqn, FieldDeclaration fd) {
 		String st = GenerateClassDiagram.renderStereotypes(GenerateClassDiagram.stereotypesOf(fd));
 
@@ -216,24 +252,26 @@ class CollectRelationshipsVisitor {
 	/**
 	 * Returns the immediate lexical owner FQN for a nested type name.
 	 *
-	 * <p>Examples:
+	 * <p>
+	 * Examples:
 	 * <ul>
-	 *   <li>{@code "p.Outer$Inner"} -> {@code "p.Outer"}</li>
-	 *   <li>{@code "p.A$B$C"} -> {@code "p.A$B"}</li>
+	 * <li>{@code "p.Outer$Inner"} -> {@code "p.Outer"}</li>
+	 * <li>{@code "p.A$B$C"} -> {@code "p.A$B"}</li>
 	 * </ul>
 	 *
-	 * <p>This method uses the last {@code '$'} to support multi-level nesting.
+	 * <p>
+	 * This method uses the last {@code '$'} to support multi-level nesting.
 	 *
 	 * @param fqn fully qualified name (may include {@code '$'} for nesting)
 	 * @return owner FQN, or {@code null} when the type is top-level
 	 */
 	private static String ownerFqnOf(String fqn) {
-	    int lastDot = fqn.lastIndexOf('.');
-	    int lastDollar = fqn.lastIndexOf('$'); // was firstDollar = fqn.indexOf('$')
-	    if (lastDot < 0 && lastDollar < 0) {
-	        return null;
-	    }
-	    return fqn.substring(0, Math.max(lastDot, lastDollar));
+		int lastDot = fqn.lastIndexOf(CHAR_PACKAGE_SEPARATOR);
+		int lastDollar = fqn.lastIndexOf(CHAR_INNER_TYPE_SEPARATOR);
+		if (lastDot < 0 && lastDollar < 0) {
+			return null;
+		}
+		return fqn.substring(0, Math.max(lastDot, lastDollar));
 	}
 
 	/**
@@ -258,9 +296,9 @@ class CollectRelationshipsVisitor {
 		Type t = peelArrays(type);
 
 		if (t.isClassOrInterfaceType()) {
-			return t.asClassOrInterfaceType().getNameAsString(); // raw type: List, Optional, Foo
+			return t.asClassOrInterfaceType().getNameAsString();
 		}
-		return t.asString(); // primitives etc.
+		return t.asString();
 	}
 
 	/**
