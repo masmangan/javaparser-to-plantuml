@@ -38,6 +38,11 @@ final class CliArgs {
 		this.outDir = outDir;
 	}
 
+	/**
+	 *
+	 * @param args
+	 * @return
+	 */
 	static CliArgs parse(String[] args) {
 		if (args == null) {
 			args = new String[0];
@@ -46,7 +51,12 @@ final class CliArgs {
 		Set<Path> srcRoots = null;
 		Path outDir = null;
 
+		boolean skip = false;
 		for (int i = 0; i < args.length; i++) {
+			if (skip) {
+				skip = false;
+				continue;
+			}
 			String a = args[i];
 
 			if (isHelp(a)) {
@@ -58,8 +68,12 @@ final class CliArgs {
 			}
 
 			if (isSourcePath(a)) {
+				skip = true;
+				
 				requireValue(args, i, a);
-				String raw = args[++i];
+				String raw = args[i + 1];
+
+				// another parse option
 				Set<Path> parsed = parsePathList(raw);
 
 				if (srcRoots == null) {
@@ -67,13 +81,14 @@ final class CliArgs {
 				}
 				srcRoots.addAll(parsed);
 			} else if (isOutputDirectory(a)) {
-				requireValue(args, i, a);
+				skip = true;
 
 				if (outDir != null) {
 					throw new IllegalArgumentException("Duplicate option: -d\n\n" + usage);
 				}
-
-				outDir = Path.of(args[++i]);
+				
+				requireValue(args, i, a);
+				outDir = Path.of(args[i + 1]);
 			} else {
 				throw new IllegalArgumentException("Unknown option: " + a + "\n\n" + usage);
 			}
