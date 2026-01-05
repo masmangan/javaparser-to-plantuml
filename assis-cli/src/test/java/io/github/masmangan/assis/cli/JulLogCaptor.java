@@ -28,11 +28,15 @@ final class JulLogCaptor implements AutoCloseable {
 
     // A handler that collects records in-memory
     this.handler = new Handler() {
-      @Override public void publish(LogRecord record) {
-        if (record != null) records.add(record);
+      @Override public void publish(LogRecord logRecord) {
+        if (logRecord != null) records.add(logRecord);
       }
-      @Override public void flush() {}
-      @Override public void close() throws SecurityException {}
+      @Override public void flush() {
+    	  // no need to log flushes
+      }
+      @Override public void close() throws SecurityException {
+    	  // no need to log close
+      }
     };
 
     // Make sure we see CONFIG/INFO/SEVERE regardless of environment defaults

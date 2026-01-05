@@ -5,7 +5,6 @@
 
 package io.github.masmangan.assis.cli;
 
-import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
@@ -37,8 +36,7 @@ public final class AssisApp {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		int code = run(args);
-		System.exit(code);
+		System.exit(run(args));
 	}
 
 	/**
@@ -51,17 +49,17 @@ public final class AssisApp {
 		try {
 			cli = CliArgs.parse(args);
 		} catch (IllegalArgumentException e) {
-			LOG.log(Level.SEVERE, () -> e.getMessage());
+			LOG.log(Level.SEVERE, e::getMessage);
 			return 1;
 		}
 
 		if (cli.mode == CliArgs.Mode.HELP) {
-			LOG.log(Level.CONFIG, () -> CliArgs.usage);
+			LOG.log(Level.INFO, () -> CliArgs.usage);
 			return 0;
 		}
 
 		if (cli.mode == CliArgs.Mode.VERSION) {
-			LOG.log(Level.CONFIG, () -> "ASSIS " + GenerateClassDiagram.versionOrDev());
+			LOG.log(Level.INFO, () -> "ASSIS " + GenerateClassDiagram.versionOrDev());
 			return 0;
 		}
 
@@ -69,7 +67,7 @@ public final class AssisApp {
 		try {
 			sourceRoots = SourceLocator.resolve(cli.sourceRoots);
 		} catch (Exception e) {
-			LOG.log(Level.SEVERE, () -> "ERROR: " + e.getMessage());
+			LOG.log(Level.SEVERE, e::getMessage);
 			return 2;
 		}
 
@@ -92,7 +90,7 @@ public final class AssisApp {
 
 			return 0;
 		} catch (Exception e) {
-			LOG.log(Level.SEVERE, () -> "ERROR: " + e.getMessage());
+			LOG.log(Level.SEVERE, e::getMessage);
 			return 3;
 		}
 	}

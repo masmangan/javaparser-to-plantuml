@@ -163,7 +163,6 @@ class AssisAppTest {
 
 			assertNotEquals(0, code, "Expected non-zero exit code for invalid arg.\nLogs:\n" + logs.dump());
 
-			// Your AssisApp logs parse errors at SEVERE
 			assertTrue(logs.any(Level.SEVERE, "unknown") || logs.any(Level.SEVERE, "option"),
 					"Expected a SEVERE message mentioning unknown/invalid option.\nLogs:\n" + logs.dump());
 		}
@@ -176,8 +175,7 @@ class AssisAppTest {
 
 			assertEquals(0, code, "Expected zero exit code for --help.\nLogs:\n" + logs.dump());
 
-			// In AssisApp: help goes to Level.CONFIG with CliArgs.usage
-			assertTrue(logs.any(Level.CONFIG, "usage"),
+			assertTrue(logs.any(Level.INFO, "usage"),
 					"Expected help text to contain 'usage' (logged at CONFIG).\nLogs:\n" + logs.dump());
 		}
 	}
@@ -189,7 +187,7 @@ class AssisAppTest {
 
 			assertEquals(0, code, "Expected zero exit code for --version.\nLogs:\n" + logs.dump());
 
-			assertTrue(logs.any(Level.CONFIG, "ASSIS"),
+			assertTrue(logs.any(Level.INFO, "ASSIS"),
 					"Expected version output to mention ASSIS (logged at CONFIG).\nLogs:\n" + logs.dump());
 		}
 	}
