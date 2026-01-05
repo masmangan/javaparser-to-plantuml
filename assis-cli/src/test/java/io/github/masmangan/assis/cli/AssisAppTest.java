@@ -8,15 +8,14 @@ package io.github.masmangan.assis.cli;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.logging.Level;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -41,20 +40,14 @@ class AssisAppTest {
 
 		Path outputDirectory = tempDir.resolve("anotherdoc");
 
-		var outBuf = new ByteArrayOutputStream();
-		var errBuf = new ByteArrayOutputStream();
+		int code = AssisApp
+				.run(new String[] { "-sourcepath", srcMainJava.toString(), "-d", outputDirectory.toString() });
 
-		int code = AssisApp.run(
-				new String[] { "-sourcepath", srcMainJava.toString(), "-d", outputDirectory.toString() },
-				new PrintStream(outBuf, true, UTF_8), new PrintStream(errBuf, true, UTF_8));
-
-		assertEquals(0, code, debugBuffers(outBuf, errBuf));
-		assertTrue(Files.exists(outputDirectory),
-				"Expected output directory to exist: " + outputDirectory + "\n" + debugBuffers(outBuf, errBuf));
+		assertEquals(0, code);
+		assertTrue(Files.exists(outputDirectory), "Expected output directory to exist: " + outputDirectory + "\n");
 
 		Path pumlPath = outputDirectory.resolve(PUML_FILE);
-		assertTrue(Files.exists(pumlPath),
-				"Expected output PUML file to exist: " + pumlPath + "\n" + debugBuffers(outBuf, errBuf));
+		assertTrue(Files.exists(pumlPath), "Expected output PUML file to exist: " + pumlPath + "\n");
 
 		String puml = Files.readString(pumlPath, UTF_8);
 		assertTrue(puml.contains("Hello") || puml.contains("\"Hello\""),
@@ -77,23 +70,17 @@ class AssisAppTest {
 
 		Files.deleteIfExists(pumlPath);
 
-		try (
-				var outBuf = new ByteArrayOutputStream();
-				var errBuf = new ByteArrayOutputStream();
+		try (var outBuf = new ByteArrayOutputStream(); var errBuf = new ByteArrayOutputStream();
 
-				) {
-			int code = AssisApp.run(new String[] { "-sourcepath", sourcePath.toString() },
-					new PrintStream(outBuf, true, UTF_8), new PrintStream(errBuf, true, UTF_8));
+		) {
+			int code = AssisApp.run(new String[] { "-sourcepath", sourcePath.toString() });
 
-			assertEquals(0, code, debugBuffers(outBuf, errBuf));
-			assertTrue(Files.exists(expectedOut),
-					"Expected default output directory to exist: " + expectedOut + "\n" + debugBuffers(outBuf, errBuf));
-			assertTrue(Files.exists(pumlPath),
-					"Expected output PUML file to exist: " + pumlPath + "\n" + debugBuffers(outBuf, errBuf));
+			assertEquals(0, code);
+			assertTrue(Files.exists(expectedOut), "Expected default output directory to exist: " + expectedOut + "\n");
+			assertTrue(Files.exists(pumlPath), "Expected output PUML file to exist: " + pumlPath + "\n");
 
 			String puml = Files.readString(pumlPath, UTF_8);
-			assertTrue(puml.contains("Hello"),
-					"Expected diagram to mention Hello. Content:\n" + puml);
+			assertTrue(puml.contains("Hello"), "Expected diagram to mention Hello. Content:\n" + puml);
 		} finally {
 			try {
 				Files.deleteIfExists(pumlPath);
@@ -111,23 +98,15 @@ class AssisAppTest {
 
 		Files.deleteIfExists(pumlPath);
 
-		try (
-				var outBuf = new ByteArrayOutputStream();
-				var errBuf = new ByteArrayOutputStream();
+		try {
+			int code = AssisApp.run(new String[] {});
 
-				) {
-			int code = AssisApp.run(new String[] { },
-					new PrintStream(outBuf, true, UTF_8), new PrintStream(errBuf, true, UTF_8));
-
-			assertEquals(0, code, debugBuffers(outBuf, errBuf));
-			assertTrue(Files.exists(expectedOut),
-					"Expected default output directory to exist: " + expectedOut + "\n" + debugBuffers(outBuf, errBuf));
-			assertTrue(Files.exists(pumlPath),
-					"Expected output PUML file to exist: " + pumlPath + "\n" + debugBuffers(outBuf, errBuf));
+			assertEquals(0, code);
+			assertTrue(Files.exists(expectedOut), "Expected default output directory to exist: " + expectedOut + "\n");
+			assertTrue(Files.exists(pumlPath), "Expected output PUML file to exist: " + pumlPath + "\n");
 
 			String puml = Files.readString(pumlPath, UTF_8);
-			assertTrue(puml.contains("AssisApp"),
-					"Expected diagram to mention Hello. Content:\n" + puml);
+			assertTrue(puml.contains("AssisApp"), "Expected diagram to mention Hello. Content:\n" + puml);
 		} finally {
 			try {
 				Files.deleteIfExists(pumlPath);
@@ -160,8 +139,7 @@ class AssisAppTest {
 		var errBuf = new ByteArrayOutputStream();
 
 		String compositeSourcepath = sp1.toString() + File.pathSeparator + sp2.toString();
-		int code = AssisApp.run(new String[] { "-sourcepath", compositeSourcepath, "-d", out.toString() },
-				new PrintStream(outBuf, true, UTF_8), new PrintStream(errBuf, true, UTF_8));
+		int code = AssisApp.run(new String[] { "-sourcepath", compositeSourcepath, "-d", out.toString() });
 
 		assertEquals(0, code, debugBuffers(outBuf, errBuf));
 		assertTrue(Files.exists(out),
@@ -180,48 +158,40 @@ class AssisAppTest {
 
 	@Test
 	void invalidArgumentReturnsNonZero() {
-		var outBuf = new ByteArrayOutputStream();
-		var errBuf = new ByteArrayOutputStream();
+		try (var logs = new JulLogCaptor(AssisApp.class)) {
+			int code = AssisApp.run(new String[] { "-nope" });
 
-		int code = AssisApp.run(new String[] { "-nope" }, new PrintStream(outBuf, true, UTF_8),
-				new PrintStream(errBuf, true, UTF_8));
+			assertNotEquals(0, code, "Expected non-zero exit code for invalid arg.\nLogs:\n" + logs.dump());
 
-		assertNotEquals(0, code, "Expected non-zero exit code for invalid arg.\n" + debugBuffers(outBuf, errBuf));
-
-		String err = errBuf.toString(UTF_8);
-		assertFalse(err.isBlank(), "Expected some error output on stderr.\n" + debugBuffers(outBuf, errBuf));
-
-		assertTrue(err.toLowerCase().contains("unknown") || err.toLowerCase().contains("option"),
-				"Expected an error mentioning an unknown/invalid option. Got:\n" + err);
+			// Your AssisApp logs parse errors at SEVERE
+			assertTrue(logs.any(Level.SEVERE, "unknown") || logs.any(Level.SEVERE, "option"),
+					"Expected a SEVERE message mentioning unknown/invalid option.\nLogs:\n" + logs.dump());
+		}
 	}
 
 	@Test
 	void checkHelpKnobExists() {
-		var outBuf = new ByteArrayOutputStream();
-		var errBuf = new ByteArrayOutputStream();
+		try (var logs = new JulLogCaptor(AssisApp.class)) {
+			int code = AssisApp.run(new String[] { "--help" });
 
-		int code = AssisApp.run(new String[] { "--help" }, new PrintStream(outBuf, true, UTF_8),
-				new PrintStream(errBuf, true, UTF_8));
+			assertEquals(0, code, "Expected zero exit code for --help.\nLogs:\n" + logs.dump());
 
-		assertEquals(0, code, "Expected zero exit code for --help.\n" + debugBuffers(outBuf, errBuf));
-
-		String out = outBuf.toString(UTF_8);
-		assertTrue(out.toLowerCase().contains("usage"), "Expected help text to contain 'usage'. Got:\n" + out);
-
+			// In AssisApp: help goes to Level.CONFIG with CliArgs.usage
+			assertTrue(logs.any(Level.CONFIG, "usage"),
+					"Expected help text to contain 'usage' (logged at CONFIG).\nLogs:\n" + logs.dump());
+		}
 	}
 
 	@Test
-	void checkHelpVersionExists() {
-		var outBuf = new ByteArrayOutputStream();
-		var errBuf = new ByteArrayOutputStream();
+	void checkVersionExists() {
+		try (var logs = new JulLogCaptor(AssisApp.class)) {
+			int code = AssisApp.run(new String[] { "--version" });
 
-		int code = AssisApp.run(new String[] { "--version" }, new PrintStream(outBuf, true, UTF_8),
-				new PrintStream(errBuf, true, UTF_8));
+			assertEquals(0, code, "Expected zero exit code for --version.\nLogs:\n" + logs.dump());
 
-		assertEquals(0, code, "Expected zero exit code for --version.\n" + debugBuffers(outBuf, errBuf));
-
-		String out = outBuf.toString(UTF_8);
-		assertTrue(out.contains("ASSIS"), "Expected version output to mention ASSIS. Got:\n" + out);
+			assertTrue(logs.any(Level.CONFIG, "ASSIS"),
+					"Expected version output to mention ASSIS (logged at CONFIG).\nLogs:\n" + logs.dump());
+		}
 	}
 
 	private static String debugBuffers(ByteArrayOutputStream outBuf, ByteArrayOutputStream errBuf) {
