@@ -97,7 +97,9 @@ public final class CollectDependenciesVisitor
     /* ===== helpers ===== */
 
     private void recordTypeUse(Type typeNode, Node site, DependencyContext ctx) {
-        if (ownerStack.isEmpty()) return;
+        if (ownerStack.isEmpty()) {
+			return;
+		}
 
         ctx.resolveTarget(typeNode, site)
            .ifPresent(target -> collect(owner(), target, ctx));
@@ -111,14 +113,18 @@ public final class CollectDependenciesVisitor
     }
 
     private void recordScope(String simpleName, Node site, DependencyContext ctx) {
-        if (ownerStack.isEmpty()) return;
+        if (ownerStack.isEmpty()) {
+			return;
+		}
 
         ctx.resolveScopeName(simpleName, site)
            .ifPresent(target -> collect(owner(), target, ctx));
     }
 
     private void collect(TypeDeclaration<?> from, TypeRef to, DependencyContext ctx) {
-        if (ctx.hasDependency(from, to)) return;
+        if (ctx.hasDependency(from, to)) {
+			return;
+		}
 
         if (to instanceof DeclaredTypeRef) {
             ctx.addDependency(from, to);
