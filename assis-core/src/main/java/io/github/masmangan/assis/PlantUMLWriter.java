@@ -13,8 +13,9 @@ import java.util.Objects;
  *
  * <p>
  * Output is line-based: each call to {@link #println(String)} writes a single
- * line. This class also provides helper methods to emit common block constructs
- * such as packages and type declarations.
+ * line. This class provides helper methods to emit common block constructs such
+ * as packages and type declarations. This class also provides methods to add
+ * relationships.
  *
  * <p>
  * Blocks started with {@code begin*} methods must be closed with a
@@ -25,14 +26,16 @@ import java.util.Objects;
  * This class performs no validation of PlantUML syntax and does not attempt to
  * enforce balanced blocks.
  * <p>
- * For format integrity, names must be single-line and must not contain double
- * quotes ("). Violations cause IllegalArgumentException.
+ * For format integrity, names must be fully qualified, single-lined and must not
+ * contain double quotes ("). Violations cause IllegalArgumentException.
  * <p>
  * End a type block before beginning another type block.
  * <p>
  * PlantUML does not support true nested type declarations. To represent Java
  * inner or nested types, emit each type as a separate PlantUML type and encode
  * the nesting relationship in the type name using a separator.
+ * <p>
+ * Relationship
  * <p>
  * Package qualification follows standard Java fully qualified naming, using the
  * {@code .} (dot) separator. Avoid using {@code .} to encode nesting; treat
@@ -80,6 +83,16 @@ public final class PlantUMLWriter implements AutoCloseable {
 
 	private static final String INDENT_UNIT = "  ";
 
+	/**
+	 *
+	 */
+	private static final String HAS_A_INNER = "+--";
+	
+	/**
+	 *
+	 */
+	private static final String HAS_A = "-->";
+	
 	private final PrintWriter out;
 
 	private int indentLevel;
@@ -101,11 +114,19 @@ public final class PlantUMLWriter implements AutoCloseable {
 	 *             {@code null}
 	 * @throws NullPointerException if {@code line} is {@code null}
 	 */
-	public void println(final String line) {
+    public void println(final String line) {
+        if (activeTag != null) {
+            printlnInternal(activeTag + " " + line);
+        } else {
+            printlnInternal(line);
+        }
+    }
+    
+    private void printlnInternal(final String line) {
 		Objects.requireNonNull(line, "line");
 		out.println(INDENT_UNIT.repeat(indentLevel) + line);
 	}
-
+	
 	/**
 	 * Writes an empty line.
 	 */
@@ -408,6 +429,54 @@ public final class PlantUMLWriter implements AutoCloseable {
 		endType("annotation", name);
 	}
 
+	/**
+	 * Connects owned as a inner type of owner.
+	 * 
+	 * @param owner owner to quote in the emitted statement; must not be
+	 *              {@code null}
+	 * @param owned owned to quote in the emitted statement; must not be
+	 *              {@code null} * @throws NullPointerException if {@code owner} is
+	 *              {@code null}, {@code owned} is {@code null}
+	 * @throws IllegalArgumentException if {@code owner} or {@code owned} contains
+	 *                                  {@code "}, {@code "\n"}, or {@code "\r"}
+	 */
+	public void connectInnerType(String owner, String owned) {
+		checkName(owner);
+		checkName(owned);
+		println("\"%s\" %s \"%s\"".formatted(owner, HAS_A_INNER, owned));
+	}
+
+	
+	public void connectAssociation(String source, String target, String role, String stereotypes) {
+		checkName(source);
+		checkName(target);
+		checkStereotypes(stereotypes);
+		println("\"%s\" %s \"%s\" : %s %s".formatted(source, HAS_A, target, role, stereotypes));	
+	}
+	// tag 
+    private String activeTag;
+
+    public void withBeforeTag(String tag, Runnable action) {
+        checkTag(tag);
+        if (activeTag != null) {
+            throw new IllegalStateException("Nested withTag() is not allowed");
+        }
+        activeTag = tag;
+        try {
+            action.run();
+        } finally {
+            activeTag = null;
+        }
+    }
+
+    private void checkTag(String tag) {
+        if (tag == null || tag.isBlank()) {
+            throw new IllegalArgumentException("Tag must be non-empty");
+        }
+    }	
+    
+	// block helpers
+
 	private void beginType(final String keyword, final String name, final String stereotypes) {
 		checkName(name);
 		checkStereotypes(stereotypes);
@@ -421,6 +490,9 @@ public final class PlantUMLWriter implements AutoCloseable {
 		println("/' @assis:end %s \"%s\"'/".formatted(keyword, name.strip()));
 	}
 
+	
+	// static helpers
+	
 	private static void checkStereotypes(final String stereotypes) {
 		requireSingleLine(stereotypes, "stereotypes");
 		requireNotContainsQuote(stereotypes, "stereotypes");
@@ -445,11 +517,13 @@ public final class PlantUMLWriter implements AutoCloseable {
 	}
 
 	/**
-	 * Returns an empty string if stereotypes is blank; or adds space before stereotypes.
+	 * Returns an empty string if stereotypes is blank; or adds space before
+	 * stereotypes.
 	 * <p>
 	 * This avoids an empty space as a separator for an empty string.
+	 * 
 	 * @param stereotypes
-	 * @return an empty string or a string with a space before stereotypes 
+	 * @return an empty string or a string with a space before stereotypes
 	 */
 	private static String stereotypesSuffix(final String stereotypes) {
 		if (stereotypes == null) {
