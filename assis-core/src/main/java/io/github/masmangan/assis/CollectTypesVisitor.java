@@ -122,8 +122,8 @@ class CollectTypesVisitor {
 	 * @throws NullPointerException if {@code fqn} or {@code td} is {@code null}
 	 */
 	void emitType(String fqn, TypeDeclaration<?> td) {
-		String stereotypes = GenerateClassDiagram.renderStereotypes(GenerateClassDiagram.stereotypesOf(td));
-		String pumlName = idx.pumlName(fqn);
+		String stereotypes = typeStereotypes(td);
+		String pumlName = DeclaredIndex.pumlName(fqn);
 
 		pw.println();
 
@@ -143,7 +143,7 @@ class CollectTypesVisitor {
 
 				pw.endAbstractClass(pumlName);
 			} else if (cid.isFinal()) {
-				pw.beginClass(pumlName, FINAL_MODIFIER + (stereotypes.isBlank() ? EMPTY_STRING : SPACE_STRING + stereotypes.trim()));
+				pw.beginClass(pumlName, finalClassStereotypes(td));
 				emitFields(fqn, cid.getFields());
 				emitConstructors(cid.getConstructors());
 				emitMethods(cid.getMethods());
@@ -200,6 +200,15 @@ class CollectTypesVisitor {
 		}
 
 		GenerateClassDiagram.logger.log(Level.WARNING, () -> "Unexpected type: " + td);
+	}
+
+	private static String typeStereotypes(TypeDeclaration<?> td) {
+		return GenerateClassDiagram.renderStereotypes(GenerateClassDiagram.stereotypesOf(td));
+	}
+
+	private static String finalClassStereotypes(TypeDeclaration<?> td) {
+		String stereotypes = typeStereotypes(td);
+		return FINAL_MODIFIER + (stereotypes.isBlank() ? EMPTY_STRING : SPACE_STRING + stereotypes.trim());
 	}
 
 	/**
