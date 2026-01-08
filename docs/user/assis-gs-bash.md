@@ -4,6 +4,8 @@ This guide shows how to run **ASSIS CLI** from the command line and generate you
 
 No IDE is required.
 
+> Verified with ASSIS v0.9.3 (beta)
+
 ---
 
 ## What you will need
