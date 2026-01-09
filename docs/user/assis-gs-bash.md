@@ -149,6 +149,22 @@ You have successfully generated a PlantUML class diagram from Java source code.
 > ```
 > These defaults work because the guide uses a flat directory structure.
 
+
+At this point, you have a UML diagram in PlantUML format:
+
+docs/diagrams/src/class-diagram.puml
+
+This text file fully describes the diagram.
+
+From here, you may choose how to view it:
+
+- View it locally as SVG (recommended)
+- Use the PlantUML Online Server (no installation)
+
+See:
+- Getting Started: View diagrams as SVG
+- Getting Started: View diagrams via PlantUML Online
+
 ---
 
 ## Found a problem?
