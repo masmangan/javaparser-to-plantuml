@@ -215,7 +215,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	 */
 	public void beginPackage(final String name) {
 		checkName(name);
-		println("package \"%s\" {".formatted(name.strip()));
+		println("package \"%s\" { /' @assis:begin package \"%s\" '/".formatted(name.strip(), name.strip()));
 		indent();
 	}
 
@@ -480,14 +480,14 @@ public final class PlantUMLWriter implements AutoCloseable {
 	private void beginType(final String keyword, final String name, final String stereotypes) {
 		checkName(name);
 		checkStereotypes(stereotypes);
-		println("%s \"%s\"%s {".formatted(keyword, name.strip(), stereotypesSuffix(stereotypes.strip())));
+		println("%s \"%s\"%s { /' @assis:begin %s \"%s\" '/".formatted(keyword, name.strip(), stereotypesSuffix(stereotypes.strip()), keyword, name.strip()));
 		indent();
 	}
 
 	private void endType(final String keyword, final String name) {
 		checkName(name);
 		dedent();
-		println("} /' @assis:end %s \"%s\"'/".formatted(keyword, name.strip()));
+		println("} /' @assis:end %s \"%s\" '/".formatted(keyword, name.strip()));
 	}
 
 	
