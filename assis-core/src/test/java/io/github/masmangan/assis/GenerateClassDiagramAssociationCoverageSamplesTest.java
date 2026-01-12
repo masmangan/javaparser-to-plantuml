@@ -32,7 +32,7 @@ class GenerateClassDiagramAssociationCoverageSamplesTest {
 
         assertPumlContainsName(puml, "p1.A");
         assertPumlContainsName(puml, "p1.B");
-        assertAnyLineContainsAll(puml, "p1.A", "-->", "p1.B", ":", "b");
+        assertAnyLineContainsAll(puml, "p1.A", "-->", "b", "p1.B");
     }
 
     @Test
@@ -46,8 +46,8 @@ class GenerateClassDiagramAssociationCoverageSamplesTest {
         assertPumlContainsName(puml, "p1.ArraysSample");
         assertPumlContainsName(puml, "p1.C");
 
-        assertAnyLineContainsAll(puml, "p1.ArraysSample", "-->", "p1.C", ":", "cs");
-        assertAnyLineContainsAll(puml, "p1.ArraysSample", "-->", "p1.C", ":", "matrix");
+        assertAnyLineContainsAll(puml, "p1.ArraysSample", "-->", "p1.C", "cs");
+        assertAnyLineContainsAll(puml, "p1.ArraysSample", "-->", "p1.C", "matrix");
     }
 
     @Test
@@ -109,7 +109,7 @@ class GenerateClassDiagramAssociationCoverageSamplesTest {
 
         assertPumlContainsName(puml, "p1.CrossPackage");
         assertPumlContainsName(puml, "p2.G");
-        assertAnyLineContainsAll(puml, "p1.CrossPackage", "-->", "p2.G", ":", "g");
+        assertAnyLineContainsAll(puml, "p1.CrossPackage", "-->", "p2.G", "g");
     }
 
     @Test
@@ -122,7 +122,7 @@ class GenerateClassDiagramAssociationCoverageSamplesTest {
 
         assertPumlContainsName(puml, "p1.EnumFieldSample");
         assertPumlContainsName(puml, "p1.H");
-        assertAnyLineContainsAll(puml, "p1.EnumFieldSample", "-->", "p1.H", ":", "h");
+        assertAnyLineContainsAll(puml, "p1.EnumFieldSample", "-->", "p1.H", "h");
     }
 
 
@@ -136,7 +136,7 @@ class GenerateClassDiagramAssociationCoverageSamplesTest {
 
         assertPumlContainsName(puml, "p1.InterfaceConstant");
         assertPumlContainsName(puml, "p1.I");
-        assertAnyLineContainsAll(puml, "p1.InterfaceConstant", "-->", "p1.I", ":", "DEFAULT");
+        assertAnyLineContainsAll(puml, "p1.InterfaceConstant", "-->", "p1.I", "DEFAULT");
     }
 
 
@@ -163,7 +163,7 @@ class GenerateClassDiagramAssociationCoverageSamplesTest {
                 tempDir,
                 "association");
 
-        assertPumlContains(puml, "\"samples.association.Order\" --> \"samples.association.Customer\" : buyer");
+        assertPumlContains(puml, "\"samples.association.Order\" ---> \"buyer\" \"samples.association.Customer\"");
         assertPumlContainsClass(puml, "samples.association.Order");
         assertPumlContainsClass(puml, "samples.association.Customer");
 

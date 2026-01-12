@@ -37,6 +37,6 @@ class GenerateClassDiagramRecordTypeSampleTest {
 
         // association edge from record R to Outer$Inner with role "x"
         TestWorkbench.assertAnyLineContainsAll(puml,
-                "\"samples.records.R\"", "-->", "\"samples.records.Outer$Inner\"", ": x");
+                "\"samples.records.R\"", "--->", "\"samples.records.Outer$Inner\"", "x");
     }
 }

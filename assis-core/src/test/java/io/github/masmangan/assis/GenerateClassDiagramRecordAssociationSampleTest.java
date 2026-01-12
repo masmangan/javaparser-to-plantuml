@@ -40,7 +40,7 @@ class GenerateClassDiagramRecordAssociationSampleTest {
 
         TestWorkbench.assertPumlContains(
                 puml,
-                "\"samples.rassociation.OwnerDto\" --> \"samples.rassociation.Name\" : name"
+                "\"samples.rassociation.OwnerDto\" ---> \"name\" \"samples.rassociation.Name\""
         );
     }
 }
