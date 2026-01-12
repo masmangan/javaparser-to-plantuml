@@ -261,6 +261,7 @@ public class GenerateClassDiagram {
 			}
 
 			pw.println();
+			pw.println();
 
 			new CollectRelationshipsVisitor(idx, pw).emitAll();
 
