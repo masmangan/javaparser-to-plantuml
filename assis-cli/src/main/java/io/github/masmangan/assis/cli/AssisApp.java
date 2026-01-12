@@ -20,9 +20,8 @@ import io.github.masmangan.assis.GenerateClassDiagram;
  */
 public final class AssisApp {
 
-	private static final String MAVEN_POM_PROPS =
-	        "META-INF/maven/%s/%s/pom.properties";
-	
+	private static final String MAVEN_POM_PROPS = "META-INF/maven/%s/%s/pom.properties";
+
 	private static final String VERSION_UNKNOWN = "unknown";
 
 	private static final Logger LOG = Logger.getLogger(AssisApp.class.getName());
@@ -66,8 +65,8 @@ public final class AssisApp {
 		}
 
 		if (cli.mode == CliArgs.Mode.VERSION) {
-		    logVersion();
-		    return 0;
+			logVersion();
+			return 0;
 		}
 
 		final Set<Path> sourceRoots;
@@ -101,45 +100,43 @@ public final class AssisApp {
 			return 3;
 		}
 	}
-	
+
 	private static void logVersion() {
-	    LOG.log(Level.INFO, () -> "ASSIS " + io.github.masmangan.assis.GenerateClassDiagram.versionOrDev());
+		LOG.log(Level.INFO, () -> "ASSIS " + io.github.masmangan.assis.GenerateClassDiagram.versionOrDev());
 
-	    // JavaParser version
-	    LOG.log(Level.INFO, () -> "JavaParser: " + mavenPomVersion("com.github.javaparser", "javaparser-core"));
+		// JavaParser version
+		LOG.log(Level.INFO, () -> "JavaParser: " + mavenPomVersion("com.github.javaparser", "javaparser-core"));
 
-	    // Java runtime
-	    final String javaVersion = System.getProperty("java.version");
-	    final String javaVendor  = System.getProperty("java.vendor");
-	    final String runtimeName = System.getProperty("java.runtime.name");
-	    final String runtimeVer  = System.getProperty("java.runtime.version");
+		// Java runtime
+		final String javaVersion = System.getProperty("java.version");
+		final String javaVendor = System.getProperty("java.vendor");
+		final String runtimeName = System.getProperty("java.runtime.name");
+		final String runtimeVer = System.getProperty("java.runtime.version");
 
-	    final String runtime = (runtimeName != null ? runtimeName : "Java Runtime")
-	            + (runtimeVer != null ? " " + runtimeVer : "");
+		final String runtime = (runtimeName != null ? runtimeName : "Java Runtime")
+				+ (runtimeVer != null ? " " + runtimeVer : "");
 
-	    LOG.log(Level.INFO, () -> "Java: " + javaVersion + " (" + javaVendor + ") / " + runtime);
+		LOG.log(Level.INFO, () -> "Java: " + javaVersion + " (" + javaVendor + ") / " + runtime);
 
-	    // OS
-	    final String os = System.getProperty("os.name") + " "
-	            + System.getProperty("os.version") + " "
-	            + System.getProperty("os.arch");
+		// OS
+		final String os = System.getProperty("os.name") + " " + System.getProperty("os.version") + " "
+				+ System.getProperty("os.arch");
 
-	    LOG.log(Level.INFO, () -> "OS: " + os);
+		LOG.log(Level.INFO, () -> "OS: " + os);
 	}
 
 	private static String mavenPomVersion(String groupId, String artifactId) {
-
-
 		String path = MAVEN_POM_PROPS.formatted(groupId, artifactId);
 		try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(path)) {
-	        if (in == null) return VERSION_UNKNOWN;
-	        Properties p = new Properties();
-	        p.load(in);
-	        return p.getProperty("version", VERSION_UNKNOWN);
-	    } catch (Exception e) {
-	        return VERSION_UNKNOWN;
-	    }
+			if (in == null) {
+				return VERSION_UNKNOWN;
+			}
+			Properties p = new Properties();
+			p.load(in);
+			return p.getProperty("version", VERSION_UNKNOWN);
+		} catch (Exception e) {
+			return VERSION_UNKNOWN;
+		}
 	}
-
 
 }
