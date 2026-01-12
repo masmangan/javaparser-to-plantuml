@@ -463,7 +463,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 		out.print(SPACE_STRING);
 		out.print(HAS_A);
 
-		if (role != null && !role.isBlank()) {
+		if (!role.isBlank()) {
 			out.print(SPACE_STRING);
 			out.print(quote(role));
 		}
@@ -471,7 +471,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 		out.print(SPACE_STRING);
 		out.print(quote(target));
 
-		if (stereotypes != null && !stereotypes.isBlank()) {
+		if (!stereotypes.isBlank()) {
 			out.print(SPACE_STRING);
 			out.print(COLON_SEPARATOR);
 			out.print(SPACE_STRING);
