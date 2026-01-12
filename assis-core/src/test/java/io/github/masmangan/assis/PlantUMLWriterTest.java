@@ -1,6 +1,7 @@
 package io.github.masmangan.assis;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -15,18 +16,22 @@ class PlantUMLWriterTest {
 
 		try (PlantUMLWriter w = new PlantUMLWriter(new PrintWriter(sw))) {
 			// no-op
+		} catch (Exception e) {
+			fail(e);
 		}
 
 		assertEquals("", sw.toString());
 	}
 
 	@Test
-	void beginAndEndDiagramProducesMinimalBlock() throws Exception {
+	void beginAndEndDiagramProducesMinimalBlock() {
 		StringWriter sw = new StringWriter();
 
 		try (PlantUMLWriter w = new PlantUMLWriter(new PrintWriter(sw))) {
 			w.beginDiagram("D");
 			w.endDiagram("D");
+		} catch (Exception e) {
+			fail(e);
 		}
 
 		String expected = """
@@ -38,7 +43,7 @@ class PlantUMLWriterTest {
 	}
 
 	@Test
-	void emptyPackageInsideDiagramIsProperlyClosed() throws Exception {
+	void emptyPackageInsideDiagramIsProperlyClosed() {
 		StringWriter sw = new StringWriter();
 
 		try (PlantUMLWriter w = new PlantUMLWriter(new PrintWriter(sw))) {
@@ -46,6 +51,8 @@ class PlantUMLWriterTest {
 			w.beginPackage("P");
 			w.endPackage("P");
 			w.endDiagram("D");
+		} catch (Exception e) {
+			fail(e);
 		}
 
 		String expected = """
@@ -59,7 +66,7 @@ class PlantUMLWriterTest {
 	}
 
 	@Test
-	void emptyClassInsideDiagramIsProperlyClosed() throws Exception {
+	void emptyClassInsideDiagramIsProperlyClosed() {
 		StringWriter sw = new StringWriter();
 
 		try (PlantUMLWriter w = new PlantUMLWriter(new PrintWriter(sw))) {
@@ -67,6 +74,8 @@ class PlantUMLWriterTest {
 			w.beginClass("A", "");
 			w.endClass("A");
 			w.endDiagram("D");
+		} catch (Exception e) {
+			fail(e);
 		}
 
 		String expected = """
@@ -80,7 +89,7 @@ class PlantUMLWriterTest {
 	}
 
 	@Test
-	void emptyClassInsidePackageGetsIndentation() throws Exception {
+	void emptyClassInsidePackageGetsIndentation() {
 		StringWriter sw = new StringWriter();
 
 		try (PlantUMLWriter w = new PlantUMLWriter(new PrintWriter(sw))) {
@@ -90,6 +99,8 @@ class PlantUMLWriterTest {
 			w.endClass("A");
 			w.endPackage("P");
 			w.endDiagram("D");
+		} catch (Exception e) {
+			fail(e);
 		}
 
 		String expected = """
@@ -105,33 +116,37 @@ class PlantUMLWriterTest {
 	}
 
 	@Test
-	void associationWithRole() throws Exception {
-	    StringWriter sw = new StringWriter();
+	void associationWithRole() {
+		StringWriter sw = new StringWriter();
 
-	    try (PlantUMLWriter w = new PlantUMLWriter(new PrintWriter(sw))) {
-	        w.connectAssociation("A", "B", "r", "");
-	    }
+		try (PlantUMLWriter w = new PlantUMLWriter(new PrintWriter(sw))) {
+			w.connectAssociation("A", "B", "r", "");
+		} catch (Exception e) {
+			fail(e);
+		}
 
-	    String expected = """
-	        "A" ---> "r" "B"
-	        """;
+		String expected = """
+				"A" ---> "r" "B"
+				""";
 
-	    assertEquals(expected, sw.toString());
+		assertEquals(expected, sw.toString());
 	}
-	
+
 	@Test
-	void associationWithRoleAndStereotype() throws Exception {
-	    StringWriter sw = new StringWriter();
+	void associationWithRoleAndStereotype() {
+		StringWriter sw = new StringWriter();
 
-	    try (PlantUMLWriter w = new PlantUMLWriter(new PrintWriter(sw))) {
-	        w.connectAssociation("A", "B", "r", "<<OneToMany>>");
-	    }
+		try (PlantUMLWriter w = new PlantUMLWriter(new PrintWriter(sw))) {
+			w.connectAssociation("A", "B", "r", "<<OneToMany>>");
+		} catch (Exception e) {
+			fail(e);
+		}
 
-	    String expected = """
-	        "A" ---> "r" "B" : <<OneToMany>>
-	        """;
+		String expected = """
+				"A" ---> "r" "B" : <<OneToMany>>
+				""";
 
-	    assertEquals(expected, sw.toString());
+		assertEquals(expected, sw.toString());
 	}
-	
+
 }
