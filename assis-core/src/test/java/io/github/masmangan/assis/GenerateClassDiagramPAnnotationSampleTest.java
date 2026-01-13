@@ -14,24 +14,18 @@ import org.junit.jupiter.api.Test;
 
 class GenerateClassDiagramPAnnotationSampleTest {
 
-    @Test
-    void parameterSample_rendersAnnotationsInlineOnParameters() throws Exception {
-        String puml = TestWorkbench.generatePumlFromSample(
-                "samples/pannotation",
-                Paths.get("target", "tmp-tests"),
-                "param-annotations");
+	@Test
+	void parameterSample_rendersAnnotationsInlineOnParameters() throws Exception {
+		String puml = TestWorkbench.generatePumlFromSample("samples/pannotation", Paths.get("target", "tmp-tests"),
+				"param-annotations");
 
-        // method line should contain method name plus all parameter annotations
-        // (this forces “inline stereotypes” behavior)
-        assertAnyLineContainsAll(puml,
-                "show(",
-                "<<PathVariable>>",
-                "<<RequestParam>>",
-                "<<NotNull>>");
+		// method line should contain method name plus all parameter annotations
+		// (this forces “inline stereotypes” behavior)
+		assertAnyLineContainsAll(puml, "show(", "<<PathVariable>>", "<<RequestParam>>", "<<NotNull>>");
 
-        // optional loose presence
-        assertPumlContains(puml, "<<PathVariable>>");
-        assertPumlContains(puml, "<<RequestParam>>");
-        assertPumlContains(puml, "<<NotNull>>");
-    }
+		// optional loose presence
+		assertPumlContains(puml, "<<PathVariable>>");
+		assertPumlContains(puml, "<<RequestParam>>");
+		assertPumlContains(puml, "<<NotNull>>");
+	}
 }

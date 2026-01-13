@@ -13,17 +13,15 @@ import org.junit.jupiter.api.Test;
 
 class GenerateClassDiagramCAnnotationSampleTest {
 
-    @Test
-    void fooSample_rendersAnnotationsOnTypeFieldAndMethod() throws Exception {
-        String puml = TestWorkbench.generatePumlFromSample(
-                "samples/cannotation",               // <-- your resource folder
-                Paths.get("target", "tmp-tests"),
-                "cannotation");
+	@Test
+	void fooSample_rendersAnnotationsOnTypeFieldAndMethod() throws Exception {
+		String puml = TestWorkbench.generatePumlFromSample("samples/cannotation", // <-- your resource folder
+				Paths.get("target", "tmp-tests"), "cannotation");
 
-        assertAnyLineContainsAll(puml, "class", "samples.cannotation.FooTest", "<<Deprecated>>");
+		assertAnyLineContainsAll(puml, "class", "samples.cannotation.FooTest", "<<Deprecated>>");
 
-        assertAnyLineContainsAll(puml, "name", "<<NotNull>>");
+		assertAnyLineContainsAll(puml, "name", "<<NotNull>>");
 
-        assertAnyLineContainsAll(puml, "testFoo", "<<Test>>");
-    }
+		assertAnyLineContainsAll(puml, "testFoo", "<<Test>>");
+	}
 }

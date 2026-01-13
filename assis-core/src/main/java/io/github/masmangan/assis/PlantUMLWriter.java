@@ -81,7 +81,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	 *
 	 */
 	private static final String COLON_SEPARATOR = ":";
-	
+
 	/**
 	 *
 	 */
@@ -101,7 +101,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	 *
 	 */
 	private static final String IS_A_IMPLEMENTS = "..|>";
-	
+
 	/**
 	 *
 	 */
@@ -153,7 +153,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param line
 	 */
 	private void printlnInternal(final String line) {
@@ -485,7 +485,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param subType
 	 * @param superType
 	 */
@@ -503,9 +503,9 @@ public final class PlantUMLWriter implements AutoCloseable {
 
 		out.println();
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param subType
 	 * @param superType
 	 */
@@ -523,9 +523,9 @@ public final class PlantUMLWriter implements AutoCloseable {
 
 		out.println();
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param sourceType
 	 * @param targetType
 	 * @param role
@@ -568,7 +568,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	private String activeTag;
 
 	/**
-	 * 
+	 *
 	 * @param tag
 	 * @param action
 	 */

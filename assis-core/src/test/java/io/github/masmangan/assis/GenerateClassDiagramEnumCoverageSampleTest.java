@@ -17,74 +17,54 @@ import org.junit.jupiter.api.io.TempDir;
 
 class GenerateClassDiagramEnumCoverageSampleTest {
 
-    @TempDir
-    Path tempDir;
+	@TempDir
+	Path tempDir;
 
-    @Test
-    void generatesEnumConstantsInDeclarationOrder() throws Exception {
-        String puml = generatePumlFromSample(
-                "samples/enums/values",
-                tempDir,
-                "enums-values"
-        );
+	@Test
+	void generatesEnumConstantsInDeclarationOrder() throws Exception {
+		String puml = generatePumlFromSample("samples/enums/values", tempDir, "enums-values");
 
-        assertAnyLineContainsAll(puml, "enum", "Kind");
+		assertAnyLineContainsAll(puml, "enum", "Kind");
 
-        assertAnyLineContainsAll(puml, "CLASS");
-        assertAnyLineContainsAll(puml, "INTERFACE");
-        assertAnyLineContainsAll(puml, "ENUM");
-        assertAnyLineContainsAll(puml, "RECORD");
-        assertAnyLineContainsAll(puml, "ANNOTATION");
-    }
+		assertAnyLineContainsAll(puml, "CLASS");
+		assertAnyLineContainsAll(puml, "INTERFACE");
+		assertAnyLineContainsAll(puml, "ENUM");
+		assertAnyLineContainsAll(puml, "RECORD");
+		assertAnyLineContainsAll(puml, "ANNOTATION");
+	}
 
-    @Test
-    void generatesEnumWithTypeStereotypeAndOrderedConstants() throws Exception {
-        String puml = generatePumlFromSample(
-                "samples/enums/type",
-                tempDir,
-                "enums-type"
-        );
+	@Test
+	void generatesEnumWithTypeStereotypeAndOrderedConstants() throws Exception {
+		String puml = generatePumlFromSample("samples/enums/type", tempDir, "enums-type");
 
-        assertAnyLineContainsAll(puml, "enum", "\"samples.enums.type.Choice\"", "<<Deprecated>>");
-        assertAppearsInOrder(puml, "A", "B");
-    }
+		assertAnyLineContainsAll(puml, "enum", "\"samples.enums.type.Choice\"", "<<Deprecated>>");
+		assertAppearsInOrder(puml, "A", "B");
+	}
 
-    @Test
-    void generatesEnumWithFieldAndFieldStereotype() throws Exception {
-        String puml = generatePumlFromSample(
-                "samples/enums/fields",
-                tempDir,
-                "enums-fields"
-        );
+	@Test
+	void generatesEnumWithFieldAndFieldStereotype() throws Exception {
+		String puml = generatePumlFromSample("samples/enums/fields", tempDir, "enums-fields");
 
-        assertPumlContains(puml, "enum \"samples.enums.fields.Color\"");
-        assertAppearsInOrder(puml, "RED", "BLUE");
-        assertAnyLineContainsAll(puml, "rgb", ":", "int", "<<Deprecated>>");
-    }
+		assertPumlContains(puml, "enum \"samples.enums.fields.Color\"");
+		assertAppearsInOrder(puml, "RED", "BLUE");
+		assertAnyLineContainsAll(puml, "rgb", ":", "int", "<<Deprecated>>");
+	}
 
-    @Test
-    void generatesEnumWithConstructorAndCtorStereotype() throws Exception {
-        String puml = generatePumlFromSample(
-                "samples/enums/constructors",
-                tempDir,
-                "enums-constructors"
-        );
+	@Test
+	void generatesEnumWithConstructorAndCtorStereotype() throws Exception {
+		String puml = generatePumlFromSample("samples/enums/constructors", tempDir, "enums-constructors");
 
-        assertPumlContains(puml, "enum \"samples.enums.constructors.Flag\"");
-        assertAnyLineContainsAll(puml, "<<create>>", "Flag(", "code", ":", "int", "<<Deprecated>>");
-        assertAnyLineContainsAll(puml, "code", ":", "int");
-    }
+		assertPumlContains(puml, "enum \"samples.enums.constructors.Flag\"");
+		assertAnyLineContainsAll(puml, "<<create>>", "Flag(", "code", ":", "int", "<<Deprecated>>");
+		assertAnyLineContainsAll(puml, "code", ":", "int");
+	}
 
-    @Test
-    void generatesEnumWithMethodsAndMethodStereotypesIncludingStatic() throws Exception {
-        String puml = generatePumlFromSample(
-                "samples/enums/methods",
-                tempDir,
-                "enums-methods"
-        );
+	@Test
+	void generatesEnumWithMethodsAndMethodStereotypesIncludingStatic() throws Exception {
+		String puml = generatePumlFromSample("samples/enums/methods", tempDir, "enums-methods");
 
-        assertPumlContains(puml, "enum \"samples.enums.methods.Op\"");
-        assertAnyLineContainsAll(puml, "apply(", "a", ":", "int", "b", ":", "int", ") : int", "<<Deprecated>>");
-        assertAnyLineContainsAll(puml, "parse(", "s", ":", "String", ") : Op", "{static}", "<<Deprecated>>");
-    }
+		assertPumlContains(puml, "enum \"samples.enums.methods.Op\"");
+		assertAnyLineContainsAll(puml, "apply(", "a", ":", "int", "b", ":", "int", ") : int", "<<Deprecated>>");
+		assertAnyLineContainsAll(puml, "parse(", "s", ":", "String", ") : Op", "{static}", "<<Deprecated>>");
+	}
 }

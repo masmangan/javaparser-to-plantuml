@@ -14,18 +14,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 class GenerateClassDiagramDefaultPackageSampleTest {
-    @TempDir
-    Path tempDir;
+	@TempDir
+	Path tempDir;
 
-    @Test
-    void generatesDiagramContainingDefaultPackageClass() throws Exception {
-        String puml = TestWorkbench.generatePumlFromSample(
-                "samples/defaultpackage",
-                tempDir,
-                "defaultpackage");
+	@Test
+	void generatesDiagramContainingDefaultPackageClass() throws Exception {
+		String puml = TestWorkbench.generatePumlFromSample("samples/defaultpackage", tempDir, "defaultpackage");
 
-        assertPumlContainsClass(puml, "Hello");
-        assertPumlNotContains(puml, "package");
+		assertPumlContainsClass(puml, "Hello");
+		assertPumlNotContains(puml, "package");
 
-    }
+	}
 }

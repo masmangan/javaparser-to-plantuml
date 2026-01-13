@@ -16,28 +16,19 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 class GenerateClassDiagramRecordAssociationStereotypeSampleTest {
-    @TempDir
-    Path tempDir;
-    @Test
-    void generatesAssociationFromRecordComponentWithStereotype() throws Exception {
-        String puml = generatePumlFromSample(
-                "samples/rstereo",
-                tempDir,
-                "rstereo"
-        );
+	@TempDir
+	Path tempDir;
 
-        assertPumlContains(puml, "record \"samples.rstereo.Order\"");
-        assertPumlContains(puml, "class \"samples.rstereo.Customer\"");
+	@Test
+	void generatesAssociationFromRecordComponentWithStereotype() throws Exception {
+		String puml = generatePumlFromSample("samples/rstereo", tempDir, "rstereo");
 
-        assertPumlNotContains(puml, "customer : Customer");
+		assertPumlContains(puml, "record \"samples.rstereo.Order\"");
+		assertPumlContains(puml, "class \"samples.rstereo.Customer\"");
 
-        assertAnyLineContainsAll(
-                puml,
-                "\"samples.rstereo.Order\"",
-                "-->",
-                "\"samples.rstereo.Customer\"",
-                "customer",
-                "<<Deprecated>>"
-        );
-    }
+		assertPumlNotContains(puml, "customer : Customer");
+
+		assertAnyLineContainsAll(puml, "\"samples.rstereo.Order\"", "-->", "\"samples.rstereo.Customer\"", "customer",
+				"<<Deprecated>>");
+	}
 }

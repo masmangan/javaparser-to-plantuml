@@ -12,35 +12,20 @@ import org.junit.jupiter.api.io.TempDir;
 
 class GenerateClassDiagramRecordAssociationSampleTest {
 
-    @TempDir
-    Path tempDir;
+	@TempDir
+	Path tempDir;
 
-    @Test
-    void generatesAssociationFromRecordComponent() throws Exception {
-        String puml = TestWorkbench.generatePumlFromSample(
-                "samples/associations/rassociation",
-                tempDir,
-                "ownerdto"
-        );
+	@Test
+	void generatesAssociationFromRecordComponent() throws Exception {
+		String puml = TestWorkbench.generatePumlFromSample("samples/associations/rassociation", tempDir, "ownerdto");
 
-        TestWorkbench.assertPumlContains(
-                puml,
-                "record \"samples.rassociation.OwnerDto\""
-        );
+		TestWorkbench.assertPumlContains(puml, "record \"samples.rassociation.OwnerDto\"");
 
-        TestWorkbench.assertAnyLineContainsAll(
-                puml,
-                "id", ":", "int"
-        );
+		TestWorkbench.assertAnyLineContainsAll(puml, "id", ":", "int");
 
-        TestWorkbench.assertPumlNotContains(
-                puml,
-                "name : Name"
-        );
+		TestWorkbench.assertPumlNotContains(puml, "name : Name");
 
-        TestWorkbench.assertPumlContains(
-                puml,
-                "\"samples.rassociation.OwnerDto\" ---> \"name\" \"samples.rassociation.Name\""
-        );
-    }
+		TestWorkbench.assertPumlContains(puml,
+				"\"samples.rassociation.OwnerDto\" ---> \"name\" \"samples.rassociation.Name\"");
+	}
 }

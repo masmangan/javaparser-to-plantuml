@@ -43,19 +43,14 @@ import com.github.javaparser.ast.type.Type;
 class CollectRelationshipsVisitor {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final char CHAR_INNER_TYPE_SEPARATOR = '$';
 
 	/**
-	 * 
-	 */
-	private static final char CHAR_PACKAGE_SEPARATOR = '.';
-
-	/**
 	 *
 	 */
-
+	private static final char CHAR_PACKAGE_SEPARATOR = '.';
 
 	/**
 	 *

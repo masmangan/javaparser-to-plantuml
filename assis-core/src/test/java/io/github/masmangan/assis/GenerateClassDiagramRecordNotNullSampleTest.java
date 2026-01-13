@@ -16,20 +16,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 class GenerateClassDiagramRecordNotNullSampleTest {
-    @TempDir
-    Path tempDir;
+	@TempDir
+	Path tempDir;
 
-    @Test
-    void generatesRecordWithStereotypeOnExternalTypeComponent() throws Exception {
-        String puml = generatePumlFromSample(
-                "samples/rnull",
-                tempDir,
-                "rnull"
-        );
+	@Test
+	void generatesRecordWithStereotypeOnExternalTypeComponent() throws Exception {
+		String puml = generatePumlFromSample("samples/rnull", tempDir, "rnull");
 
-        assertPumlContains(puml, "record \"samples.rnull.OwnerDto\"");
-        assertAnyLineContainsAll(puml, "id", ":", "int");
-        assertAnyLineContainsAll(puml, "name", ":", "String", "<<NotNull>>");
-        assertAppearsInOrder(puml, "id", "name");
-    }
+		assertPumlContains(puml, "record \"samples.rnull.OwnerDto\"");
+		assertAnyLineContainsAll(puml, "id", ":", "int");
+		assertAnyLineContainsAll(puml, "name", ":", "String", "<<NotNull>>");
+		assertAppearsInOrder(puml, "id", "name");
+	}
 }

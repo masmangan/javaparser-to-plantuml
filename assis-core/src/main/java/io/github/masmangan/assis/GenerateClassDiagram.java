@@ -237,7 +237,7 @@ public class GenerateClassDiagram {
 		try (PlantUMLWriter pw = new PlantUMLWriter(
 				new PrintWriter(Files.newBufferedWriter(out, StandardCharsets.UTF_8)));) {
 			pw.beginDiagram("class-diagram");
-			
+
 			addHeader(pw);
 
 			for (var entry : idx.fqnsByPkg.entrySet()) {

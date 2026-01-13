@@ -14,34 +14,31 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 class GenerateClassDiagramFieldModifiersSampleTest {
-    @TempDir
-    Path tempDir;
+	@TempDir
+	Path tempDir;
 
-    @Test
-    void generatesDiagramContainingFieldModifiers() throws Exception {
-        String puml = TestWorkbench.generatePumlFromSample(
-                "samples/fmodifiers",
-                tempDir,
-                "fmodifiers");
+	@Test
+	void generatesDiagramContainingFieldModifiers() throws Exception {
+		String puml = TestWorkbench.generatePumlFromSample("samples/fmodifiers", tempDir, "fmodifiers");
 
-        assertPumlContainsClass(puml, "samples.fmodifiers.FieldModifiersSample");
-        assertPumlContains(puml, "counter");
-                assertPumlContains(puml, "int");
+		assertPumlContainsClass(puml, "samples.fmodifiers.FieldModifiersSample");
+		assertPumlContains(puml, "counter");
+		assertPumlContains(puml, "int");
 
-        assertPumlContains(puml, "{static}");
+		assertPumlContains(puml, "{static}");
 
-        assertPumlContains(puml, "CONST");
-                        assertPumlContains(puml, "String");
+		assertPumlContains(puml, "CONST");
+		assertPumlContains(puml, "String");
 
-        assertPumlContains(puml, "{final}");
+		assertPumlContains(puml, "{final}");
 
-        assertPumlContains(puml, "id");
-        assertPumlContains(puml, "{static}");
+		assertPumlContains(puml, "id");
+		assertPumlContains(puml, "{static}");
 
-        assertPumlContains(puml, "cache");
-         assertPumlContains(puml, "{final}");
+		assertPumlContains(puml, "cache");
+		assertPumlContains(puml, "{final}");
 
-        assertPumlContains(puml, "id");
-        assertPumlContains(puml, "{static}");
-    }
+		assertPumlContains(puml, "id");
+		assertPumlContains(puml, "{static}");
+	}
 }

@@ -16,22 +16,19 @@ import org.junit.jupiter.api.io.TempDir;
 // This test intentionally requires FQN resolution.
 // Removing FQN support must break this test.
 class GenerateClassDiagramJlsLexicalTest {
-    @TempDir
-    Path tempDir;
+	@TempDir
+	Path tempDir;
 
-    @Test
-    void generatesDiagramContainingLexical() throws Exception {
-        String puml = TestWorkbench.generatePumlFromSample(
-                "jls/lexical",
-                tempDir,
-                "lexical");
+	@Test
+	void generatesDiagramContainingLexical() throws Exception {
+		String puml = TestWorkbench.generatePumlFromSample("jls/lexical", tempDir, "lexical");
 
-        assertPumlContainsPackage(puml, "testPackage");
-        assertPumlContainsPackage(puml, "other");
+		assertPumlContainsPackage(puml, "testPackage");
+		assertPumlContainsPackage(puml, "other");
 
-        assertPumlContainsClass(puml, "testPackage.Test");
-        assertPumlContainsClass(puml, "testPackage.Other");
-        assertPumlContainsClass(puml, "other.Other");
+		assertPumlContainsClass(puml, "testPackage.Test");
+		assertPumlContainsClass(puml, "testPackage.Other");
+		assertPumlContainsClass(puml, "other.Other");
 
-    }
+	}
 }

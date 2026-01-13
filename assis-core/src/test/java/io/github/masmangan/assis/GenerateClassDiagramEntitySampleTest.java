@@ -14,17 +14,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 class GenerateClassDiagramEntitySampleTest {
-    @TempDir
-    Path tempDir;
+	@TempDir
+	Path tempDir;
 
-    @Test
-    void generatesDiagramContainingEntity() throws Exception {
-        String puml = TestWorkbench.generatePumlFromSample(
-                "samples/entity",
-                tempDir,
-                "entity");
+	@Test
+	void generatesDiagramContainingEntity() throws Exception {
+		String puml = TestWorkbench.generatePumlFromSample("samples/entity", tempDir, "entity");
 
-        assertPumlContainsClass(puml, "Owner");
-        assertPumlContains(puml,"<<Entity>>");
-    }
+		assertPumlContainsClass(puml, "Owner");
+		assertPumlContains(puml, "<<Entity>>");
+	}
 }

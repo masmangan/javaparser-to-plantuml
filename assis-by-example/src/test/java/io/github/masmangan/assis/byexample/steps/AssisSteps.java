@@ -19,9 +19,8 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.github.masmangan.assis.GenerateClassDiagram;
 
-
 /**
- * 
+ *
  */
 public class AssisSteps {
 
@@ -62,7 +61,7 @@ public class AssisSteps {
 
 		Path outDir = tempProjectDir.resolve("out");
 		Files.createDirectories(outDir);
-		//Path outFile = outDir.resolve("class-diagram.puml");
+		// Path outFile = outDir.resolve("class-diagram.puml");
 
 		GenerateClassDiagram.generate(Set.of(tempProjectDir), outDir);
 

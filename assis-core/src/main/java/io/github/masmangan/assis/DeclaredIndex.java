@@ -31,7 +31,7 @@ class DeclaredIndex {
 	static final Logger logger = Logger.getLogger(DeclaredIndex.class.getName());
 
 	/**
-	 * 
+	 *
 	 */
 	private static final String PACKAGE_SEPARATOR = ".";
 

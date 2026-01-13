@@ -19,154 +19,113 @@ import org.junit.jupiter.api.io.TempDir;
 
 class GenerateClassDiagramAssociationCoverageSamplesTest {
 
-    @TempDir
-    Path tempDir;
+	@TempDir
+	Path tempDir;
 
-    @Test
-    void generatesAssociationForSimpleFieldSamePackage() throws Exception {
-        String puml = generatePumlFromSample(
-                "samples/associations/fields",
-                tempDir,
-                "fields"
-        );
+	@Test
+	void generatesAssociationForSimpleFieldSamePackage() throws Exception {
+		String puml = generatePumlFromSample("samples/associations/fields", tempDir, "fields");
 
-        assertPumlContainsName(puml, "p1.A");
-        assertPumlContainsName(puml, "p1.B");
-        assertAnyLineContainsAll(puml, "p1.A", "-->", "b", "p1.B");
-    }
+		assertPumlContainsName(puml, "p1.A");
+		assertPumlContainsName(puml, "p1.B");
+		assertAnyLineContainsAll(puml, "p1.A", "-->", "b", "p1.B");
+	}
 
-    @Test
-    void generatesAssociationsForArrays1dAnd2d() throws Exception {
-        String puml = generatePumlFromSample(
-                "samples/associations/arrays",
-                tempDir,
-                "arrays"
-        );
+	@Test
+	void generatesAssociationsForArrays1dAnd2d() throws Exception {
+		String puml = generatePumlFromSample("samples/associations/arrays", tempDir, "arrays");
 
-        assertPumlContainsName(puml, "p1.ArraysSample");
-        assertPumlContainsName(puml, "p1.C");
+		assertPumlContainsName(puml, "p1.ArraysSample");
+		assertPumlContainsName(puml, "p1.C");
 
-        assertAnyLineContainsAll(puml, "p1.ArraysSample", "-->", "p1.C", "cs");
-        assertAnyLineContainsAll(puml, "p1.ArraysSample", "-->", "p1.C", "matrix");
-    }
+		assertAnyLineContainsAll(puml, "p1.ArraysSample", "-->", "p1.C", "cs");
+		assertAnyLineContainsAll(puml, "p1.ArraysSample", "-->", "p1.C", "matrix");
+	}
 
-    @Test
-    void rendersGenericFieldButDoesNotCreateAssociationYet() throws Exception {
-        String puml = generatePumlFromSample(
-                "samples/associations/lists",
-                tempDir,
-                "lists"
-        );
+	@Test
+	void rendersGenericFieldButDoesNotCreateAssociationYet() throws Exception {
+		String puml = generatePumlFromSample("samples/associations/lists", tempDir, "lists");
 
-        assertPumlContains(puml, "class \"p1.ListField\"");
-        assertPumlContains(puml, "class \"p1.D\"");
+		assertPumlContains(puml, "class \"p1.ListField\"");
+		assertPumlContains(puml, "class \"p1.D\"");
 
-        assertAnyLineContainsAll(puml, "ds", ":", "List<D>");
+		assertAnyLineContainsAll(puml, "ds", ":", "List<D>");
 
-        assertPumlNotContains(puml, "-->");
-    }
+		assertPumlNotContains(puml, "-->");
+	}
 
-    @Test
-    void rendersRecordComponentListAsFieldWithoutAssociationInterpretation() throws Exception {
-        String puml = generatePumlFromSample(
-                "samples/associations/records",
-                tempDir,
-                "records"
-        );
+	@Test
+	void rendersRecordComponentListAsFieldWithoutAssociationInterpretation() throws Exception {
+		String puml = generatePumlFromSample("samples/associations/records", tempDir, "records");
 
-        assertPumlContains(puml, "record \"p1.ListRecord\"");
-        assertPumlContains(puml, "class \"p1.E\"");
+		assertPumlContains(puml, "record \"p1.ListRecord\"");
+		assertPumlContains(puml, "class \"p1.E\"");
 
-        assertAnyLineContainsAll(puml, "es", ":", "List<E>");
+		assertAnyLineContainsAll(puml, "es", ":", "List<E>");
 
-        assertPumlNotContains(puml, "-->");
-    }
+		assertPumlNotContains(puml, "-->");
+	}
 
-    @Test
-    void rendersOptionalFieldAndRecordComponentAsFieldsWithoutAssociationInterpretation() throws Exception {
-        String puml = generatePumlFromSample(
-                "samples/associations/optionals",
-                tempDir,
-                "optionals"
-        );
+	@Test
+	void rendersOptionalFieldAndRecordComponentAsFieldsWithoutAssociationInterpretation() throws Exception {
+		String puml = generatePumlFromSample("samples/associations/optionals", tempDir, "optionals");
 
-        assertPumlContainsName(puml, "p1.OptionalField");
-        assertPumlContainsName(puml, "p1.OptionalRecord");
-        assertPumlContainsName(puml, "p1.F");
+		assertPumlContainsName(puml, "p1.OptionalField");
+		assertPumlContainsName(puml, "p1.OptionalRecord");
+		assertPumlContainsName(puml, "p1.F");
 
-        assertAnyLineContainsAll(puml, "f", ":", "Optional<F>");
+		assertAnyLineContainsAll(puml, "f", ":", "Optional<F>");
 
-        assertPumlNotContains(puml, "-->");
-    }
+		assertPumlNotContains(puml, "-->");
+	}
 
-    @Test
-    void generatesAssociationForCrossPackageTypeUsingFqn() throws Exception {
-        String puml = generatePumlFromSample(
-                "samples/associations/cross",
-                tempDir,
-                "cross"
-        );
+	@Test
+	void generatesAssociationForCrossPackageTypeUsingFqn() throws Exception {
+		String puml = generatePumlFromSample("samples/associations/cross", tempDir, "cross");
 
-        assertPumlContainsName(puml, "p1.CrossPackage");
-        assertPumlContainsName(puml, "p2.G");
-        assertAnyLineContainsAll(puml, "p1.CrossPackage", "-->", "p2.G", "g");
-    }
+		assertPumlContainsName(puml, "p1.CrossPackage");
+		assertPumlContainsName(puml, "p2.G");
+		assertAnyLineContainsAll(puml, "p1.CrossPackage", "-->", "p2.G", "g");
+	}
 
-    @Test
-    void generatesAssociationForEnumField() throws Exception {
-        String puml = generatePumlFromSample(
-                "samples/associations/enum",
-                tempDir,
-                "enum"
-        );
+	@Test
+	void generatesAssociationForEnumField() throws Exception {
+		String puml = generatePumlFromSample("samples/associations/enum", tempDir, "enum");
 
-        assertPumlContainsName(puml, "p1.EnumFieldSample");
-        assertPumlContainsName(puml, "p1.H");
-        assertAnyLineContainsAll(puml, "p1.EnumFieldSample", "-->", "p1.H", "h");
-    }
+		assertPumlContainsName(puml, "p1.EnumFieldSample");
+		assertPumlContainsName(puml, "p1.H");
+		assertAnyLineContainsAll(puml, "p1.EnumFieldSample", "-->", "p1.H", "h");
+	}
 
+	@Test
+	void generatesAssociationForInterfaceConstantField() throws Exception {
+		String puml = generatePumlFromSample("samples/associations/constant", tempDir, "constant");
 
-    @Test
-    void generatesAssociationForInterfaceConstantField() throws Exception {
-        String puml = generatePumlFromSample(
-                "samples/associations/constant",
-                tempDir,
-                "constant"
-        );
+		assertPumlContainsName(puml, "p1.InterfaceConstant");
+		assertPumlContainsName(puml, "p1.I");
+		assertAnyLineContainsAll(puml, "p1.InterfaceConstant", "-->", "p1.I", "DEFAULT");
+	}
 
-        assertPumlContainsName(puml, "p1.InterfaceConstant");
-        assertPumlContainsName(puml, "p1.I");
-        assertAnyLineContainsAll(puml, "p1.InterfaceConstant", "-->", "p1.I", "DEFAULT");
-    }
+	@Test
+	void generatesAssociationStereotypesFromAnnotations() throws Exception {
+		String puml = generatePumlFromSample("samples/associations/stereotype", tempDir, "stereotype");
 
+		assertPumlContainsName(puml, "p1.FieldStereotype");
+		assertPumlContainsName(puml, "p1.RecordStereotype");
+		assertPumlContainsName(puml, "p1.J");
 
-    @Test
-    void generatesAssociationStereotypesFromAnnotations() throws Exception {
-        String puml = generatePumlFromSample(
-                "samples/associations/stereotype",
-                tempDir,
-                "stereotype"
-        );
+		assertAnyLineContainsAll(puml, "p1.FieldStereotype", "-->", "p1.J", ":", "x", "<<AssocTag>>");
+		assertAnyLineContainsAll(puml, "p1.RecordStereotype", "-->", "p1.J", ":", "y", "<<AssocTag>>");
+	}
 
-        assertPumlContainsName(puml, "p1.FieldStereotype");
-        assertPumlContainsName(puml, "p1.RecordStereotype");
-        assertPumlContainsName(puml, "p1.J");
+	@Test
+	void generatesDiagramContainingAssociation() throws Exception {
+		String puml = TestWorkbench.generatePumlFromSample("samples/associations/association", tempDir, "association");
 
-        assertAnyLineContainsAll(puml, "p1.FieldStereotype", "-->", "p1.J", ":", "x", "<<AssocTag>>");
-        assertAnyLineContainsAll(puml, "p1.RecordStereotype", "-->", "p1.J", ":", "y", "<<AssocTag>>");
-    }
+		assertPumlContains(puml, "\"samples.association.Order\" ---> \"buyer\" \"samples.association.Customer\"");
+		assertPumlContainsClass(puml, "samples.association.Order");
+		assertPumlContainsClass(puml, "samples.association.Customer");
 
-    @Test
-    void generatesDiagramContainingAssociation() throws Exception {
-        String puml = TestWorkbench.generatePumlFromSample(
-                "samples/associations/association",
-                tempDir,
-                "association");
-
-        assertPumlContains(puml, "\"samples.association.Order\" ---> \"buyer\" \"samples.association.Customer\"");
-        assertPumlContainsClass(puml, "samples.association.Order");
-        assertPumlContainsClass(puml, "samples.association.Customer");
-
-    }
+	}
 
 }

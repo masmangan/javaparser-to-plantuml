@@ -16,33 +16,29 @@ import org.junit.jupiter.api.Test;
 
 class GenerateClassDiagramDeterminismSampleTest {
 
-    @Test
-    void twoConsecutiveGenerationsHaveSameOutput() throws Exception {
-        Path tempDir = Path.of("target", "tmp-determinism");
-        Files.createDirectories(tempDir);
+	@Test
+	void twoConsecutiveGenerationsHaveSameOutput() throws Exception {
+		Path tempDir = Path.of("target", "tmp-determinism");
+		Files.createDirectories(tempDir);
 
-        // reuse an existing sample
-        Path sampleRoot = TestWorkbench.copySampleProjectToTemp(
-                "samples/enums/values",
-                tempDir.resolve("enumvalues")
-        );
+		// reuse an existing sample
+		Path sampleRoot = TestWorkbench.copySampleProjectToTemp("samples/enums/values", tempDir.resolve("enumvalues"));
 
-        Path outDir1 = tempDir.resolve("out-" + "diagram1");
-        Files.createDirectories(outDir1);
+		Path outDir1 = tempDir.resolve("out-" + "diagram1");
+		Files.createDirectories(outDir1);
 
-        Path outDir2 = tempDir.resolve("out-" + "diagram2");
-        Files.createDirectories(outDir2);
+		Path outDir2 = tempDir.resolve("out-" + "diagram2");
+		Files.createDirectories(outDir2);
 
+		GenerateClassDiagram.generate(Set.of(sampleRoot), outDir1);
+		GenerateClassDiagram.generate(Set.of(sampleRoot), outDir2);
 
-        GenerateClassDiagram.generate(Set.of(sampleRoot), outDir1);
-        GenerateClassDiagram.generate(Set.of(sampleRoot), outDir2);
+		Path outputFile1 = outDir1.resolve("class-diagram.puml");
+		Path outputFile2 = outDir2.resolve("class-diagram.puml");
 
-        Path outputFile1 = outDir1.resolve("class-diagram.puml");
-        Path outputFile2 = outDir2.resolve("class-diagram.puml");
+		String a = Files.readString(outputFile1, StandardCharsets.UTF_8);
+		String b = Files.readString(outputFile2, StandardCharsets.UTF_8);
 
-        String a = Files.readString(outputFile1, StandardCharsets.UTF_8);
-        String b = Files.readString(outputFile2, StandardCharsets.UTF_8);
-
-        assertEquals(a, b);
-    }
+		assertEquals(a, b);
+	}
 }

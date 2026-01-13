@@ -8,21 +8,21 @@ import com.github.javaparser.ast.type.Type;
 
 public interface DependencyContext {
 
-    /* ===== owner tracking ===== */
+	/* ===== owner tracking ===== */
 
-    TypeDeclaration<?> currentOwner();
+	TypeDeclaration<?> currentOwner();
 
-    /* ===== resolution ===== */
+	/* ===== resolution ===== */
 
-    Optional<TypeRef> resolveTarget(Type typeNode, Node usageSite);
+	Optional<TypeRef> resolveTarget(Type typeNode, Node usageSite);
 
-    Optional<TypeRef> resolveScopeName(String simpleName, Node usageSite);
+	Optional<TypeRef> resolveScopeName(String simpleName, Node usageSite);
 
-    /* ===== bookkeeping ===== */
+	/* ===== bookkeeping ===== */
 
-    boolean hasDependency(TypeDeclaration<?> from, TypeRef to);
+	boolean hasDependency(TypeDeclaration<?> from, TypeRef to);
 
-    void addDependency(TypeDeclaration<?> from, TypeRef to);
+	void addDependency(TypeDeclaration<?> from, TypeRef to);
 
-    void addCherryPick(TypeDeclaration<?> from, TypeRef to);
+	void addCherryPick(TypeDeclaration<?> from, TypeRef to);
 }

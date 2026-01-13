@@ -14,21 +14,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 class GenerateClassDiagramClassModifiersSampleTest {
-    @TempDir
-    Path tempDir;
+	@TempDir
+	Path tempDir;
 
-    @Test
-    void generatesDiagramContainingClassModifiers() throws Exception {
-        String puml = TestWorkbench.generatePumlFromSample(
-                "samples/cmodifiers",
-                tempDir,
-                "cmodifiers");
+	@Test
+	void generatesDiagramContainingClassModifiers() throws Exception {
+		String puml = TestWorkbench.generatePumlFromSample("samples/cmodifiers", tempDir, "cmodifiers");
 
-        assertPumlContains(puml,"abstract class \"samples.cmodifiers.AbstractClass\"");
-        assertPumlContains(puml,
-            "class \"samples.cmodifiers.FinalClass\" <<final>>");
-        assertPumlContainsClass(puml,
-            "samples.cmodifiers.PlainClass");
+		assertPumlContains(puml, "abstract class \"samples.cmodifiers.AbstractClass\"");
+		assertPumlContains(puml, "class \"samples.cmodifiers.FinalClass\" <<final>>");
+		assertPumlContainsClass(puml, "samples.cmodifiers.PlainClass");
 
-    }
+	}
 }

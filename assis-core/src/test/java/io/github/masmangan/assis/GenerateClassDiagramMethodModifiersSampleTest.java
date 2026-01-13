@@ -14,27 +14,24 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 class GenerateClassDiagramMethodModifiersSampleTest {
-    @TempDir
-    Path tempDir;
+	@TempDir
+	Path tempDir;
 
-    @Test
-    void generatesDiagramContainingMethodModifiers() throws Exception {
-        String puml = TestWorkbench.generatePumlFromSample(
-                "samples/mmodifiers",
-                tempDir,
-                "mmodifiers");
+	@Test
+	void generatesDiagramContainingMethodModifiers() throws Exception {
+		String puml = TestWorkbench.generatePumlFromSample("samples/mmodifiers", tempDir, "mmodifiers");
 
-        assertPumlContainsClass(puml, "samples.mmodifiers.AbstractMethods");
-        assertPumlContains(puml, "abstractMethod");
-        assertPumlContains(puml, "{abstract}");
+		assertPumlContainsClass(puml, "samples.mmodifiers.AbstractMethods");
+		assertPumlContains(puml, "abstractMethod");
+		assertPumlContains(puml, "{abstract}");
 
-        assertPumlContainsClass(puml, "samples.mmodifiers.ConcreteMethods");
-        assertPumlContains(puml, "finalMethod");
-        assertPumlContains(puml, "{final}");
+		assertPumlContainsClass(puml, "samples.mmodifiers.ConcreteMethods");
+		assertPumlContains(puml, "finalMethod");
+		assertPumlContains(puml, "{final}");
 
-        assertPumlContains(puml, "staticMethod");
-        assertPumlContains(puml, "{static}");
+		assertPumlContains(puml, "staticMethod");
+		assertPumlContains(puml, "{static}");
 
-        assertPumlContains(puml, "normalMethod");
-    }
+		assertPumlContains(puml, "normalMethod");
+	}
 }

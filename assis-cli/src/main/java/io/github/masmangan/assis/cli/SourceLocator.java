@@ -54,7 +54,7 @@ final class SourceLocator {
 			LOG.info(() -> "Trying source directory: " + abs);
 
 			boolean invalid = false;
-			
+
 			if (!Files.isDirectory(abs)) {
 				LOG.info(() -> "Not a directory. Skipping: " + candidate.toString());
 				invalid = true;
@@ -64,7 +64,7 @@ final class SourceLocator {
 				LOG.info(() -> "No source code inside. Skipping: " + candidate.toString());
 				invalid = true;
 			}
-			
+
 			if (invalid) {
 				continue;
 			}

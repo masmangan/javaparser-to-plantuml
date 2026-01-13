@@ -49,7 +49,7 @@ final class CliArgs {
 		}
 
 		Set<Path> srcRoots = new LinkedHashSet<>();
-		
+
 		Path outDir = null;
 
 		boolean skip = false;
@@ -92,7 +92,7 @@ final class CliArgs {
 	}
 
 	private static Set<Path> parseSourcePath(String[] args, int i, String a) {
-		requireValue(args, i, a); 
+		requireValue(args, i, a);
 		return parsePathList(args[i + 1]);
 	}
 

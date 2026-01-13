@@ -14,21 +14,18 @@ import org.junit.jupiter.api.io.TempDir;
 
 class GenerateClassDiagramTypesSampleTest {
 
-    @TempDir
-    Path tempDir;
+	@TempDir
+	Path tempDir;
 
-    @Test
-    void generatesDiagramContainingTypes() throws Exception {
-        String puml = TestWorkbench.generatePumlFromSample(
-                "samples/types",
-                tempDir,
-                "types");
+	@Test
+	void generatesDiagramContainingTypes() throws Exception {
+		String puml = TestWorkbench.generatePumlFromSample("samples/types", tempDir, "types");
 
-        assertPumlContains(puml, "class \"samples.types.Class\"");
-        assertPumlContains(puml, "interface \"samples.types.Interface\"");
-        assertPumlContains(puml, "enum \"samples.types.Enumeration\"");
-        assertPumlContains(puml, "annotation \"samples.types.Annotation\"");
-        assertPumlContains(puml, "record \"samples.types.Record\"");
-    }
+		assertPumlContains(puml, "class \"samples.types.Class\"");
+		assertPumlContains(puml, "interface \"samples.types.Interface\"");
+		assertPumlContains(puml, "enum \"samples.types.Enumeration\"");
+		assertPumlContains(puml, "annotation \"samples.types.Annotation\"");
+		assertPumlContains(puml, "record \"samples.types.Record\"");
+	}
 
 }

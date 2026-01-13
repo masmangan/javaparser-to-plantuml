@@ -15,17 +15,14 @@ import org.junit.jupiter.api.io.TempDir;
 
 class GenerateClassDiagramHelloSampleTest {
 
-    @TempDir
-    Path tempDir;
+	@TempDir
+	Path tempDir;
 
-    @Test
-    void generatesDiagramContainingHelloClass() throws Exception {
-        String puml = TestWorkbench.generatePumlFromSample(
-                "samples/hello",
-                tempDir,
-                "hello");
-        assertPumlContainsClass(puml, "samples.hello.Hello");
-        assertPumlContains(puml, "main");
-    }
+	@Test
+	void generatesDiagramContainingHelloClass() throws Exception {
+		String puml = TestWorkbench.generatePumlFromSample("samples/hello", tempDir, "hello");
+		assertPumlContainsClass(puml, "samples.hello.Hello");
+		assertPumlContains(puml, "main");
+	}
 
 }
