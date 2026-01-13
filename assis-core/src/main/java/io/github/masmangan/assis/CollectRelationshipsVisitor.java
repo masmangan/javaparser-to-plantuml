@@ -41,7 +41,7 @@ import com.github.javaparser.ast.type.Type;
  * {@link DeclaredIndex#resolveTypeName(String, String)}.
  */
 /**
- * 
+ *
  */
 class CollectRelationshipsVisitor {
 
@@ -94,7 +94,7 @@ class CollectRelationshipsVisitor {
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	private void emitAssociationRelations() {
 		for (var entry : idx.fqnsByPkg.entrySet()) {
@@ -107,7 +107,7 @@ class CollectRelationshipsVisitor {
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	private void emitInnerClassRelations() {
 		for (String fqn : idx.byFqn.keySet()) {
@@ -116,7 +116,7 @@ class CollectRelationshipsVisitor {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param fqn
 	 */
 	private void emitInnerTypes(String fqn) {
@@ -127,7 +127,7 @@ class CollectRelationshipsVisitor {
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	private void emitInheritanceRelations() {
 		for (var entry : idx.fqnsByPkg.entrySet()) {
@@ -232,7 +232,7 @@ class CollectRelationshipsVisitor {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param pkg
 	 * @param ownerFqn
 	 * @param p
@@ -247,7 +247,7 @@ class CollectRelationshipsVisitor {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param p
 	 * @return
 	 */

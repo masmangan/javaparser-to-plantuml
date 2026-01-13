@@ -496,7 +496,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 		if (activeTag != null) {
 			out.print("/'");
 			out.print(SPACE_STRING);
-			out.print(activeTag); 	
+			out.print(activeTag);
 			out.print(SPACE_STRING);
 		}
 		out.print(quote(subType));
@@ -511,7 +511,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 			out.print(SPACE_STRING);
 			out.print("'/");
 		}
-		
+
 		out.println();
 	}
 
@@ -526,7 +526,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 		if (activeTag != null) {
 			out.print("/'");
 			out.print(SPACE_STRING);
-			out.print(activeTag); 	
+			out.print(activeTag);
 			out.print(SPACE_STRING);
 		}
 		out.print(quote(subType));
@@ -541,7 +541,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 			out.print(SPACE_STRING);
 			out.print("'/");
 		}
-		
+
 		out.println();
 	}
 
@@ -561,10 +561,10 @@ public final class PlantUMLWriter implements AutoCloseable {
 		if (activeTag != null) {
 			out.print("/'");
 			out.print(SPACE_STRING);
-			out.print(activeTag); 	
+			out.print(activeTag);
 			out.print(SPACE_STRING);
 		}
-		
+
 		out.print(quote(sourceType));
 
 		out.print(SPACE_STRING);
@@ -594,7 +594,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param s
 	 * @return
 	 */
@@ -603,7 +603,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	private String activeTag;
 
@@ -626,7 +626,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param tag
 	 */
 	private void checkTag(String tag) {
@@ -638,7 +638,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	// block helpers
 
 	/**
-	 * 
+	 *
 	 * @param keyword
 	 * @param name
 	 * @param stereotypes
@@ -652,7 +652,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param keyword
 	 * @param name
 	 */
@@ -665,7 +665,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	// static helpers
 
 	/**
-	 * 
+	 *
 	 * @param stereotypes
 	 */
 	private static void checkStereotypes(final String stereotypes) {
@@ -674,7 +674,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param name
 	 */
 	private static void checkName(final String name) {
@@ -684,7 +684,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param s
 	 * @param label
 	 */
@@ -695,7 +695,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param s
 	 * @param label
 	 */
@@ -706,7 +706,7 @@ public final class PlantUMLWriter implements AutoCloseable {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param prefix
 	 * @param s
 	 * @return
