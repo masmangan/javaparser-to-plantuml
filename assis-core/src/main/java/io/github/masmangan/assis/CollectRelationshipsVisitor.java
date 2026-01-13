@@ -40,6 +40,9 @@ import com.github.javaparser.ast.type.Type;
  * decision is made by resolving the declared type name using
  * {@link DeclaredIndex#resolveTypeName(String, String)}.
  */
+/**
+ * 
+ */
 class CollectRelationshipsVisitor {
 
 	/**
@@ -90,6 +93,9 @@ class CollectRelationshipsVisitor {
 		emitAssociationRelations();
 	}
 
+	/**
+	 * 
+	 */
 	private void emitAssociationRelations() {
 		for (var entry : idx.fqnsByPkg.entrySet()) {
 			String pkg = entry.getKey();
@@ -100,12 +106,19 @@ class CollectRelationshipsVisitor {
 		}
 	}
 
+	/**
+	 * 
+	 */
 	private void emitInnerClassRelations() {
 		for (String fqn : idx.byFqn.keySet()) {
 			emitInnerTypes(fqn);
 		}
 	}
 
+	/**
+	 * 
+	 * @param fqn
+	 */
 	private void emitInnerTypes(String fqn) {
 		String ownerFqn = ownerFqnOf(fqn);
 		if (ownerFqn != null && idx.byFqn.containsKey(ownerFqn)) {
@@ -113,6 +126,9 @@ class CollectRelationshipsVisitor {
 		}
 	}
 
+	/**
+	 * 
+	 */
 	private void emitInheritanceRelations() {
 		for (var entry : idx.fqnsByPkg.entrySet()) {
 			String pkg = entry.getKey();
@@ -215,6 +231,12 @@ class CollectRelationshipsVisitor {
 		}
 	}
 
+	/**
+	 * 
+	 * @param pkg
+	 * @param ownerFqn
+	 * @param p
+	 */
 	private void emitRecordParameterAssociation(String pkg, String ownerFqn, Parameter p) {
 		String target = resolveAssocTarget(pkg, ownerFqn, p.getType());
 		if (target != null) {
@@ -224,6 +246,11 @@ class CollectRelationshipsVisitor {
 		}
 	}
 
+	/**
+	 * 
+	 * @param p
+	 * @return
+	 */
 	private String stereotypesToString(Parameter p) {
 		return GenerateClassDiagram.renderStereotypes(GenerateClassDiagram.stereotypesOf(p));
 	}

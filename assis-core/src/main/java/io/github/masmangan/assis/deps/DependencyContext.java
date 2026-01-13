@@ -6,6 +6,9 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.type.Type;
 
+/**
+ * 
+ */
 public interface DependencyContext {
 
 	/* ===== owner tracking ===== */

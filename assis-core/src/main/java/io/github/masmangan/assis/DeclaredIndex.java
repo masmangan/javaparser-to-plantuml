@@ -35,16 +35,25 @@ class DeclaredIndex {
 	 */
 	private static final String PACKAGE_SEPARATOR = ".";
 
-	/** FQN → declaration */
+	/** 
+	 * FQN → declaration 
+	 * */
 	final Map<String, TypeDeclaration<?>> byFqn = new LinkedHashMap<>();
 
-	/** FQN → declared package (from CompilationUnit) */
+	/** 
+	 * FQN → declared package (from CompilationUnit) 
+	 * */
 	final Map<String, String> pkgByFqn = new LinkedHashMap<>();
 
-	/** package → list of FQNs */
+	/** 
+	 * package → list of FQNs 
+	 * */
 	Map<String, List<String>> fqnsByPkg = new LinkedHashMap<>();
 
-	/** simple name → unique FQN (only when unambiguous) */
+	/** 
+	 * simple name → unique FQN (only when unambiguous) 
+	 * 
+	 */
 	final Map<String, String> uniqueBySimple = new LinkedHashMap<>();
 
 	/**

@@ -21,6 +21,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.ResourceLock;
 
+/**
+ * 
+ */
 class AssisAppTest {
 
 	private static final String PUML_FILE = "class-diagram.puml";

@@ -202,10 +202,20 @@ class CollectTypesVisitor {
 		GenerateClassDiagram.logger.log(Level.WARNING, () -> "Unexpected type: " + td);
 	}
 
+	/**
+	 * 
+	 * @param td
+	 * @return
+	 */
 	private static String typeStereotypes(TypeDeclaration<?> td) {
 		return GenerateClassDiagram.renderStereotypes(GenerateClassDiagram.stereotypesOf(td));
 	}
 
+	/**
+	 * 
+	 * @param td
+	 * @return
+	 */
 	private static String finalClassStereotypes(TypeDeclaration<?> td) {
 		String stereotypes = typeStereotypes(td);
 		return FINAL_MODIFIER + (stereotypes.isBlank() ? EMPTY_STRING : SPACE_STRING + stereotypes.trim());

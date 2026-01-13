@@ -14,14 +14,34 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
+/**
+ * 
+ */
 final class SourceLocator {
 
+	/**
+	 * 
+	 */
 	private static final Logger LOG = Logger.getLogger(SourceLocator.class.getName());
 
+	/**
+	 * 
+	 */
 	static final Path MAVEN = Path.of("src/main/java");
+	
+	/**
+	 * 
+	 */
 	static final Path SRC = Path.of("src");
+	
+	/**
+	 * 
+	 */
 	static final Path DOT = Path.of(".");
 
+	/**
+	 * 
+	 */
 	private static final List<Path> CANDIDATES = List.of(MAVEN, SRC, DOT);
 
 	/**
@@ -44,6 +64,11 @@ final class SourceLocator {
 
 	}
 
+	/**
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
 	private static Set<Path> extractFirstDefault() throws IOException {
 		boolean mavenDirExists = Files.isDirectory(MAVEN);
 		boolean mavenHasJava = mavenDirExists && containsJava(MAVEN);
@@ -89,6 +114,12 @@ final class SourceLocator {
 
 	}
 
+	/**
+	 * 
+	 * @param requested
+	 * @return
+	 * @throws IOException
+	 */
 	private static Set<Path> extractRequested(Set<Path> requested) throws IOException {
 		LinkedHashSet<Path> out = new LinkedHashSet<>();
 		for (Path dir : requested) {
@@ -110,6 +141,12 @@ final class SourceLocator {
 		return out;
 	}
 
+	/**
+	 * 
+	 * @param dir
+	 * @param isExplicit
+	 * @throws IOException
+	 */
 	private static void validateHasJavaOrThrow(Path dir, boolean isExplicit) throws IOException {
 		if (!Files.exists(dir)) {
 			throw new IllegalArgumentException("Source path does not exist: " + dir);
@@ -124,12 +161,21 @@ final class SourceLocator {
 		}
 	}
 
+	/**
+	 * 
+	 * @param dir
+	 * @return
+	 * @throws IOException
+	 */
 	private static boolean containsJava(Path dir) throws IOException {
 		try (Stream<Path> walk = Files.walk(dir)) {
 			return walk.anyMatch(p -> p.toString().endsWith(".java"));
 		}
 	}
 
+	/**
+	 * 
+	 */
 	private SourceLocator() {
 	}
 }

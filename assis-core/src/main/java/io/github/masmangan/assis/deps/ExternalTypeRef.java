@@ -1,5 +1,8 @@
 package io.github.masmangan.assis.deps;
 
+/**
+ * 
+ */
 public record ExternalTypeRef(String fqn) implements TypeRef {
 
 	@Override

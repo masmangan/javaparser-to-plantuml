@@ -20,10 +20,19 @@ import io.github.masmangan.assis.GenerateClassDiagram;
  */
 public final class AssisApp {
 
+	/**
+	 * 
+	 */
 	private static final String MAVEN_POM_PROPS = "META-INF/maven/%s/%s/pom.properties";
 
+	/**
+	 * 
+	 */
 	private static final String VERSION_UNKNOWN = "unknown";
 
+	/**
+	 * 
+	 */
 	private static final Logger LOG = Logger.getLogger(AssisApp.class.getName());
 
 	/**
@@ -101,6 +110,9 @@ public final class AssisApp {
 		}
 	}
 
+	/**
+	 * 
+	 */
 	private static void logVersion() {
 		LOG.log(Level.INFO, () -> "ASSIS " + io.github.masmangan.assis.GenerateClassDiagram.versionOrDev());
 
@@ -125,6 +137,12 @@ public final class AssisApp {
 		LOG.log(Level.INFO, () -> "OS: " + os);
 	}
 
+	/**
+	 * 
+	 * @param groupId
+	 * @param artifactId
+	 * @return
+	 */
 	private static String mavenPomVersion(String groupId, String artifactId) {
 		String path = MAVEN_POM_PROPS.formatted(groupId, artifactId);
 		try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(path)) {

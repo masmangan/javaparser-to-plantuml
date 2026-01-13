@@ -7,6 +7,9 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
+/**
+ * 
+ */
 final class JulLogCaptor implements AutoCloseable {
 	private final Logger logger;
 	private final Handler handler;

@@ -18,8 +18,14 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
+/**
+ * 
+ */
 public final class CollectDependenciesVisitor extends VoidVisitorAdapter<DependencyContext> {
 
+	/**
+	 * 
+	 */
 	private final Deque<TypeDeclaration<?>> ownerStack = new ArrayDeque<>();
 
 	/* ===== owner handling ===== */
@@ -45,14 +51,25 @@ public final class CollectDependenciesVisitor extends VoidVisitorAdapter<Depende
 		exit();
 	}
 
+	/**
+	 * 
+	 * @param td
+	 */
 	private void enter(TypeDeclaration<?> td) {
 		ownerStack.push(td);
 	}
 
+	/**
+	 * 
+	 */
 	private void exit() {
 		ownerStack.pop();
 	}
 
+	/**
+	 * 
+	 * @return
+	 */
 	private TypeDeclaration<?> owner() {
 		return ownerStack.peek();
 	}
@@ -95,6 +112,12 @@ public final class CollectDependenciesVisitor extends VoidVisitorAdapter<Depende
 
 	/* ===== helpers ===== */
 
+	/**
+	 * 
+	 * @param typeNode
+	 * @param site
+	 * @param ctx
+	 */
 	private void recordTypeUse(Type typeNode, Node site, DependencyContext ctx) {
 		if (ownerStack.isEmpty()) {
 			return;
@@ -108,6 +131,12 @@ public final class CollectDependenciesVisitor extends VoidVisitorAdapter<Depende
 		}
 	}
 
+	/**
+	 * 
+	 * @param simpleName
+	 * @param site
+	 * @param ctx
+	 */
 	private void recordScope(String simpleName, Node site, DependencyContext ctx) {
 		if (ownerStack.isEmpty()) {
 			return;
@@ -116,6 +145,12 @@ public final class CollectDependenciesVisitor extends VoidVisitorAdapter<Depende
 		ctx.resolveScopeName(simpleName, site).ifPresent(target -> collect(owner(), target, ctx));
 	}
 
+	/**
+	 * 
+	 * @param from
+	 * @param to
+	 * @param ctx
+	 */
 	private void collect(TypeDeclaration<?> from, TypeRef to, DependencyContext ctx) {
 		if (ctx.hasDependency(from, to)) {
 			return;

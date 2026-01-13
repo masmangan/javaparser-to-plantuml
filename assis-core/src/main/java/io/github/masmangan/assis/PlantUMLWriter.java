@@ -560,11 +560,18 @@ public final class PlantUMLWriter implements AutoCloseable {
 		out.println();
 	}
 
+	/**
+	 * 
+	 * @param s
+	 * @return
+	 */
 	private static String quote(String s) {
 		return "\"" + s.strip() + "\"";
 	}
 
-	// tag
+	/**
+	 * 
+	 */
 	private String activeTag;
 
 	/**
@@ -585,6 +592,10 @@ public final class PlantUMLWriter implements AutoCloseable {
 		}
 	}
 
+	/**
+	 * 
+	 * @param tag
+	 */
 	private void checkTag(String tag) {
 		if (tag == null || tag.isBlank()) {
 			throw new IllegalArgumentException("Tag must be non-empty");
@@ -593,6 +604,12 @@ public final class PlantUMLWriter implements AutoCloseable {
 
 	// block helpers
 
+	/**
+	 * 
+	 * @param keyword
+	 * @param name
+	 * @param stereotypes
+	 */
 	private void beginType(final String keyword, final String name, final String stereotypes) {
 		checkName(name);
 		checkStereotypes(stereotypes);
@@ -601,6 +618,11 @@ public final class PlantUMLWriter implements AutoCloseable {
 		indent();
 	}
 
+	/**
+	 * 
+	 * @param keyword
+	 * @param name
+	 */
 	private void endType(final String keyword, final String name) {
 		checkName(name);
 		dedent();
@@ -609,29 +631,53 @@ public final class PlantUMLWriter implements AutoCloseable {
 
 	// static helpers
 
+	/**
+	 * 
+	 * @param stereotypes
+	 */
 	private static void checkStereotypes(final String stereotypes) {
 		requireSingleLine(stereotypes, "stereotypes");
 		requireNotContainsQuote(stereotypes, "stereotypes");
 	}
 
+	/**
+	 * 
+	 * @param name
+	 */
 	private static void checkName(final String name) {
 		Objects.requireNonNull(name, "name");
 		requireSingleLine(name, "name");
 		requireNotContainsQuote(name, "name");
 	}
 
+	/**
+	 * 
+	 * @param s
+	 * @param label
+	 */
 	private static void requireNotContainsQuote(final String s, final String label) {
 		if (s.contains("\"")) {
 			throw new IllegalArgumentException("Quote (\") not allowed in " + label + ": " + s);
 		}
 	}
 
+	/**
+	 * 
+	 * @param s
+	 * @param label
+	 */
 	private static void requireSingleLine(final String s, final String label) {
 		if (s.indexOf('\n') >= 0 || s.indexOf('\r') >= 0) {
 			throw new IllegalArgumentException(label + " must be a single line");
 		}
 	}
 
+	/**
+	 * 
+	 * @param prefix
+	 * @param s
+	 * @return
+	 */
 	private static String prefixIfPresent(String prefix, String s) {
 		if (s == null || s.isBlank()) {
 			return "";

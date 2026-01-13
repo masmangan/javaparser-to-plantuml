@@ -15,10 +15,16 @@ import java.util.Set;
  */
 final class CliArgs {
 
+	/**
+	 * 
+	 */
 	enum Mode {
 		RUN, HELP, VERSION
 	}
 
+	/**
+	 * 
+	 */
 	final Mode mode;
 
 	/**
@@ -32,6 +38,12 @@ final class CliArgs {
 	 */
 	final Path outDir;
 
+	/**
+	 * 
+	 * @param mode
+	 * @param sourceRoots
+	 * @param outDir
+	 */
 	private CliArgs(Mode mode, Set<Path> sourceRoots, Path outDir) {
 		this.mode = mode;
 		this.sourceRoots = sourceRoots;
@@ -82,6 +94,14 @@ final class CliArgs {
 		return new CliArgs(Mode.RUN, srcRoots, outDir);
 	}
 
+	/**
+	 * 
+	 * @param args
+	 * @param outDir
+	 * @param i
+	 * @param a
+	 * @return
+	 */
 	private static Path parseOutputDirectory(String[] args, Path outDir, int i, String a) {
 		if (outDir != null) {
 			throw new IllegalArgumentException("Duplicate option: -d\n\n" + usage);
@@ -91,27 +111,59 @@ final class CliArgs {
 		return Path.of(args[i + 1]);
 	}
 
+	/**
+	 * 
+	 * @param args
+	 * @param i
+	 * @param a
+	 * @return
+	 */
 	private static Set<Path> parseSourcePath(String[] args, int i, String a) {
 		requireValue(args, i, a);
 		return parsePathList(args[i + 1]);
 	}
 
+	/**
+	 * 
+	 * @param a
+	 * @return
+	 */
 	private static boolean isOutputDirectory(String a) {
 		return "-d".equals(a);
 	}
 
+	/**
+	 * 
+	 * @param a
+	 * @return
+	 */
 	private static boolean isSourcePath(String a) {
 		return "--source-path".equals(a) || "-sourcepath".equals(a);
 	}
 
+	/**
+	 * 
+	 * @param a
+	 * @return
+	 */
 	private static boolean isVersion(String a) {
 		return "--version".equals(a) || "-version".equals(a);
 	}
 
+	/**
+	 * 
+	 * @param a
+	 * @return
+	 */
 	private static boolean isHelp(String a) {
 		return "--help".equals(a) || "-help".equals(a) || "-?".equals(a);
 	}
 
+	/**
+	 * 
+	 * @param raw
+	 * @return
+	 */
 	private static Set<Path> parsePathList(String raw) {
 		if (raw == null || raw.isBlank()) {
 			throw new IllegalArgumentException("Empty value for --source-path/-sourcepath\n\n" + usage);
@@ -135,6 +187,12 @@ final class CliArgs {
 		return out;
 	}
 
+	/**
+	 * 
+	 * @param args
+	 * @param i
+	 * @param opt
+	 */
 	private static void requireValue(String[] args, int i, String opt) {
 		if (i + 1 >= args.length) {
 			throw new IllegalArgumentException("Missing value for " + opt + "\n\n" + usage);
@@ -165,6 +223,9 @@ final class CliArgs {
 			      -d docs/diagrams/src/
 			""";
 
+	/**
+	 * 
+	 */
 	private CliArgs() {
 		throw new AssertionError();
 	}
