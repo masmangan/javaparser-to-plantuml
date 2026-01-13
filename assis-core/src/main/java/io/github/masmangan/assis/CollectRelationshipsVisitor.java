@@ -30,7 +30,7 @@ import com.github.javaparser.ast.type.Type;
  * <li><b>Nesting</b> (inner/nested types):
  * {@code "Outer" +-- "Outer$Inner"}</li>
  * <li><b>Association</b> (has-a):
- * {@code "Owner" --> "Target" : role <<Stereo>>}</li>
+ * {@code "Owner" ---> "Target" : role <<Stereo>>}</li>
  * </ul>
  *
  * <h2>No duplicate rendering</h2>
@@ -55,12 +55,7 @@ class CollectRelationshipsVisitor {
 	/**
 	 *
 	 */
-	private static final String IS_A_IMPLEMENTS = " ..|> ";
 
-	/**
-	 *
-	 */
-	private static final String IS_A_EXTENDS = " --|> ";
 
 	/**
 	 *
@@ -162,10 +157,16 @@ class CollectRelationshipsVisitor {
 	 * @param impl
 	 */
 	private void emitImplements(String pkg, String subFqn, ClassOrInterfaceType impl) {
-		String raw = GenerateClassDiagram.simpleName(impl.getNameWithScope());
+		String nameWithScope = impl.getNameWithScope();
+
+		String raw = GenerateClassDiagram.simpleName(nameWithScope);
 		String target = idx.resolveTypeName(pkg, raw);
 		if (target != null) {
-			pw.println(DeclaredIndex.qPuml(subFqn) + IS_A_IMPLEMENTS + DeclaredIndex.qPuml(target));
+			// emit active implements to a know type
+			pw.connectImplements(subFqn, target);
+		} else {
+			// emit commented out, tagged implements for user review
+			pw.withBeforeTag("@assis:cherry-pick ghost", () -> pw.connectImplements(subFqn, nameWithScope));
 		}
 	}
 
@@ -176,10 +177,15 @@ class CollectRelationshipsVisitor {
 	 * @param ext
 	 */
 	private void emitExtends(String pkg, String subFqn, ClassOrInterfaceType ext) {
-		String raw = GenerateClassDiagram.simpleName(ext.getNameWithScope());
+		String nameWithScope = ext.getNameWithScope();
+		String raw = GenerateClassDiagram.simpleName(nameWithScope);
 		String target = idx.resolveTypeName(pkg, raw);
 		if (target != null) {
-			pw.println(DeclaredIndex.qPuml(subFqn) + IS_A_EXTENDS + DeclaredIndex.qPuml(target));
+			// emit active extends to a know type
+			pw.connectExtends(subFqn, target);
+		} else {
+			// emit commented out, tagged extends for user review
+			pw.withBeforeTag("@assis:cherry-pick ghost", () -> pw.connectExtends(subFqn, nameWithScope));
 		}
 	}
 
