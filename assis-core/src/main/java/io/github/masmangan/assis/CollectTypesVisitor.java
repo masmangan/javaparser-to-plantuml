@@ -60,10 +60,19 @@ import com.github.javaparser.ast.body.VariableDeclarator;
  */
 class CollectTypesVisitor {
 
+	/**
+	 *
+	 */
 	private static final String SPACE_STRING = " ";
 
+	/**
+	 *
+	 */
 	private static final String EMPTY_STRING = "";
 
+	/**
+	 *
+	 */
 	private static final String FINAL_MODIFIER = "<<final>>";
 
 	/**
@@ -204,7 +213,7 @@ class CollectTypesVisitor {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param td
 	 * @return
 	 */
@@ -213,7 +222,7 @@ class CollectTypesVisitor {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param td
 	 * @return
 	 */
