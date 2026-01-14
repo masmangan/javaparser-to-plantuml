@@ -236,62 +236,74 @@ public class GenerateClassDiagram {
 
 			addHeader(pw);
 
-			for (var entry : idx.fqnsByPkg.entrySet()) {
-				String pkg = entry.getKey();
-				List<String> fqns = entry.getValue();
-
-				if (!pkg.isEmpty()) {
-					pw.println();
-					pw.beginPackage(pkg);
-				}
-
-				for (String fqn : fqns) {
-					TypeDeclaration<?> td = idx.byFqn.get(fqn);
-					new CollectTypesVisitor(idx, pkg, pw).emitType(fqn, td);
-				}
-
-				if (!pkg.isEmpty()) {
-					pw.println();
-					pw.endPackage(pkg);
-				}
-			}
+			writeTypes(idx, pw);
 
 			pw.println();
 			pw.println();
 
-			new CollectRelationshipsVisitor(idx, pw).emitAll();
+			writeStructuralRelations(idx, pw);
 
-			DependencyContext context = new DependencyContext(idx, pw);
-			CollectDependenciesVisitor dependenciesVisitor = new CollectDependenciesVisitor();
-
-			// includes tripwire for fqn and package naming schema diff
-			for (var entry : idx.fqnsByPkg.entrySet()) {
-				String pkgFromIndex = entry.getKey();
-				for (String fqnFromIndex : entry.getValue()) {
-					TypeDeclaration<?> td = idx.byFqn.get(fqnFromIndex);
-
-					String pkgDerived = DeclaredIndex.derivePkg(td);
-					String fqnDerived = DeclaredIndex.deriveFqnDollar(td);
-
-					if (!pkgFromIndex.equals(pkgDerived) || !fqnFromIndex.equals(fqnDerived)) {
-						throw new IllegalStateException("""
-								FQN mismatch!
-								index pkg=%s fqn=%s
-								derived pkg=%s fqn=%s
-								decl=%s
-								""".formatted(pkgFromIndex, fqnFromIndex, pkgDerived, fqnDerived, td));
-					}
-					if (DeclaredIndex.isTopLevel(td)) {
-						td.accept(dependenciesVisitor, context);
-					}
-				}
-			}
+			writeDependencies(idx, pw);
 			pw.println();
 
 			pw.endDiagram("class-diagram");
 
 		} catch (IOException e) {
 			logger.log(Level.WARNING, () -> "Error writing diagram file: " + e.getLocalizedMessage());
+		}
+	}
+
+	private static void writeDependencies(final DeclaredIndex idx, PlantUMLWriter pw) {
+		DependencyContext context = new DependencyContext(idx, pw);
+		CollectDependenciesVisitor dependenciesVisitor = new CollectDependenciesVisitor();
+
+		// includes tripwire for fqn and package naming schema diff
+		for (var entry : idx.fqnsByPkg.entrySet()) {
+			String pkgFromIndex = entry.getKey();
+			for (String fqnFromIndex : entry.getValue()) {
+				TypeDeclaration<?> td = idx.byFqn.get(fqnFromIndex);
+
+				String pkgDerived = DeclaredIndex.derivePkg(td);
+				String fqnDerived = DeclaredIndex.deriveFqnDollar(td);
+
+				if (!pkgFromIndex.equals(pkgDerived) || !fqnFromIndex.equals(fqnDerived)) {
+					throw new IllegalStateException("""
+							FQN mismatch!
+							index pkg=%s fqn=%s
+							derived pkg=%s fqn=%s
+							decl=%s
+							""".formatted(pkgFromIndex, fqnFromIndex, pkgDerived, fqnDerived, td));
+				}
+				if (DeclaredIndex.isTopLevel(td)) {
+					td.accept(dependenciesVisitor, context);
+				}
+			}
+		}
+	}
+
+	private static void writeStructuralRelations(final DeclaredIndex idx, PlantUMLWriter pw) {
+		new CollectRelationshipsVisitor(idx, pw).emitAll();
+	}
+
+	private static void writeTypes(final DeclaredIndex idx, PlantUMLWriter pw) {
+		for (var entry : idx.fqnsByPkg.entrySet()) {
+			String pkg = entry.getKey();
+			List<String> fqns = entry.getValue();
+
+			if (!pkg.isEmpty()) {
+				pw.println();
+				pw.beginPackage(pkg);
+			}
+
+			for (String fqn : fqns) {
+				TypeDeclaration<?> td = idx.byFqn.get(fqn);
+				new CollectTypesVisitor(idx, pkg, pw).emitType(fqn, td);
+			}
+
+			if (!pkg.isEmpty()) {
+				pw.println();
+				pw.endPackage(pkg);
+			}
 		}
 	}
 
