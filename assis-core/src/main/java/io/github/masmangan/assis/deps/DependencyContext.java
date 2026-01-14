@@ -32,7 +32,7 @@ public class DependencyContext {
 		this.pw = pw;
 	}
 
-	public Optional<TypeRef> resolveTarget2(Type typeNode, Node usageSite) {
+	public Optional<TypeRef> resolveTarget(Type typeNode, Node usageSite) {
 		logger.log(Level.INFO, () -> "Resolving target" + typeNode);
 
 		if (!(typeNode instanceof ClassOrInterfaceType cit)) {
@@ -45,28 +45,11 @@ public class DependencyContext {
 	    //Optional<TypeDeclaration<?>> decl = idx.findBySimpleName(simpleName, usageSite);
 	    TypeDeclaration<?> td = idx.byFqn.get(simpleName);
 	    if (td == null)
-	        return Optional.ofNullable(new ExternalTypeRef(simpleName));
+	        return Optional.of(new ExternalTypeRef(simpleName));
 	    else
-	    return Optional.ofNullable(new DeclaredTypeRef(td));
+	    return Optional.of(new DeclaredTypeRef(td));
 	}
-	public Optional<TypeRef> resolveTarget(Type typeNode, Node usageSite) {
-	    if (!(typeNode instanceof ClassOrInterfaceType cit)) return Optional.empty();
 
-	    String simpleName = cit.getNameAsString();
-
-	    // 1) same compilation unit
-	    var cuOpt = usageSite.findCompilationUnit();
-	    if (cuOpt.isPresent()) {
-	        for (TypeDeclaration<?> t : cuOpt.get().getTypes()) {
-	            if (t.getNameAsString().equals(simpleName)) {
-	                return Optional.of(new DeclaredTypeRef(t));
-	            }
-	        }
-	    }
-
-	    // 2) fallback: external for now
-	    return Optional.of(new ExternalTypeRef(simpleName));
-	}
 
 	public Optional<TypeRef> resolveScopeName(String simpleName, Node usageSite) {
 		// TODO Auto-generated method stub
