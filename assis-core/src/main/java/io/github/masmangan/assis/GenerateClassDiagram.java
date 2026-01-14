@@ -30,6 +30,10 @@ import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 import com.github.javaparser.ast.nodeTypes.modifiers.NodeWithAccessModifiers;
 import com.github.javaparser.utils.SourceRoot;
 
+import io.github.masmangan.assis.deps.CollectDependenciesVisitor;
+import io.github.masmangan.assis.deps.DependenciesContext;
+import io.github.masmangan.assis.deps.DependencyContext;
+
 /**
  * Generates a PlantUML class diagram from one or more Java source roots.
  *
@@ -265,6 +269,31 @@ public class GenerateClassDiagram {
 
 			new CollectRelationshipsVisitor(idx, pw).emitAll();
 
+			DependencyContext context = new DependenciesContext(idx, pw);
+			CollectDependenciesVisitor dependenciesVisitor = new CollectDependenciesVisitor();
+
+			// includes tripwire for fqn and package naming schema diff
+			for (var entry : idx.fqnsByPkg.entrySet()) {
+				String pkgFromIndex = entry.getKey();
+				for (String fqnFromIndex : entry.getValue()) {
+					TypeDeclaration<?> td = idx.byFqn.get(fqnFromIndex);
+
+					String pkgDerived = DeclaredIndex.derivePkg(td);
+					String fqnDerived = DeclaredIndex.deriveFqnDollar(td);
+
+					if (!pkgFromIndex.equals(pkgDerived) || !fqnFromIndex.equals(fqnDerived)) {
+						throw new IllegalStateException("""
+								FQN mismatch!
+								index pkg=%s fqn=%s
+								derived pkg=%s fqn=%s
+								decl=%s
+								""".formatted(pkgFromIndex, fqnFromIndex, pkgDerived, fqnDerived, td));
+					}
+					if (DeclaredIndex.isTopLevel(td)) {
+						td.accept(dependenciesVisitor, context);
+					}
+				}
+			}
 			pw.println();
 
 			pw.endDiagram("class-diagram");

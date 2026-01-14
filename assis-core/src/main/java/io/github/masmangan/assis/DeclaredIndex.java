@@ -5,7 +5,9 @@
 
 package io.github.masmangan.assis;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -16,6 +18,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
@@ -23,7 +26,7 @@ import com.github.javaparser.ast.body.TypeDeclaration;
 /**
  * Index of declared types (top-level and nested).
  */
-class DeclaredIndex {
+public class DeclaredIndex {
 
 	/**
 	 * Logger used by index to warn about type redefinition.
@@ -130,6 +133,29 @@ class DeclaredIndex {
 		return uniqueBySimple.get(simple);
 	}
 
+	static String deriveFqnDollar(TypeDeclaration<?> td) {
+	  String pkg = derivePkg(td);
+	
+	  // walk up TypeDeclaration parents to build nested chain
+	  Deque<String> names = new ArrayDeque<>();
+	  Node cur = td;
+	  while (cur != null) {
+	    if (cur instanceof TypeDeclaration<?> t) {
+	      names.push(t.getNameAsString());
+	    }
+	    cur = cur.getParentNode().orElse(null);
+	  }
+	  String chain = String.join("$", names);
+	
+	  return pkg.isEmpty() ? chain : pkg + "." + chain;
+	}
+
+	static String derivePkg(TypeDeclaration<?> td) {
+	  return td.findCompilationUnit()
+	      .flatMap(cu -> cu.getPackageDeclaration().map(pd -> pd.getNameAsString()))
+	      .orElse(""); // default package
+	}
+
 	/**
 	 *
 	 * @param idx
@@ -201,5 +227,13 @@ class DeclaredIndex {
 	 */
 	static String qPuml(String fqn) {
 		return "\"" + pumlName(fqn) + "\"";
+	}
+	
+	
+	static boolean isTopLevel(TypeDeclaration<?> td) {
+		return td.getParentNode().isPresent()
+			    && td.getParentNode().get() instanceof com.github.javaparser.ast.CompilationUnit;
+
+
 	}
 }

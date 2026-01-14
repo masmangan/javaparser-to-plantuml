@@ -2,6 +2,8 @@ package io.github.masmangan.assis.deps;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -18,11 +20,19 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
+
+
 /**
  * 
  */
 public final class CollectDependenciesVisitor extends VoidVisitorAdapter<DependencyContext> {
 
+	/**
+	 * Logger used by the generator to report progress and parse/write issues.
+	 */
+	static final Logger logger = Logger.getLogger(CollectDependenciesVisitor.class.getName());
+
+	
 	/**
 	 * 
 	 */
@@ -32,6 +42,8 @@ public final class CollectDependenciesVisitor extends VoidVisitorAdapter<Depende
 
 	@Override
 	public void visit(ClassOrInterfaceDeclaration n, DependencyContext ctx) {
+		logger.log(Level.INFO, () -> "Collecting dependencies for " + n);
+
 		enter(n);
 		super.visit(n, ctx);
 		exit();

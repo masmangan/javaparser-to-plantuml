@@ -11,9 +11,6 @@ import com.github.javaparser.ast.type.Type;
  */
 public interface DependencyContext {
 
-	/* ===== owner tracking ===== */
-
-	TypeDeclaration<?> currentOwner();
 
 	/* ===== resolution ===== */
 
