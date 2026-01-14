@@ -97,16 +97,16 @@ public class GenerateClassDiagram {
 		Objects.requireNonNull(outDir, "outDir");
 
 		DeclaredIndex index = new DeclaredIndex();
-		List<CompilationUnit> cus = new ArrayList<>();
+		List<CompilationUnit> units = new ArrayList<>();
 
-		scanSourceRoots(sourceRoots, index, cus);
+		scanSourceRoots(sourceRoots, index, units);
 
 		logger.log(Level.FINE, () -> "**     byFqn    ** " + index.byFqn.toString());
 		logger.log(Level.FINE, () -> "**   fqnsByPkg  ** " + index.fqnsByPkg.toString());
 		logger.log(Level.FINE, () -> "**   pkgByFqn   ** " + index.pkgByFqn.toString());
 		logger.log(Level.FINE, () -> "**uniqueBySimple** " + index.uniqueBySimple.toString());
 
-		logger.log(Level.FINE, () -> "**      CUS     **" + cus.toString());
+		logger.log(Level.FINE, () -> "**      CUS     **" + units.toString());
 
 		Path dir = outDir.normalize();
 
@@ -134,11 +134,11 @@ public class GenerateClassDiagram {
 	 * @param sourceRoots one or more Java source roots; must not be {@code null}
 	 * @param index       index to be filled with compilation units scanned from
 	 *                    sources roots
-	 * @param cus         list of compilation units scanned
+	 * @param units         list of compilation units scanned
 	 * @throws IOException if an I/O error occurs while reading sources
 	 */
 	private static void scanSourceRoots(final Set<Path> sourceRoots, final DeclaredIndex index,
-			final List<CompilationUnit> cus) throws IOException {
+			final List<CompilationUnit> units) throws IOException {
 
 		final ParserConfiguration cfg = new ParserConfiguration()
 				.setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17)
@@ -166,16 +166,14 @@ public class GenerateClassDiagram {
 			List<ParseResult<CompilationUnit>> results = root.tryToParse("");
 
 			for (ParseResult<CompilationUnit> r : results) {
-				r.getResult().ifPresent(cu -> {
-					cus.add(cu);
-				});
+				r.getResult().ifPresent(units::add);
 			}
 
 		}
 
-		cus.sort(Comparator.comparing(cu -> cu.getStorage().map(s -> s.getPath().toString()).orElse("")));
+		units.sort(Comparator.comparing(unit -> unit.getStorage().map(s -> s.getPath().toString()).orElse("")));
 
-		DeclaredIndex.fill(index, cus);
+		DeclaredIndex.fill(index, units);
 	}
 
 	/**

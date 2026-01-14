@@ -62,15 +62,15 @@ public class DeclaredIndex {
 	/**
 	 * Populates idx with declared types from compilation units.
 	 *
-	 * @param cus
+	 * @param units
 	 * @return
 	 */
-	static void fill(DeclaredIndex idx, List<CompilationUnit> cus) {
+	static void fill(DeclaredIndex idx, List<CompilationUnit> units) {
 
-		for (CompilationUnit cu : cus) {
+		for (CompilationUnit unit : units) {
 
-			for (TypeDeclaration<?> td : cu.getTypes()) {
-				collectTypeRecursive(idx, cu, td, null, PACKAGE_SEPARATOR);
+			for (TypeDeclaration<?> td : unit.getTypes()) {
+				collectTypeRecursive(idx, unit, td, null, PACKAGE_SEPARATOR);
 			}
 		}
 
@@ -161,23 +161,23 @@ public class DeclaredIndex {
 	 * @return
 	 */
 	static String derivePkg(TypeDeclaration<?> td) {
-		return td.findCompilationUnit().flatMap(cu -> cu.getPackageDeclaration().map(pd -> pd.getNameAsString()))
+		return td.findCompilationUnit().flatMap(u -> u.getPackageDeclaration().map(pd -> pd.getNameAsString()))
 				.orElse(""); // default package
 	}
 
 	/**
 	 *
 	 * @param idx
-	 * @param cu
+	 * @param unit
 	 * @param td
 	 * @param ownerFqn
 	 * @param separator
 	 */
-	private static void collectTypeRecursive(DeclaredIndex idx, CompilationUnit cu, TypeDeclaration<?> td,
+	private static void collectTypeRecursive(DeclaredIndex idx, CompilationUnit unit, TypeDeclaration<?> td,
 			String ownerFqn, String separator) {
 		String name = td.getNameAsString();
 		String fqn;
-		String pkg = cu.getPackageDeclaration().map(pd -> pd.getNameAsString()).orElse("");
+		String pkg = unit.getPackageDeclaration().map(pd -> pd.getNameAsString()).orElse("");
 
 		if (ownerFqn == null) {
 			fqn = pkg.isEmpty() ? name : pkg + separator + name;
@@ -186,7 +186,7 @@ public class DeclaredIndex {
 		}
 		if (idx.byFqn.containsKey(fqn)) {
 			logger.log(Level.WARNING, () -> "Attempt to redefine " + fqn);
-			logger.log(Level.WARNING, cu::toString);
+			logger.log(Level.WARNING, unit::toString);
 			logger.log(Level.WARNING, td::toString);
 			logger.log(Level.WARNING, () -> "Keeping first definition.");
 			return;
@@ -198,13 +198,13 @@ public class DeclaredIndex {
 		if (td instanceof ClassOrInterfaceDeclaration cid) {
 			cid.getMembers().forEach(m -> {
 				if (m instanceof TypeDeclaration<?> nested) {
-					collectTypeRecursive(idx, cu, nested, fqn, "$");
+					collectTypeRecursive(idx, unit, nested, fqn, "$");
 				}
 			});
 		} else if (td instanceof EnumDeclaration ed) {
 			ed.getMembers().forEach(m -> {
 				if (m instanceof TypeDeclaration<?> nested) {
-					collectTypeRecursive(idx, cu, nested, fqn, "$");
+					collectTypeRecursive(idx, unit, nested, fqn, "$");
 				}
 			});
 		}
