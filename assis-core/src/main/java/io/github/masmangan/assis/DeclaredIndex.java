@@ -41,7 +41,7 @@ public class DeclaredIndex {
 	/** 
 	 * FQN → declaration 
 	 * */
-	final Map<String, TypeDeclaration<?>> byFqn = new LinkedHashMap<>();
+	public final Map<String, TypeDeclaration<?>> byFqn = new LinkedHashMap<>();
 
 	/** 
 	 * FQN → declared package (from CompilationUnit) 
@@ -133,7 +133,7 @@ public class DeclaredIndex {
 		return uniqueBySimple.get(simple);
 	}
 
-	static String deriveFqnDollar(TypeDeclaration<?> td) {
+	public static String deriveFqnDollar(TypeDeclaration<?> td) {
 	  String pkg = derivePkg(td);
 	
 	  // walk up TypeDeclaration parents to build nested chain
