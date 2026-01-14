@@ -244,8 +244,11 @@ public class DeclaredIndex {
 	 * @return
 	 */
 	static boolean isTopLevel(TypeDeclaration<?> td) {
-		return td.getParentNode().isPresent()
-				&& td.getParentNode().get() instanceof com.github.javaparser.ast.CompilationUnit;
-
+		if (td.getParentNode().isEmpty()) {
+			// or is it true?
+			return false;
+		}
+		return td.getParentNode().get() instanceof com.github.javaparser.ast.CompilationUnit;
 	}
+	
 }
