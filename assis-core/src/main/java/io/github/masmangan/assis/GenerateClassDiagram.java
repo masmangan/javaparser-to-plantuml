@@ -31,7 +31,6 @@ import com.github.javaparser.ast.nodeTypes.modifiers.NodeWithAccessModifiers;
 import com.github.javaparser.utils.SourceRoot;
 
 import io.github.masmangan.assis.deps.CollectDependenciesVisitor;
-import io.github.masmangan.assis.deps.DependenciesContext;
 import io.github.masmangan.assis.deps.DependencyContext;
 
 /**
@@ -167,14 +166,7 @@ public class GenerateClassDiagram {
 			List<ParseResult<CompilationUnit>> results = root.tryToParse("");
 
 			for (ParseResult<CompilationUnit> r : results) {
-
 				r.getResult().ifPresent(cu -> {
-					// MEMORY: Stripping no structural data to save memory space: method body
-					cu.findAll(com.github.javaparser.ast.body.MethodDeclaration.class).forEach(m -> m.removeBody());
-					// MEMORY: Stripping no structural data to save memory space: constructor body
-					cu.findAll(com.github.javaparser.ast.body.ConstructorDeclaration.class)
-							.forEach(c -> c.getBody().getStatements().clear());
-
 					cus.add(cu);
 				});
 			}
@@ -269,7 +261,7 @@ public class GenerateClassDiagram {
 
 			new CollectRelationshipsVisitor(idx, pw).emitAll();
 
-			DependencyContext context = new DependenciesContext(idx, pw);
+			DependencyContext context = new DependencyContext(idx, pw);
 			CollectDependenciesVisitor dependenciesVisitor = new CollectDependenciesVisitor();
 
 			// includes tripwire for fqn and package naming schema diff
