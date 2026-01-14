@@ -36,20 +36,21 @@ public class DependencyContext {
 		logger.log(Level.INFO, () -> "Resolving target" + typeNode);
 
 		if (!(typeNode instanceof ClassOrInterfaceType cit)) {
-	        return Optional.empty();
-	    }
+			return Optional.empty();
+		}
 
-	    String simpleName = cit.getNameAsString();
+		String simpleName = cit.getNameAsString();
 
-	    // ask the index for a declared type with this simple name
-	    //Optional<TypeDeclaration<?>> decl = idx.findBySimpleName(simpleName, usageSite);
-	    TypeDeclaration<?> td = idx.byFqn.get(simpleName);
-	    if (td == null)
-	        return Optional.of(new ExternalTypeRef(simpleName));
-	    else
-	    return Optional.of(new DeclaredTypeRef(td));
+		// ask the index for a declared type with this simple name
+		// Optional<TypeDeclaration<?>> decl = idx.findBySimpleName(simpleName,
+		// usageSite);
+		TypeDeclaration<?> td = idx.byFqn.get(simpleName);
+		if (td == null) {
+			return Optional.of(new ExternalTypeRef(simpleName));
+		} else {
+			return Optional.of(new DeclaredTypeRef(td));
+		}
 	}
-
 
 	public Optional<TypeRef> resolveScopeName(String simpleName, Node usageSite) {
 		// TODO Auto-generated method stub
@@ -67,7 +68,7 @@ public class DependencyContext {
 		if (to instanceof DeclaredTypeRef dtr) {
 			toFqn = DeclaredIndex.deriveFqnDollar(dtr.declaration());
 		}
-  
+
 		pw.connectDepends(fromFqn, toFqn);
 		deps.add(new DepKey(from, to));
 
