@@ -100,8 +100,15 @@ public class DeclaredIndex {
 				idx.uniqueBySimple.put(e.getKey(), e.getValue());
 			}
 		}
+		
+		  for (String fqnDollar : idx.byFqn.keySet()) {
+			    String alias = fqnDollar.replace('$', '.'); // ONLY $ -> .
+			    idx.dollarByDotNested.put(alias, fqnDollar);
+			  }
+		  
 
 	}
+	final Map<String, String> dollarByDotNested = new LinkedHashMap<>();
 
 	/**
 	 *
@@ -222,31 +229,11 @@ public class DeclaredIndex {
 
 	/**
 	 *
-	 * @param fqn
-	 * @return
-	 */
-	static String pumlName(String fqn) {
-		return fqn;
-	}
-
-	/**
-	 *
-	 * @param fqn
-	 * @return
-	 */
-	static String qPuml(String fqn) {
-		return "\"" + pumlName(fqn) + "\"";
-	}
-
-	/**
-	 *
 	 * @param td
 	 * @return
 	 */
 	static boolean isTopLevel(TypeDeclaration<?> td) {
-		return td.getParentNode()
-				  .map(p -> p instanceof CompilationUnit)
-				  .orElse(false);
+		return td.getParentNode().map(CompilationUnit.class::isInstance).orElse(false);
 	}
-	
+
 }
