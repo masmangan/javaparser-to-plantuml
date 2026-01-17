@@ -18,7 +18,7 @@ import io.github.masmangan.assis.PlantUMLWriter;
  *
  */
 public class DependencyContext {
-	
+
 	/**
 	 * Logger used by the generator to report progress and parse/write issues.
 	 */
@@ -62,8 +62,9 @@ public class DependencyContext {
 			return Optional.empty();
 		}
 
-		String simpleName = cit.getNameAsString();
+		// FIXME: Symbol Solver here...
 
+		String simpleName = cit.getNameAsString();
 		TypeDeclaration<?> td = idx.byFqn.get(simpleName);
 		if (td == null) {
 			return Optional.of(new ExternalTypeRef(simpleName));
