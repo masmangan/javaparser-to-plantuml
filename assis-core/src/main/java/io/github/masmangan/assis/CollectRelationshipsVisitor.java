@@ -5,6 +5,10 @@
 
 package io.github.masmangan.assis;
 
+import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
@@ -14,6 +18,9 @@ import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.resolution.UnsolvedSymbolException;
+import com.github.javaparser.resolution.types.ResolvedReferenceType;
+import com.github.javaparser.resolution.types.ResolvedType;
 
 /**
  * Emits PlantUML relationship edges for all declared types in a
@@ -44,6 +51,11 @@ import com.github.javaparser.ast.type.Type;
  *
  */
 class CollectRelationshipsVisitor {
+
+	/**
+	 * Logger used by the generator to report progress and parse/write issues.
+	 */
+	static final Logger logger = Logger.getLogger(CollectRelationshipsVisitor.class.getName());
 
 	/**
 	 *
@@ -263,9 +275,29 @@ class CollectRelationshipsVisitor {
 	 */
 	private void emitFieldAssociation(String pkg, String ownerFqn, FieldDeclaration fd) {
 		String st = GenerateClassDiagram.renderStereotypes(GenerateClassDiagram.stereotypesOf(fd));
+		String target = null;
 
 		for (VariableDeclarator vd : fd.getVariables()) {
-			String target = resolveAssocTarget(pkg, ownerFqn, vd.getType());
+			// Symbol solver
+			if (vd.getType().isClassOrInterfaceType()) {
+				ClassOrInterfaceType cit = vd.getType().asClassOrInterfaceType();
+				logger.log(Level.INFO, () -> "Trying to resolve type: " + cit);
+				try {
+					ResolvedType rt = cit.resolve();
+					logger.log(Level.INFO, () -> "ResolvedType.describe(): " + rt.describe());
+					if (rt.isReferenceType()) {
+						logger.log(Level.INFO, () -> "QualifiedName: " + rt.asReferenceType().getQualifiedName());
+						// FIXME: must get dot dollar name
+						target = rt.asReferenceType().getQualifiedName();
+					}
+				} catch (UnsolvedSymbolException e) {
+					logger.log(Level.INFO, () -> "UNSOLVED: " + e.getName());
+				}
+			} else {
+				target = resolveAssocTarget(pkg, ownerFqn, vd.getType());
+
+			}
+			//
 			if (target != null) {
 				emitAssociation(ownerFqn, target, vd.getNameAsString(), st);
 			}
@@ -325,6 +357,41 @@ class CollectRelationshipsVisitor {
 		return t.asString();
 	}
 
+	private Optional<String> debugResolve(Type type) {
+		try {
+			if (!(type instanceof ClassOrInterfaceType cit)) {
+				logger.fine(() -> "Skip non-reference type: " + type);
+				return Optional.empty();
+			}
+
+			ResolvedType rt = cit.resolve();
+			logger.info(() -> "Resolved '" + cit + "' -> " + rt.describe());
+
+			if (!rt.isReferenceType()) {
+				logger.fine(() -> "Not a reference type: " + rt);
+				return Optional.empty();
+			}
+
+			ResolvedReferenceType rrt = rt.asReferenceType();
+			String qname = rrt.getQualifiedName(); // dot form
+			logger.info(() -> "Qualified name: " + qname);
+
+			return Optional.of(qname);
+
+		} catch (UnsolvedSymbolException e) {
+			logger.info(() -> "Unsolved symbol: " + e.getName());
+			return Optional.empty();
+
+		} catch (IllegalStateException e) {
+			logger.info(() -> "SymbolSolver not configured at node");
+			return Optional.empty();
+
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Unexpected resolution error", e);
+			return Optional.empty();
+		}
+	}
+
 	/**
 	 *
 	 * @param pkg
@@ -333,6 +400,13 @@ class CollectRelationshipsVisitor {
 	 * @return
 	 */
 	private String resolveAssocTarget(String pkg, String ownerFqn, Type type) {
+		// FIXME: solving type
+		logger.log(Level.INFO, () -> "Type: " + type.toString());
+		Optional<String> op = debugResolve(type);
+
+		logger.log(Level.INFO, () -> "Name: " + op.orElse("NOPE"));
+
+		//
 		String raw = rawNameOf(type);
 		String target = idx.resolveTypeName(pkg, raw);
 		if (target == null || target.equals(ownerFqn)) {
