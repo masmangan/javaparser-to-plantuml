@@ -26,12 +26,10 @@ class GenerateClassDiagramDepByMethodBodyTest {
 		assertPumlContainsName(puml, "A");
 		assertPumlContainsName(puml, "B");
 		assertAnyLineContainsAll(puml, "A", "..>", "B");
-		
+
 		// adding package p1 gives a more challenging sample
 		// assertAnyLineContainsAll(puml, "p1.A", "..>", "p1.B");
 
 	}
-
-
 
 }
