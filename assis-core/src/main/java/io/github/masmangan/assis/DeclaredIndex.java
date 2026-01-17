@@ -100,14 +100,14 @@ public class DeclaredIndex {
 				idx.uniqueBySimple.put(e.getKey(), e.getValue());
 			}
 		}
-		
-		  for (String fqnDollar : idx.byFqn.keySet()) {
-			    String alias = fqnDollar.replace('$', '.'); // ONLY $ -> .
-			    idx.dollarByDotNested.put(alias, fqnDollar);
-			  }
-		  
+
+		for (String fqnDollar : idx.byFqn.keySet()) {
+			String alias = fqnDollar.replace('$', '.'); // ONLY $ -> .
+			idx.dollarByDotNested.put(alias, fqnDollar);
+		}
 
 	}
+
 	final Map<String, String> dollarByDotNested = new LinkedHashMap<>();
 
 	/**
