@@ -151,37 +151,35 @@ class PlantUMLWriterTest {
 
 	@Test
 	void associationWithRoleAndTag() {
-	    StringWriter sw = new StringWriter();
+		StringWriter sw = new StringWriter();
 
-	    try (PlantUMLWriter w = new PlantUMLWriter(new PrintWriter(sw))) {
-	        w.withBeforeTag("T",
-	            () -> w.connectAssociation("A", "B", "r", "")
-	        );
-	    } catch (Exception e) {
-	        fail(e);
-	    }
+		try (PlantUMLWriter w = new PlantUMLWriter(new PrintWriter(sw))) {
+			w.withBeforeTag("T", () -> w.connectAssociation("A", "B", "r", ""));
+		} catch (Exception e) {
+			fail(e);
+		}
 
-	    String expected = """
-	            /' T "A" ---> "r" "B" '/
-	            """;
+		String expected = """
+				/' T "A" ---> "r" "B" '/
+				""";
 
-	    assertEquals(expected, sw.toString());
+		assertEquals(expected, sw.toString());
 	}
-	
+
 	@Test
 	void dependency() {
-	    StringWriter sw = new StringWriter();
+		StringWriter sw = new StringWriter();
 
-	    try (PlantUMLWriter w = new PlantUMLWriter(new PrintWriter(sw))) {
-	             w.connectDepends("A", "B");	
-	    } catch (Exception e) {
-	        fail(e);
-	    }
+		try (PlantUMLWriter w = new PlantUMLWriter(new PrintWriter(sw))) {
+			w.connectDepends("A", "B");
+		} catch (Exception e) {
+			fail(e);
+		}
 
-	    String expected = """
-	            "A" ..> "B"
-	            """;
+		String expected = """
+				"A" ..> "B"
+				""";
 
-	    assertEquals(expected, sw.toString());
+		assertEquals(expected, sw.toString());
 	}
 }
