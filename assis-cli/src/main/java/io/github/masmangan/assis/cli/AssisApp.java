@@ -114,7 +114,7 @@ public final class AssisApp {
 	 * 
 	 */
 	private static void logVersion() {
-		LOG.log(Level.INFO, () -> "ASSIS " + io.github.masmangan.assis.GenerateClassDiagram.versionOrDev());
+		LOG.log(Level.INFO, () -> "ASSIS " + io.github.masmangan.assis.AssisInfo.versionOrDev());
 
 		// JavaParser version
 		LOG.log(Level.INFO, () -> "JavaParser: " + mavenPomVersion("com.github.javaparser", "javaparser-core"));
