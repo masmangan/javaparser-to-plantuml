@@ -3,57 +3,71 @@
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  */
 
-package io.github.masmangan.assis.utils;
+package io.github.masmangan.assis.io;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ast.CompilationUnit;
 
+/**
+ * Scans a set of Java source root directories.
+ *
+ * <p>
+ * Uses one {@link SmartSourceRoot} per directory.
+ *
+ * @see SmartSourceRoot
+ */
 public class SmartSourceRootManager {
-	/**
-	 * Logger used by the generator to report progress and parse/write issues.
-	 */
-	static final Logger logger = Logger.getLogger(SmartSourceRootManager.class.getName());
+
+	private static final Logger logger = Logger.getLogger(SmartSourceRootManager.class.getName());
 
 	/**
-	 * Scans directories on sourceRoots.
+	 * Scans the given Java source root directories and parses all {@code .java}
+	 * files found.
 	 *
 	 * <p>
-	 * Best effort scanning will discard invalid and proceed with a simple warning.
-	 * This behavior can scan a large mass of files even in the presence of partial
-	 * failure.
+	 * This is a best-effort scan: missing directories are skipped with a warning.
+	 * 
+	 * Roots that yield no compilation units also log a warning.
 	 *
-	 * @param sourceRoots one or more Java source roots; must not be {@code null}
-	 * @param index       index to be filled with compilation units scanned from
-	 *                    sources roots
-	 * @param units       list of compilation units scanned
-	 * @throws IOException if an I/O error occurs while reading sources
+	 * <p>
+	 * Scan order is deterministic: roots are processed in lexicographic order of
+	 * their paths. The returned compilation units are sorted by their storage path.
+	 *
+	 * Returned compilation units are sorted by declared package and type names
+	 * (file system paths are intentionally ignored).
+	 *
+	 * @param sourceRoots one or more Java source root directories; must not be
+	 *                    {@code null} or empty
+	 * @return compilation units successfully parsed from all roots
+	 * @throws IOException if an I/O error occurs while scanning or parsing
 	 */
 	public static List<CompilationUnit> autoscan(Set<Path> sourceRoots) throws IOException {
-		Objects.requireNonNull(sourceRoots, "sourceRoots");
+		checkSourceRoot(sourceRoots);
 
 		List<CompilationUnit> units = new ArrayList<>();
 
 		logger.log(Level.INFO, () -> "Scanning started");
 
-		List<Path> roots = sourceRoots.stream().sorted(Comparator.comparing(Path::toString)).toList();
-
-		for (Path src : roots) {
+		for (Path src : sortRootsByPath(sourceRoots)) {
 
 			logger.log(Level.INFO, () -> "Scanning " + src);
 
 			if (!Files.exists(src)) {
-				logger.log(Level.WARNING, () -> "@assis:bogus-src: Source folder does not exist: " + src);
+				logger.log(Level.WARNING, () -> "Source folder does not exist: " + src);
 				continue;
 			}
 
@@ -61,15 +75,71 @@ public class SmartSourceRootManager {
 
 			List<ParseResult<CompilationUnit>> results = root.tryToParse("");
 
+			int addedFromThisRoot = 0;
 			for (ParseResult<CompilationUnit> r : results) {
-				r.getResult().ifPresent(units::add);
+				if (r.getResult().isPresent()) {
+					units.add(r.getResult().get());
+					addedFromThisRoot++;
+				}
 			}
 
+			if (addedFromThisRoot == 0) {
+				logger.log(Level.WARNING, () -> "Source folder yields no compilation units: " + src);
+			}
 		}
 
-		units.sort(Comparator.comparing(unit -> unit.getStorage().map(s -> s.getPath().toString()).orElse("")));
+		warnOnPrimaryTypeCollisions(units);
 
+		sortUnitsByPackage(units);
 		return units;
+	}
+
+	private static void warnOnPrimaryTypeCollisions(List<CompilationUnit> units) {
+		// key: declared package + primary type name
+		Map<String, List<String>> occurrences = new HashMap<>();
+
+		for (CompilationUnit u : units) {
+			String pkg = u.getPackageDeclaration().map(pd -> pd.getNameAsString()).orElse("");
+			String primary = u.getPrimaryTypeName().orElse("<no-primary-type>");
+			String key = pkg.isEmpty() ? primary : (pkg + "." + primary);
+
+			String where = u.getStorage().map(s -> s.getPath().toString()).orElse("<no-storage>");
+
+			occurrences.computeIfAbsent(key, k -> new ArrayList<>()).add(where);
+		}
+
+		for (Map.Entry<String, List<String>> e : occurrences.entrySet()) {
+			List<String> whereList = e.getValue();
+			if (whereList.size() > 1) {
+				String locations = whereList.stream().distinct().sorted().collect(Collectors.joining(", "));
+
+				logger.log(Level.WARNING, () -> "Duplicate primary type detected for \"" + e.getKey()
+						+ "\" across multiple compilation units; results may be inconsistent. Files: " + locations);
+			}
+		}
+	}
+
+	private static void sortUnitsByPackage(List<CompilationUnit> units) {
+		// replacing units.sort(Comparator.comparing(unit -> unit.getStorage().map(s ->
+		// s.getPath().toString()).orElse("")));
+		Comparator<CompilationUnit> bySemanticIdentity = Comparator
+				.comparing((CompilationUnit u) -> u.getPackageDeclaration().map(pd -> pd.getNameAsString()).orElse(""))
+				.thenComparing(u -> u.getPrimaryTypeName().orElse("")).thenComparing(
+						u -> u.getTypes().stream().map(t -> t.getNameAsString()).sorted().reduce("", String::concat));
+
+		units.sort(bySemanticIdentity);
+	}
+
+	private static List<Path> sortRootsByPath(Set<Path> sourceRoots) {
+		List<Path> roots = sourceRoots.stream().sorted(Comparator.comparing(Path::toString)).toList();
+		return roots;
+	}
+
+	private static void checkSourceRoot(Set<Path> sourceRoots) {
+		Objects.requireNonNull(sourceRoots, "sourceRoots");
+		if (sourceRoots.isEmpty()) {
+			throw new IllegalArgumentException("sourceRoots is empty.");
+		}
 	}
 
 }
