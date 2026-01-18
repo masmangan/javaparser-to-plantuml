@@ -21,7 +21,7 @@ import io.github.masmangan.assis.io.PlantUMLWriter;
  *
  */
 public final class ClassDiagramGeneration {
-	static final Logger logger = Logger.getLogger(GenerateClassDiagram.class.getName());
+	private static final Logger logger = Logger.getLogger(GenerateClassDiagram.class.getName());
 
 	private final Path out;
 	private final DeclaredIndex idx;

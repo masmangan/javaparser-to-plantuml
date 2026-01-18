@@ -51,7 +51,7 @@ public class GenerateClassDiagram {
 	/**
 	 * Logger used by the generator to report progress and parse/write issues.
 	 */
-	static final Logger logger = Logger.getLogger(GenerateClassDiagram.class.getName());
+	private static final Logger logger = Logger.getLogger(GenerateClassDiagram.class.getName());
 
 	/**
 	 * No constructor available.

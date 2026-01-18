@@ -63,7 +63,7 @@ import io.github.masmangan.assis.io.PlantUMLWriter;
  */
 class CollectTypesVisitor {
 
-	static final Logger logger = Logger.getLogger(CollectTypesVisitor.class.getName());
+	private static final Logger logger = Logger.getLogger(CollectTypesVisitor.class.getName());
 
 	/**
 	 *
