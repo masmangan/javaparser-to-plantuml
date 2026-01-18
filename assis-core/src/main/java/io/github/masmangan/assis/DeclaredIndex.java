@@ -31,7 +31,7 @@ public class DeclaredIndex {
 	/**
 	 * Logger used by index to warn about type redefinition.
 	 */
-	static final Logger logger = Logger.getLogger(DeclaredIndex.class.getName());
+	private static final Logger logger = Logger.getLogger(DeclaredIndex.class.getName());
 
 	/**
 	 *
@@ -46,7 +46,7 @@ public class DeclaredIndex {
 	/**
 	 * FQN → declared package (from CompilationUnit)
 	 */
-	final Map<String, String> pkgByFqn = new LinkedHashMap<>();
+	private final Map<String, String> pkgByFqn = new LinkedHashMap<>();
 
 	/**
 	 * package → list of FQNs
@@ -57,7 +57,7 @@ public class DeclaredIndex {
 	 * simple name → unique FQN (only when unambiguous)
 	 *
 	 */
-	final Map<String, String> uniqueBySimple = new LinkedHashMap<>();
+	private final Map<String, String> uniqueBySimple = new LinkedHashMap<>();
 
 	/**
 	 * Populates idx with declared types from compilation units.
@@ -68,7 +68,6 @@ public class DeclaredIndex {
 	void fill(List<CompilationUnit> units) {
 
 		for (CompilationUnit unit : units) {
-
 			for (TypeDeclaration<?> td : unit.getTypes()) {
 				collectTypeRecursive(unit, td, null, PACKAGE_SEPARATOR);
 			}
@@ -108,7 +107,7 @@ public class DeclaredIndex {
 
 	}
 
-	final Map<String, String> dollarByDotNested = new LinkedHashMap<>();
+	private final Map<String, String> dollarByDotNested = new LinkedHashMap<>();
 
 	/**
 	 *
@@ -221,7 +220,7 @@ public class DeclaredIndex {
 	 * @param byPkg
 	 * @return
 	 */
-	static Map<String, List<String>> sortPackagesByNameFqn(Map<String, List<String>> byPkg) {
+	private static Map<String, List<String>> sortPackagesByNameFqn(Map<String, List<String>> byPkg) {
 		return byPkg.entrySet().stream().sorted(Map.Entry.comparingByKey())
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, LinkedHashMap::new));
 	}
