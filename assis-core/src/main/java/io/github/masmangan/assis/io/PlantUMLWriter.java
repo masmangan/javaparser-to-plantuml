@@ -3,7 +3,7 @@
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  */
 
-package io.github.masmangan.assis;
+package io.github.masmangan.assis.io;
 
 import java.io.PrintWriter;
 import java.util.Objects;

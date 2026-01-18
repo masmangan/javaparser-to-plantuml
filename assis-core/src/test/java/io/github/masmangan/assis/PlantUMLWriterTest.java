@@ -8,6 +8,8 @@ import java.io.StringWriter;
 
 import org.junit.jupiter.api.Test;
 
+import io.github.masmangan.assis.io.PlantUMLWriter;
+
 class PlantUMLWriterTest {
 
 	@Test
