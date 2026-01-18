@@ -40,7 +40,7 @@ public class SmartSourceRootManager {
 	 *
 	 * <p>
 	 * This is a best-effort scan: missing directories are skipped with a warning.
-	 * 
+	 *
 	 * Roots that yield no compilation units also log a warning.
 	 *
 	 * <p>

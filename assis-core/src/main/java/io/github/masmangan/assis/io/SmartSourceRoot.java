@@ -74,17 +74,17 @@ public class SmartSourceRoot extends SourceRoot {
 	 * discovering package roots.
 	 *
 	 * Planned direction:
-	 * 
+	 *
 	 * - Walk the file system under a project root and detect one or more package
 	 * roots (possibly across multiple modules).
-	 * 
+	 *
 	 * - Configure a type solver per discovered package root (or otherwise model
 	 * module boundaries) rather than assuming a single solver rooted at {@code
 	 * rootPath}.
-	 * 
+	 *
 	 * - Keep the "unparsed types remain unresolved" rule unless/until the system is
 	 * updated to accept reflection-based resolution.
-	 * 
+	 *
 	 * This is a deliberate but fragile use of SourceRoot, chosen to avoid
 	 * duplicating logic while the behavior remains stable.
 	 */
