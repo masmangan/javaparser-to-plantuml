@@ -47,9 +47,6 @@ import com.github.javaparser.resolution.types.ResolvedType;
  * decision is made by resolving the declared type name using
  * {@link DeclaredIndex#resolveTypeName(String, String)}.
  */
-/**
- *
- */
 class CollectRelationshipsVisitor {
 
 	/**
