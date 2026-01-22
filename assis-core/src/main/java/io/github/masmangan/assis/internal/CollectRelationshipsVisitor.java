@@ -167,10 +167,8 @@ class CollectRelationshipsVisitor {
 		String raw = DeclaredIndex.simpleName(nameWithScope);
 		String target = idx.resolveTypeName(pkg, raw);
 		if (target != null) {
-			// emit active implements to a know type
 			pw.connectImplements(subFqn, target);
 		} else {
-			// emit commented out, tagged implements for user review
 			pw.withBeforeTag("@assis:cherry-pick ghost", () -> pw.connectImplements(subFqn, nameWithScope));
 		}
 	}
@@ -186,10 +184,8 @@ class CollectRelationshipsVisitor {
 		String raw = DeclaredIndex.simpleName(nameWithScope);
 		String target = idx.resolveTypeName(pkg, raw);
 		if (target != null) {
-			// emit active extends to a know type
 			pw.connectExtends(subFqn, target);
 		} else {
-			// emit commented out, tagged extends for user review
 			pw.withBeforeTag("@assis:cherry-pick ghost", () -> pw.connectExtends(subFqn, nameWithScope));
 		}
 	}
@@ -205,6 +201,7 @@ class CollectRelationshipsVisitor {
 	 */
 	private void emitAssociation(String ownerFqn, String targetFqn, String role, String stereotypes) {
 		pw.connectAssociation(ownerFqn, targetFqn, role, stereotypes);
+		// log here!
 	}
 
 	/**
@@ -261,6 +258,7 @@ class CollectRelationshipsVisitor {
 					if (rt.isReferenceType()) {
 						logger.log(Level.INFO, () -> "QualifiedName: " + rt.asReferenceType().getQualifiedName());
 						// FIXME: must get dot dollar name
+						/// 
 						target = rt.asReferenceType().getQualifiedName();
 					}
 				} catch (UnsolvedSymbolException e) {

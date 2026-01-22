@@ -483,7 +483,7 @@ class CollectTypesVisitor {
 	 */
 	private String assocTypeFrom(String ownerFqn, VariableDeclarator vd) {
 		String raw = DeclaredIndex.rawTypeName(vd.getType().asString());
-		// DeclaredIndex resolveAssocTarget
+		// FIXME: DeclaredIndex resolveAssocTarget
 
 		String resolved = idx.resolveTypeName(pkg, raw);
 		if ((resolved == null) || resolved.equals(ownerFqn)) {

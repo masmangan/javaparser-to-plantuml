@@ -13,8 +13,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -44,8 +42,8 @@ public class SmartSourceRootManager {
 	 * Roots that yield no compilation units also log a warning.
 	 *
 	 * <p>
-	 * Scan order is deterministic: roots are processed in lexicographic order of
-	 * their paths. The returned compilation units are sorted by their storage path.
+	 * Scan order is deterministic. Callers are expected to supply
+	 * {@code sourceRoots} in normalized, lexicographically sorted order
 	 *
 	 * Returned compilation units are sorted by declared package and type names
 	 * (file system paths are intentionally ignored).
@@ -55,14 +53,14 @@ public class SmartSourceRootManager {
 	 * @return compilation units successfully parsed from all roots
 	 * @throws IOException if an I/O error occurs while scanning or parsing
 	 */
-	public static List<CompilationUnit> autoscan(Set<Path> sourceRoots) throws IOException {
-		checkSourceRoots(sourceRoots);
+	public static List<CompilationUnit> autoscan(List<Path> sourceRoots) throws IOException {
+		// checkSourceRoots(sourceRoots);
 
 		List<CompilationUnit> units = new ArrayList<>();
 
 		logger.log(Level.INFO, () -> "Scanning started");
 
-		for (Path src : sortRootsByPath(sourceRoots)) {
+		for (Path src : sourceRoots) {
 
 			logger.log(Level.INFO, () -> "Scanning " + src);
 
@@ -128,18 +126,6 @@ public class SmartSourceRootManager {
 						u -> u.getTypes().stream().map(t -> t.getNameAsString()).sorted().reduce("", String::concat));
 
 		units.sort(bySemanticIdentity);
-	}
-
-	private static List<Path> sortRootsByPath(Set<Path> sourceRoots) {
-		List<Path> roots = sourceRoots.stream().sorted(Comparator.comparing(Path::toString)).toList();
-		return roots;
-	}
-
-	private static void checkSourceRoots(Set<Path> sourceRoots) {
-		Objects.requireNonNull(sourceRoots, "sourceRoots");
-		if (sourceRoots.isEmpty()) {
-			throw new IllegalArgumentException("sourceRoots is empty.");
-		}
 	}
 
 }

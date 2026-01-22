@@ -102,9 +102,7 @@ final class CollectDependenciesVisitor extends VoidVisitorAdapter<DependencyCont
 	public void visit(MethodDeclaration md, DependencyContext ctx) {
 		logger.log(Level.INFO, () -> "Collecting dependencies for " + md);
 		super.visit(md, ctx);
-		// Return type dependency (skip void)
 		if (!md.getType().isVoidType()) {
-			// FIXME: why not collect here?
 			ctx.resolveTarget(md.getType(), md).ifPresent(to -> collect(owner(), to, ctx));
 		}
 	}
@@ -173,11 +171,6 @@ final class CollectDependenciesVisitor extends VoidVisitorAdapter<DependencyCont
 	 * @param ctx
 	 */
 	private void collect(TypeDeclaration<?> from, TypeRef to, DependencyContext ctx) {
-		// TODO: no self deps
-		if (ctx.hasDependency(from, to) || from.getFullyQualifiedName().equals(to.displayName())) {
-			return;
-		}
-
 		if (to instanceof DeclaredTypeRef) {
 			ctx.addDependency(from, to);
 		} else {

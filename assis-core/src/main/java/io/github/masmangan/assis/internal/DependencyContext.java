@@ -128,8 +128,6 @@ class DependencyContext {
 		if (to instanceof DeclaredTypeRef dtr) {
 			toFqn = DeclaredIndex.deriveFqnDollar(dtr.declaration());
 		}
-
-		// no self deps
 		if (fromFqn.equals(toFqn)) {
 			return;
 		}
@@ -150,7 +148,6 @@ class DependencyContext {
 		} else {
 			toFqn = to.displayName();
 		}
-		// no self deps
 		if (fromFqn.equals(toFqn)) {
 			return;
 		}

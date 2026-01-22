@@ -18,51 +18,52 @@ import io.github.masmangan.assis.GenerateClassDiagram;
 import io.github.masmangan.assis.io.PlantUMLWriter;
 
 /**
+ * Controls the process of a class diagram generation. *
+ * <p>
+ * This process emits:
+ * <ol>
+ * <li>Diagram start and header</li>
+ * <li>Packages and types</li>
+ * <li>Structural relationships (inheritance, nesting, association)
+ * <li>Uses relationships (dependency)</li>
+ * <li>Diagram end</li>
+ * </ol>
+ *
+ * <p>
+ * The output file is written using UTF-8.
  *
  */
 public final class ClassDiagramGeneration {
+
 	private static final Logger logger = Logger.getLogger(GenerateClassDiagram.class.getName());
 
-	private final Path out;
+	private final Path outFile;
+
 	private final DeclaredIndex idx;
 
 	/**
+	 * Generation will output a file from an index of parsed types.
 	 *
-	 * @param out
-	 * @param idx
+	 * @param outFile output file path; must not be {@code null}
+	 * @param idx     index containing declared types and package grouping; must not
+	 *                be {@code null}
 	 */
-	public ClassDiagramGeneration(Path out, DeclaredIndex idx) {
+	public ClassDiagramGeneration(final Path outFile, final DeclaredIndex idx) {
 		super();
-		this.out = out;
+		this.outFile = outFile;
 		this.idx = idx;
 	}
 
 	/**
 	 * Writes the PlantUML diagram to a file.
 	 *
-	 * <p>
-	 * This method emits:
-	 * <ol>
-	 * <li>Diagram start and header</li>
-	 * <li>Packages and types</li>
-	 * <li>Relationships (inheritance, nesting, associations)</li>
-	 * <li>Layout directives</li>
-	 * <li>Diagram end</li>
-	 * </ol>
-	 *
-	 * <p>
-	 * The output is written using UTF-8.
-	 *
-	 * @param out output file path; must not be {@code null}
-	 * @param idx index containing declared types and package grouping; must not be
-	 *            {@code null}
 	 * @throws IOException
 	 */
 	public void run() throws IOException {
 		// Order matters: emit types first so later relations can refer to them
 		// Stronger relations first, then dependencies
 		try (PlantUMLWriter pw = new PlantUMLWriter(
-				new PrintWriter(Files.newBufferedWriter(out, StandardCharsets.UTF_8)));) {
+				new PrintWriter(Files.newBufferedWriter(outFile, StandardCharsets.UTF_8)));) {
 			pw.beginDiagram("class-diagram");
 
 			writeHeader(pw);
@@ -85,20 +86,6 @@ public final class ClassDiagramGeneration {
 		}
 	}
 
-	/**
-	 * Writes common PlantUML directives used by ASSIS diagrams.
-	 *
-	 * <p>
-	 * Current directives include:
-	 * <ul>
-	 * <li>{@code hide empty members}</li>
-	 * <li>{@code !theme blueprint}</li>
-	 * <li>{@code !pragma useIntermediatePackages false}</li>
-	 * </ul>
-	 *
-	 * @param pw writer to receive directives; must not be {@code null}
-	 * @throws NullPointerException if {@code pw} is {@code null}
-	 */
 	private static void writeHeader(final PlantUMLWriter pw) {
 		pw.println();
 		pw.println("mainframe class diagram (cd)");
@@ -115,11 +102,6 @@ public final class ClassDiagramGeneration {
 		pw.println();
 	}
 
-	/**
-	 *
-	 * @param idx
-	 * @param pw
-	 */
 	private void writeTypes(PlantUMLWriter pw) {
 		for (var pkg : idx.packagesInIndexOrder()) {
 			if (!pkg.isEmpty()) {
@@ -136,20 +118,10 @@ public final class ClassDiagramGeneration {
 		}
 	}
 
-	/**
-	 *
-	 * @param idx
-	 * @param pw
-	 */
 	private void writeStructuralRelations(PlantUMLWriter pw) {
 		new CollectRelationshipsVisitor(idx, pw).emitAll();
 	}
 
-	/**
-	 *
-	 * @param idx
-	 * @param pw
-	 */
 	private void writeDependencies(PlantUMLWriter pw) {
 		DependencyContext context = new DependencyContext(idx, pw);
 		CollectDependenciesVisitor dependenciesVisitor = new CollectDependenciesVisitor();

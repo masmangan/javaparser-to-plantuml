@@ -75,8 +75,6 @@ public class DeclaredIndex {
 	 */
 	private final Map<String, String> uniqueBySimple = new LinkedHashMap<>();
 
-	// private final Map<String, String> dollarByDotNested = new LinkedHashMap<>();
-
 	/**
 	 *
 	 */
@@ -127,11 +125,6 @@ public class DeclaredIndex {
 				uniqueBySimple.put(e.getKey(), e.getValue());
 			}
 		}
-
-		// for (String fqnDollar : byFqn.keySet()) {
-		// String alias = fqnDollar.replace('$', '.'); // ONLY $ -> .
-		// dollarByDotNested.put(alias, fqnDollar);
-		// }
 
 	}
 
@@ -224,7 +217,6 @@ public class DeclaredIndex {
 	static String deriveFqnDollar(TypeDeclaration<?> td) {
 		String pkg = derivePkg(td);
 
-		// walk up TypeDeclaration parents to build nested chain
 		Deque<String> names = new ArrayDeque<>();
 		Node cur = td;
 		while (cur != null) {
@@ -245,7 +237,7 @@ public class DeclaredIndex {
 	 */
 	static String derivePkg(TypeDeclaration<?> td) {
 		return td.findCompilationUnit().flatMap(u -> u.getPackageDeclaration().map(pd -> pd.getNameAsString()))
-				.orElse(""); // default package
+				.orElse(""); 
 	}
 
 	/**
