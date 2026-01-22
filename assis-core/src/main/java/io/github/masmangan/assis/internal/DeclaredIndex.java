@@ -237,7 +237,7 @@ public class DeclaredIndex {
 	 */
 	static String derivePkg(TypeDeclaration<?> td) {
 		return td.findCompilationUnit().flatMap(u -> u.getPackageDeclaration().map(pd -> pd.getNameAsString()))
-				.orElse(""); 
+				.orElse("");
 	}
 
 	/**
