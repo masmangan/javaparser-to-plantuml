@@ -21,17 +21,17 @@ import io.github.masmangan.assis.GenerateClassDiagram;
 public final class AssisApp {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final String MAVEN_POM_PROPS = "META-INF/maven/%s/%s/pom.properties";
 
 	/**
-	 * 
+	 *
 	 */
 	private static final String VERSION_UNKNOWN = "unknown";
 
 	/**
-	 * 
+	 *
 	 */
 	private static final Logger LOG = Logger.getLogger(AssisApp.class.getName());
 
@@ -64,7 +64,7 @@ public final class AssisApp {
 		try {
 			cli = CliArgs.parse(args);
 		} catch (IllegalArgumentException e) {
-			LOG.log(Level.SEVERE, e::getMessage);
+			LOG.log(Level.SEVERE, "Exception after parse: " + e.getMessage());
 			return 1;
 		}
 
@@ -82,7 +82,7 @@ public final class AssisApp {
 		try {
 			sourceRoots = SourceLocator.resolve(cli.sourceRoots);
 		} catch (Exception e) {
-			LOG.log(Level.SEVERE, e::getMessage);
+			LOG.log(Level.SEVERE, "Exception after resolve: " + e.getMessage());
 			return 2;
 		}
 
@@ -105,13 +105,13 @@ public final class AssisApp {
 
 			return 0;
 		} catch (Exception e) {
-			LOG.log(Level.SEVERE, e::getMessage);
+			LOG.log(Level.SEVERE, "Exception during generation: " + e.getMessage());
 			return 3;
 		}
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	private static void logVersion() {
 		LOG.log(Level.INFO, () -> "ASSIS " + io.github.masmangan.assis.AssisInfo.versionOrDev());
@@ -138,7 +138,7 @@ public final class AssisApp {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param groupId
 	 * @param artifactId
 	 * @return
