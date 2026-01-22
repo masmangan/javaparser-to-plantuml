@@ -171,6 +171,9 @@ final class CollectDependenciesVisitor extends VoidVisitorAdapter<DependencyCont
 	 * @param ctx
 	 */
 	private void collect(TypeDeclaration<?> from, TypeRef to, DependencyContext ctx) {
+		if (ctx.hasDependency(from, to)) {
+			return;
+		}
 		if (to instanceof DeclaredTypeRef) {
 			ctx.addDependency(from, to);
 		} else {
