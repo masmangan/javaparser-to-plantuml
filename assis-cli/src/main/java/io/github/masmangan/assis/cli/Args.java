@@ -16,14 +16,14 @@ import java.util.Set;
 final class CliArgs {
 
 	/**
-	 * 
+	 *
 	 */
 	enum Mode {
 		RUN, HELP, VERSION
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	final Mode mode;
 
@@ -39,7 +39,7 @@ final class CliArgs {
 	final Path outDir;
 
 	/**
-	 * 
+	 *
 	 * @param mode
 	 * @param sourceRoots
 	 * @param outDir
@@ -95,7 +95,7 @@ final class CliArgs {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param args
 	 * @param outDir
 	 * @param i
@@ -112,7 +112,7 @@ final class CliArgs {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param args
 	 * @param i
 	 * @param a
@@ -124,7 +124,7 @@ final class CliArgs {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param a
 	 * @return
 	 */
@@ -133,7 +133,7 @@ final class CliArgs {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param a
 	 * @return
 	 */
@@ -142,7 +142,7 @@ final class CliArgs {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param a
 	 * @return
 	 */
@@ -151,7 +151,7 @@ final class CliArgs {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param a
 	 * @return
 	 */
@@ -160,7 +160,7 @@ final class CliArgs {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param raw
 	 * @return
 	 */
@@ -188,7 +188,7 @@ final class CliArgs {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param args
 	 * @param i
 	 * @param opt
@@ -224,7 +224,7 @@ final class CliArgs {
 			""";
 
 	/**
-	 * 
+	 *
 	 */
 	private CliArgs() {
 		throw new AssertionError();
