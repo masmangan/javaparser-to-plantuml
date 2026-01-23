@@ -39,7 +39,8 @@ import io.github.masmangan.assis.util.DeterministicPathList;
  * This source root installs a fixed {@link JavaSymbolSolver} backed by a
  * {@link JavaParserTypeSolver} rooted at {@code rootPath}. The configuration is
  * locked after construction because other parts of the system rely on a stable
- * "unparsed types remain unresolved" rule (i.e., no {@code ReflectionTypeSolver}).
+ * "unparsed types remain unresolved" rule (i.e., no
+ * {@code ReflectionTypeSolver}).
  */
 public class SmartSourceRoot extends SourceRoot {
 
@@ -47,17 +48,19 @@ public class SmartSourceRoot extends SourceRoot {
 	private boolean locked = false;
 
 	/**
-	 * Directory names skipped during traversal (VCS metadata, build output, IDE caches).
+	 * Directory names skipped during traversal (VCS metadata, build output, IDE
+	 * caches).
 	 */
-	public static final Set<String> SKIP_DIR_NAMES = Set.of(".git", ".idea", ".gradle", ".mvn", "target", "build", "out",
-			"node_modules");
+	public static final Set<String> SKIP_DIR_NAMES = Set.of(".git", ".idea", ".gradle", ".mvn", "target", "build",
+			"out", "node_modules");
 
 	public SmartSourceRoot(Path root) {
 		super(root);
 		this.rootPath = root;
 
 		CombinedTypeSolver ts = new CombinedTypeSolver();
-		// Intentionally source-only: unparsed types remain unresolved (no ReflectionTypeSolver).
+		// Intentionally source-only: unparsed types remain unresolved (no
+		// ReflectionTypeSolver).
 		ts.add(new JavaParserTypeSolver(root));
 
 		JavaSymbolSolver jss = new JavaSymbolSolver(ts);
@@ -73,9 +76,12 @@ public class SmartSourceRoot extends SourceRoot {
 	 * {@inheritDoc}
 	 *
 	 * This implementation differs from {@link SourceRoot} by:
-	 * - Deterministic file discovery order (D1) via {@link DeterministicFileTreeWalker}
-	 * - Traversing directories whose names are not valid Java identifiers
-	 * - Skipping hidden directories and common tool directories
+	 * <ul>
+	 * <li>Deterministic file discovery order (D1) via
+	 * {@link DeterministicFileTreeWalker}
+	 * <li>Traversing directories whose names are not valid Java identifiers
+	 * <li>Skipping hidden directories and common tool directories
+	 * </ul>
 	 */
 	@Override
 	public List<ParseResult<CompilationUnit>> tryToParse(String startPackage) throws IOException {
@@ -108,24 +114,24 @@ public class SmartSourceRoot extends SourceRoot {
 	 * @param startPath directory where traversal started for this call
 	 */
 	private boolean shouldVisitDirectory(Path dir, Path startPath) {
-	    String name = (dir.getFileName() == null) ? "" : dir.getFileName().toString();
+		String name = (dir.getFileName() == null) ? "" : dir.getFileName().toString();
 
-	    try {
-	        if (!dir.equals(startPath) && Files.isHidden(dir)) {
-	            Log.trace("Not processing directory \"%s\"", () -> name);
-	            return false;
-	        }
-	    } catch (IOException e) {
-	        // Best effort: if we cannot determine, do not skip
-	        Log.trace("Could not determine if directory is hidden: \"%s\"", () -> name);
-	    }
+		try {
+			if (!dir.equals(startPath) && Files.isHidden(dir)) {
+				Log.trace("Not processing directory \"%s\"", () -> name);
+				return false;
+			}
+		} catch (IOException e) {
+			// Best effort: if we cannot determine, do not skip
+			Log.trace("Could not determine if directory is hidden: \"%s\"", () -> name);
+		}
 
-	    if (SKIP_DIR_NAMES.contains(name)) {
-	        Log.trace("Skipping directory \"%s\"", () -> name);
-	        return false;
-	    }
+		if (SKIP_DIR_NAMES.contains(name)) {
+			Log.trace("Skipping directory \"%s\"", () -> name);
+			return false;
+		}
 
-	    return true;
+		return true;
 	}
 
 	/**

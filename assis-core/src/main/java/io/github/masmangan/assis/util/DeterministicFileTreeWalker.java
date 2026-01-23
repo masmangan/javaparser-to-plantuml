@@ -5,8 +5,6 @@
 
 package io.github.masmangan.assis.util;
 
-
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,11 +20,11 @@ import java.util.stream.Collectors;
 /**
  * Deterministic traversal of one or more roots.
  *
- * Contract:
- * - Deterministic: same filesystem snapshot + same roots => same result order
- * - Stable: ties are broken deterministically
- * - Pre-order: directories are visited before their children
- * - Directory children order: directories first, then files; both sorted by name; tie-break by absolute path
+ * Contract: - Deterministic: same filesystem snapshot + same roots => same
+ * result order - Stable: ties are broken deterministically - Pre-order:
+ * directories are visited before their children - Directory children order:
+ * directories first, then files; both sorted by name; tie-break by absolute
+ * path
  */
 public final class DeterministicFileTreeWalker {
 
@@ -44,7 +42,8 @@ public final class DeterministicFileTreeWalker {
 	 * Discovers .java files under the given roots in a deterministic order.
 	 *
 	 * @param roots          source roots (files or directories)
-	 * @param shouldVisitDir predicate to decide whether to traverse into a directory
+	 * @param shouldVisitDir predicate to decide whether to traverse into a
+	 *                       directory
 	 */
 	public static DeterministicPathList discoverJavaFiles(Set<Path> roots, Predicate<Path> shouldVisitDir)
 			throws IOException {
@@ -69,10 +68,12 @@ public final class DeterministicFileTreeWalker {
 	}
 
 	/**
-	 * Discovers directories and files under the given roots in a deterministic order.
+	 * Discovers directories and files under the given roots in a deterministic
+	 * order.
 	 *
 	 * @param roots          source roots (files or directories)
-	 * @param shouldVisitDir predicate to decide whether to traverse into a directory
+	 * @param shouldVisitDir predicate to decide whether to traverse into a
+	 *                       directory
 	 */
 	public static List<Entry> discoverAllEntries(Set<Path> roots, Predicate<Path> shouldVisitDir) throws IOException {
 		Objects.requireNonNull(shouldVisitDir, "shouldVisitDir");
@@ -127,9 +128,8 @@ public final class DeterministicFileTreeWalker {
 
 	private static List<Path> sortedChildren(Path dir) throws IOException {
 		try (var stream = Files.list(dir)) {
-			return stream.map(p -> new Child(p, Files.isDirectory(p), fileName(p), absNorm(p)))
-					.sorted(Comparator.comparingInt((Child c) -> c.isDir ? 0 : 1).thenComparing(c -> c.name)
-							.thenComparing(c -> c.abs))
+			return stream.map(p -> new Child(p, Files.isDirectory(p), fileName(p), absNorm(p))).sorted(Comparator
+					.comparingInt((Child c) -> c.isDir ? 0 : 1).thenComparing(c -> c.name).thenComparing(c -> c.abs))
 					.map(Child::path).collect(Collectors.toList());
 		}
 	}

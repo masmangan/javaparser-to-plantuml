@@ -40,10 +40,10 @@ public final class DeterministicPathList implements Iterable<Path> {
 		return new DeterministicPathList(sortRootsByPath(sourceRoots));
 	}
 
-    public static DeterministicPathList of(List<Path> paths) {
-        return new DeterministicPathList(paths == null ? List.of() : paths);
-    }
-    
+	public static DeterministicPathList of(List<Path> paths) {
+		return new DeterministicPathList(paths == null ? List.of() : paths);
+	}
+
 	@Override
 	public Iterator<Path> iterator() {
 		return paths.iterator();
