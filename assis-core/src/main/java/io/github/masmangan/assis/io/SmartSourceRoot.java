@@ -20,6 +20,7 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import com.github.javaparser.utils.Log;
 import com.github.javaparser.utils.SourceRoot;
 
@@ -61,7 +62,9 @@ public class SmartSourceRoot extends SourceRoot {
 		CombinedTypeSolver ts = new CombinedTypeSolver();
 		// Intentionally source-only: unparsed types remain unresolved (no
 		// ReflectionTypeSolver).
+		
 		ts.add(new JavaParserTypeSolver(root));
+		ts.add(new ReflectionTypeSolver());
 
 		JavaSymbolSolver jss = new JavaSymbolSolver(ts);
 
