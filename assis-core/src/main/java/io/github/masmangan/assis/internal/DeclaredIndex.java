@@ -28,9 +28,11 @@ import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 import com.github.javaparser.ast.nodeTypes.modifiers.NodeWithAccessModifiers;
+import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.resolution.UnsolvedSymbolException;
+import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.github.javaparser.resolution.types.ResolvedType;
 
@@ -128,6 +130,50 @@ public class DeclaredIndex {
 
 	}
 
+	/**
+	 *
+	 * @param idx
+	 * @param unit
+	 * @param td
+	 * @param ownerFqn
+	 * @param separator
+	 */
+	private void collectTypeRecursive(CompilationUnit unit, TypeDeclaration<?> td, String ownerFqn, String separator) {
+		String name = td.getNameAsString();
+		String fqn;
+		String pkg = unit.getPackageDeclaration().map(pd -> pd.getNameAsString()).orElse("");
+
+		if (ownerFqn == null) {
+			fqn = pkg.isEmpty() ? name : pkg + separator + name;
+		} else {
+			fqn = ownerFqn + separator + name;
+		}
+		if (byFqn.containsKey(fqn)) {
+			logger.log(Level.WARNING, () -> "Attempt to redefine " + fqn);
+			logger.log(Level.WARNING, unit::toString);
+			logger.log(Level.WARNING, td::toString);
+			logger.log(Level.WARNING, () -> "Keeping first definition.");
+			return;
+		}
+
+		byFqn.put(fqn, td);
+		pkgByFqn.put(fqn, pkg);
+
+		if (td instanceof ClassOrInterfaceDeclaration cid) {
+			cid.getMembers().forEach(m -> {
+				if (m instanceof TypeDeclaration<?> nested) {
+					collectTypeRecursive(unit, nested, fqn, "$");
+				}
+			});
+		} else if (td instanceof EnumDeclaration ed) {
+			ed.getMembers().forEach(m -> {
+				if (m instanceof TypeDeclaration<?> nested) {
+					collectTypeRecursive(unit, nested, fqn, "$");
+				}
+			});
+		}
+	}
+
 	public Iterable<String> fqnsInIndexOrder() {
 		return Collections.unmodifiableSet(byFqn.keySet());
 	}
@@ -179,6 +225,87 @@ public class DeclaredIndex {
 		return Collections.unmodifiableList(out);
 	}
 
+	public Optional<TypeRef> resolveTarget(Type typeNode, Node usageSite) {
+		logger.log(Level.FINE, () -> "Resolving target: " + typeNode);
+
+		// If you want arrays like Foo[] to count as dependency on Foo:
+		if (typeNode instanceof ArrayType at) {
+			return resolveTarget(at.getComponentType(), usageSite);
+		}
+
+		if (!(typeNode instanceof ClassOrInterfaceType cit)) {
+			return Optional.empty();
+		}
+
+		logger.log(Level.FINE, () -> "Trying to resolve type: " + cit);
+
+		// 1) Prefer SymbolSolver
+		try {
+			ResolvedType rt = cit.resolve();
+			logger.log(Level.FINER, () -> "ResolvedType.describe(): " + rt.describe());
+
+			if (rt.isReferenceType()) {
+				ResolvedReferenceType rrt = rt.asReferenceType();
+
+				// 1a) If solver can give us the declaring AST node, prefer that
+				try {
+					Optional<ResolvedReferenceTypeDeclaration> optRtd = rrt.getTypeDeclaration();
+					if (optRtd.isPresent()) {
+						ResolvedReferenceTypeDeclaration rtd = optRtd.get();
+
+						Optional<Node> astNode = rtd.toAst();
+						if (astNode.isPresent() && astNode.get() instanceof TypeDeclaration<?> td) {
+							String fqnDollar = DeclaredIndex.deriveFqnDollar(td);
+
+							TypeDeclaration<?> indexed = getByFqn(fqnDollar);
+							if (indexed != null) {
+								return Optional.of(new DeclaredTypeRef(indexed));
+							}
+						}
+					}
+
+				} catch (RuntimeException ex) {
+					// Some solvers/declarations may throw UnsupportedOperationException, etc.
+					logger.log(Level.FINER,
+							() -> "TypeDeclaration/toAst not available: " + ex.getClass().getSimpleName());
+				}
+
+				// 1b) Otherwise, use solver’s qualified name (dot form)
+				try {
+					String qualifiedName = rrt.getQualifiedName();
+					logger.log(Level.FINER, () -> "QualifiedName: " + qualifiedName);
+
+					// If your index expects $ for nested, you may want a normalizer.
+					// But staying “less design change”: just try both if you can.
+					TypeDeclaration<?> td = getByFqn(qualifiedName);
+					if (td != null) {
+						return Optional.of(new DeclaredTypeRef(td));
+					}
+					return Optional.of(new ExternalTypeRef(qualifiedName));
+				} catch (RuntimeException ex) {
+					logger.log(Level.FINER, () -> "Could not read qualified name: " + ex.getClass().getSimpleName());
+					// fall through to textual fallback below
+				}
+			}
+		} catch (UnsolvedSymbolException e) {
+			logger.log(Level.FINE, () -> "UNSOLVED: " + e.getName());
+		} catch (RuntimeException e) {
+			// Keep best-effort behavior (SymbolSolver sometimes throws other runtime
+			// exceptions)
+			logger.log(Level.FINER, () -> "Resolve failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+		}
+
+		// 2) Best-effort textual fallback (ghost/external)
+		// getNameWithScope keeps Outer.Inner if present in source, which is better than
+		// simple name.
+		String fallbackName = cit.getNameWithScope();
+		TypeDeclaration<?> td = getByFqn(fallbackName);
+		if (td != null) {
+			return Optional.of(new DeclaredTypeRef(td));
+		}
+		return Optional.of(new ExternalTypeRef(fallbackName));
+	}
+
 	/**
 	 *
 	 * @param ownerPkg
@@ -211,6 +338,29 @@ public class DeclaredIndex {
 
 	/**
 	 *
+	 * @param pkg
+	 * @param ownerFqn
+	 * @param type
+	 * @return
+	 */
+	String resolveAssocTarget(String pkg, String ownerFqn, Type type) {
+		// FIXME: solving type
+		logger.log(Level.INFO, () -> "Type: " + type.toString());
+		Optional<String> op = DeclaredIndex.debugResolve(type);
+
+		logger.log(Level.INFO, () -> "Name: " + op.orElse("NOPE"));
+
+		//
+		String raw = DeclaredIndex.rawNameOf(type);
+		String target = resolveTypeName(pkg, raw);
+		if (target == null || target.equals(ownerFqn)) {
+			return null;
+		}
+		return target;
+	}
+
+	/**
+	 *
 	 * @param td
 	 * @return
 	 */
@@ -238,50 +388,6 @@ public class DeclaredIndex {
 	static String derivePkg(TypeDeclaration<?> td) {
 		return td.findCompilationUnit().flatMap(u -> u.getPackageDeclaration().map(pd -> pd.getNameAsString()))
 				.orElse("");
-	}
-
-	/**
-	 *
-	 * @param idx
-	 * @param unit
-	 * @param td
-	 * @param ownerFqn
-	 * @param separator
-	 */
-	private void collectTypeRecursive(CompilationUnit unit, TypeDeclaration<?> td, String ownerFqn, String separator) {
-		String name = td.getNameAsString();
-		String fqn;
-		String pkg = unit.getPackageDeclaration().map(pd -> pd.getNameAsString()).orElse("");
-
-		if (ownerFqn == null) {
-			fqn = pkg.isEmpty() ? name : pkg + separator + name;
-		} else {
-			fqn = ownerFqn + separator + name;
-		}
-		if (byFqn.containsKey(fqn)) {
-			logger.log(Level.WARNING, () -> "Attempt to redefine " + fqn);
-			logger.log(Level.WARNING, unit::toString);
-			logger.log(Level.WARNING, td::toString);
-			logger.log(Level.WARNING, () -> "Keeping first definition.");
-			return;
-		}
-
-		byFqn.put(fqn, td);
-		pkgByFqn.put(fqn, pkg);
-
-		if (td instanceof ClassOrInterfaceDeclaration cid) {
-			cid.getMembers().forEach(m -> {
-				if (m instanceof TypeDeclaration<?> nested) {
-					collectTypeRecursive(unit, nested, fqn, "$");
-				}
-			});
-		} else if (td instanceof EnumDeclaration ed) {
-			ed.getMembers().forEach(m -> {
-				if (m instanceof TypeDeclaration<?> nested) {
-					collectTypeRecursive(unit, nested, fqn, "$");
-				}
-			});
-		}
 	}
 
 	/**
@@ -423,6 +529,7 @@ public class DeclaredIndex {
 
 	// Old GenerateClassDiagram helpers
 	//
+
 	/**
 	 * Converts a JavaParser access specifier to PlantUML visibility notation.
 	 *
@@ -513,29 +620,6 @@ public class DeclaredIndex {
 			s = s.substring(lt + 1);
 		}
 		return s;
-	}
-
-	/**
-	 *
-	 * @param pkg
-	 * @param ownerFqn
-	 * @param type
-	 * @return
-	 */
-	String resolveAssocTarget(String pkg, String ownerFqn, Type type) {
-		// FIXME: solving type
-		logger.log(Level.INFO, () -> "Type: " + type.toString());
-		Optional<String> op = DeclaredIndex.debugResolve(type);
-
-		logger.log(Level.INFO, () -> "Name: " + op.orElse("NOPE"));
-
-		//
-		String raw = DeclaredIndex.rawNameOf(type);
-		String target = resolveTypeName(pkg, raw);
-		if (target == null || target.equals(ownerFqn)) {
-			return null;
-		}
-		return target;
 	}
 
 }

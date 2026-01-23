@@ -5,6 +5,7 @@
 
 package io.github.masmangan.assis.internal;
 
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,10 +17,9 @@ import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.github.javaparser.resolution.UnsolvedSymbolException;
-import com.github.javaparser.resolution.types.ResolvedType;
 
 import io.github.masmangan.assis.io.PlantUMLWriter;
+
 
 /**
  * Emits PlantUML relationship edges for all declared types in a
@@ -245,29 +245,41 @@ class CollectRelationshipsVisitor {
 	 */
 	private void emitFieldAssociation(String pkg, String ownerFqn, FieldDeclaration fd) {
 		String st = DeclaredIndex.renderStereotypes(DeclaredIndex.stereotypesOf(fd));
-		String target = null;
 
 		for (VariableDeclarator vd : fd.getVariables()) {
-			// Symbol solver
-			if (vd.getType().isClassOrInterfaceType()) {
-				ClassOrInterfaceType cit = vd.getType().asClassOrInterfaceType();
-				logger.log(Level.INFO, () -> "Trying to resolve type: " + cit);
-				try {
-					ResolvedType rt = cit.resolve();
-					logger.log(Level.INFO, () -> "ResolvedType.describe(): " + rt.describe());
-					if (rt.isReferenceType()) {
-						logger.log(Level.INFO, () -> "QualifiedName: " + rt.asReferenceType().getQualifiedName());
-						// FIXME: must get dot dollar name
-						///
-						target = rt.asReferenceType().getQualifiedName();
-					}
-				} catch (UnsolvedSymbolException e) {
-					logger.log(Level.INFO, () -> "UNSOLVED: " + e.getName());
+			String target = null;
+
+			// Reuse the central resolver (SymbolSolver + Index authority)
+			Optional<TypeRef> tr = idx.resolveTarget(vd.getType(), vd); // usageSite can be vd or fd
+			logger.log(Level.INFO, () -> "Trying to resolve type: " + tr);
+
+			if (tr.isPresent()) {
+				TypeRef ref = tr.get();
+				logger.log(Level.INFO, () -> "Type is present: " + ref);
+
+				if (ref instanceof DeclaredTypeRef dtr) {
+					// Prefer canonical $-fqn derived from AST declaration
+					String fqnDollar = DeclaredIndex.deriveFqnDollar(dtr.declaration());
+					target = fqnDollar;
+				} else if (ref instanceof ExternalTypeRef etr) {
+					logger.log(Level.INFO, () -> "External: " + etr);
+
+					target = etr.fqn(); // or etr.displayName()/name() depending on your API
+					// Wait, no association for externals, field emitted earlier!
+					return;
+				} else {
+					logger.log(Level.INFO, () -> "Unresolved: " + ref);
+
+					// UnresolvedTypeRef or others: keep it ghosted (or ignore) depending on your
+					// policy
+					target = ref.displayName();
 				}
 			} else {
+				// Non-reference types might come here (primitives, etc.)
+				// If you still want previous behavior, keep your old fallback:
 				target = idx.resolveAssocTarget(pkg, ownerFqn, vd.getType());
-
 			}
+			// idx.resolveAssocTarget() decides if we emit field or association!
 			//
 			if (target != null) {
 				emitAssociation(ownerFqn, target, vd.getNameAsString(), st);
