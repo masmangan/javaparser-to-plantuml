@@ -252,6 +252,40 @@ public class DeclaredIndex {
 
 		logger.log(Level.INFO, () -> "Trying to resolve type: " + cit);
 
+		Optional<TypeRef> solved = tryResolveWithSolver(cit);
+		if (solved.isPresent()) {
+			return solved;
+		}
+		
+		// 2) Best-effort textual fallback (ghost/external)
+		// getNameWithScope keeps Outer.Inner if present in source, which is better than
+		// simple name.
+		logger.log(Level.INFO, () -> "Textual: " + cit.getNameWithScope());
+
+		// FIXME: ii) What about getQualifiedName()?
+		String fallbackName = cit.getNameWithScope();
+		TypeDeclaration<?> td = getByFqn(fallbackName);
+		if (td != null) {
+			logger.log(Level.SEVERE, () -> "QualifiedName dot-dot succeeded on index (2): " + fallbackName);
+
+			return Optional.of(new DeclaredTypeRef(td));
+		}
+		logger.log(Level.INFO, () -> "UNSOLVED: " + cit.getNameWithScope());
+
+		return Optional.of(new UnresolvedTypeRef(fallbackName));
+
+		//
+		// String raw = cit.getNameAsString(); // simple name
+		// TypeDeclaration<?> declared = resolveDeclaredByContext(raw, usageSite); //
+		// NEW
+		// if (declared != null) return Optional.of(new DeclaredTypeRef(declared));
+
+		// if name in code was qualified, keep it
+		// String textual = cit.getNameWithScope();
+		// return Optional.of(new ExternalTypeRef(textual));
+	}
+
+	private Optional<TypeRef> tryResolveWithSolver(ClassOrInterfaceType cit) {
 		// 1) Prefer SymbolSolver
 		try {
 			ResolvedType rt = cit.resolve();
@@ -310,33 +344,7 @@ public class DeclaredIndex {
 			// exceptions)
 			logger.log(Level.INFO, () -> "Resolve failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
 		}
-
-		// 2) Best-effort textual fallback (ghost/external)
-		// getNameWithScope keeps Outer.Inner if present in source, which is better than
-		// simple name.
-		logger.log(Level.INFO, () -> "Textual: " + cit.getNameWithScope());
-
-		// FIXME: ii) What about getQualifiedName()?
-		String fallbackName = cit.getNameWithScope();
-		TypeDeclaration<?> td = getByFqn(fallbackName);
-		if (td != null) {
-			logger.log(Level.SEVERE, () -> "QualifiedName dot-dot succeeded on index (2): " + fallbackName);
-
-			return Optional.of(new DeclaredTypeRef(td));
-		}
-		logger.log(Level.INFO, () -> "UNSOLVED: " + cit.getNameWithScope());
-
-		return Optional.of(new UnresolvedTypeRef(fallbackName));
-
-		//
-		// String raw = cit.getNameAsString(); // simple name
-		// TypeDeclaration<?> declared = resolveDeclaredByContext(raw, usageSite); //
-		// NEW
-		// if (declared != null) return Optional.of(new DeclaredTypeRef(declared));
-
-		// if name in code was qualified, keep it
-		// String textual = cit.getNameWithScope();
-		// return Optional.of(new ExternalTypeRef(textual));
+		return Optional.empty();
 	}
 
 	/**
