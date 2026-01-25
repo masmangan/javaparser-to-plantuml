@@ -47,6 +47,8 @@ import io.github.masmangan.assis.io.PlantUMLWriter;
  */
 class CollectRelationshipsVisitor {
 
+	private static final String ASSIS_CHERRY_PICK_GHOST = "@assis:cherry-pick ghost";
+
 	private static final Logger logger = Logger.getLogger(CollectRelationshipsVisitor.class.getName());
 
 	private final DeclaredIndex idx;
@@ -144,11 +146,11 @@ class CollectRelationshipsVisitor {
 				return;
 			}
 
-			pw.withBeforeTag("@assis:cherry-pick ghost", () -> pw.connectImplements(subFqn, ref.displayName()));
+			pw.withBeforeTag(ASSIS_CHERRY_PICK_GHOST, () -> pw.connectImplements(subFqn, ref.displayName()));
 			return;
 		}
 
-		pw.withBeforeTag("@assis:cherry-pick ghost", () -> pw.connectImplements(subFqn, impl.getNameWithScope()));
+		pw.withBeforeTag(ASSIS_CHERRY_PICK_GHOST, () -> pw.connectImplements(subFqn, impl.getNameWithScope()));
 	}
 
 	private void emitExtends(ClassOrInterfaceDeclaration cid, ClassOrInterfaceType ext) {
@@ -177,13 +179,13 @@ class CollectRelationshipsVisitor {
 			logger.log(Level.INFO, () -> "Unresolved: " + ref.displayName());
 
 			// Unresolved (or other TypeRef): ghost
-			pw.withBeforeTag("@assis:cherry-pick ghost", () -> pw.connectExtends(subFqn, ref.displayName()));
+			pw.withBeforeTag(ASSIS_CHERRY_PICK_GHOST, () -> pw.connectExtends(subFqn, ref.displayName()));
 			return;
 		}
 		logger.log(Level.INFO, () -> "Fallback: " + ext.getNameWithScope());
 
 		// Fallback (should be rare for extends)
-		pw.withBeforeTag("@assis:cherry-pick ghost", () -> pw.connectExtends(subFqn, ext.getNameWithScope()));
+		pw.withBeforeTag(ASSIS_CHERRY_PICK_GHOST, () -> pw.connectExtends(subFqn, ext.getNameWithScope()));
 	}
 
 	/**
