@@ -31,6 +31,8 @@ import com.github.javaparser.ast.nodeTypes.modifiers.NodeWithAccessModifiers;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.ast.type.TypeParameter;
+import com.github.javaparser.ast.type.WildcardType;
 import com.github.javaparser.resolution.UnsolvedSymbolException;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
@@ -226,23 +228,34 @@ public class DeclaredIndex {
 	}
 
 	public Optional<TypeRef> resolveTarget(Type typeNode, Node usageSite) {
-		logger.log(Level.FINE, () -> "Resolving target: " + typeNode);
+		logger.log(Level.INFO, () -> "Resolving target: " + typeNode);
 
 		// If you want arrays like Foo[] to count as dependency on Foo:
 		if (typeNode instanceof ArrayType at) {
 			return resolveTarget(at.getComponentType(), usageSite);
 		}
 
+		// FIXME: i) What about enumerations?
+		if (typeNode instanceof TypeParameter tp) {
+			// resolve its first bound if present
+			if (!tp.getTypeBound().isEmpty()) {
+				return resolveTarget(tp.getTypeBound().get(0), usageSite);
+			}
+			return Optional.empty();
+		}
+		if (typeNode instanceof WildcardType wt) {
+			return wt.getExtendedType().map(t -> resolveTarget(t, usageSite)).orElse(Optional.empty());
+		}
 		if (!(typeNode instanceof ClassOrInterfaceType cit)) {
 			return Optional.empty();
 		}
 
-		logger.log(Level.FINE, () -> "Trying to resolve type: " + cit);
+		logger.log(Level.INFO, () -> "Trying to resolve type: " + cit);
 
 		// 1) Prefer SymbolSolver
 		try {
 			ResolvedType rt = cit.resolve();
-			logger.log(Level.FINER, () -> "ResolvedType.describe(): " + rt.describe());
+			logger.log(Level.INFO, () -> "ResolvedType.describe(): " + rt.describe());
 
 			if (rt.isReferenceType()) {
 				ResolvedReferenceType rrt = rt.asReferenceType();
@@ -266,14 +279,14 @@ public class DeclaredIndex {
 
 				} catch (RuntimeException ex) {
 					// Some solvers/declarations may throw UnsupportedOperationException, etc.
-					logger.log(Level.FINER,
+					logger.log(Level.INFO,
 							() -> "TypeDeclaration/toAst not available: " + ex.getClass().getSimpleName());
 				}
 
 				// 1b) Otherwise, use solver’s qualified name (dot form)
 				try {
 					String qualifiedName = rrt.getQualifiedName();
-					logger.log(Level.FINER, () -> "QualifiedName: " + qualifiedName);
+					logger.log(Level.INFO, () -> "QualifiedName: " + qualifiedName);
 
 					// If your index expects $ for nested, you may want a normalizer.
 					// But staying “less design change”: just try both if you can.
@@ -283,27 +296,40 @@ public class DeclaredIndex {
 					}
 					return Optional.of(new ExternalTypeRef(qualifiedName));
 				} catch (RuntimeException ex) {
-					logger.log(Level.FINER, () -> "Could not read qualified name: " + ex.getClass().getSimpleName());
+					logger.log(Level.INFO, () -> "Could not read qualified name: " + ex.getClass().getSimpleName());
 					// fall through to textual fallback below
 				}
 			}
 		} catch (UnsolvedSymbolException e) {
-			logger.log(Level.FINE, () -> "UNSOLVED: " + e.getName());
+			logger.log(Level.INFO, () -> "UNSOLVED: " + e.getName());
 		} catch (RuntimeException e) {
 			// Keep best-effort behavior (SymbolSolver sometimes throws other runtime
 			// exceptions)
-			logger.log(Level.FINER, () -> "Resolve failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+			logger.log(Level.INFO, () -> "Resolve failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
 		}
 
 		// 2) Best-effort textual fallback (ghost/external)
 		// getNameWithScope keeps Outer.Inner if present in source, which is better than
 		// simple name.
+		logger.log(Level.INFO, () -> "Textual: " + cit.getNameWithScope());
+
+		// FIXME: ii) What about getQualifiedName()?
 		String fallbackName = cit.getNameWithScope();
 		TypeDeclaration<?> td = getByFqn(fallbackName);
 		if (td != null) {
 			return Optional.of(new DeclaredTypeRef(td));
 		}
 		return Optional.of(new ExternalTypeRef(fallbackName));
+
+		//
+		// String raw = cit.getNameAsString(); // simple name
+		// TypeDeclaration<?> declared = resolveDeclaredByContext(raw, usageSite); //
+		// NEW
+		// if (declared != null) return Optional.of(new DeclaredTypeRef(declared));
+
+		// if name in code was qualified, keep it
+		// String textual = cit.getNameWithScope();
+		// return Optional.of(new ExternalTypeRef(textual));
 	}
 
 	/**

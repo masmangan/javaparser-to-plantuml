@@ -47,25 +47,12 @@ import io.github.masmangan.assis.io.PlantUMLWriter;
  */
 class CollectRelationshipsVisitor {
 
-	/**
-	 * Logger used by the generator to report progress and parse/write issues.
-	 */
 	private static final Logger logger = Logger.getLogger(CollectRelationshipsVisitor.class.getName());
 
-	/**
-	 *
-	 */
 	private final DeclaredIndex idx;
 
-	/**
-	 *
-	 */
 	private final PlantUMLWriter pw;
 
-	/**
-	 *
-	 * @param idx
-	 */
 	CollectRelationshipsVisitor(final DeclaredIndex idx, final PlantUMLWriter pw) {
 		this.idx = idx;
 		this.pw = pw;
@@ -90,9 +77,6 @@ class CollectRelationshipsVisitor {
 		emitAssociationRelations();
 	}
 
-	/**
-	 *
-	 */
 	private void emitAssociationRelations() {
 		for (var td : idx.typesInIndexOrder()) {
 			String pkg = DeclaredIndex.derivePkg(td);
@@ -101,19 +85,12 @@ class CollectRelationshipsVisitor {
 		}
 	}
 
-	/**
-	 *
-	 */
 	private void emitInnerClassRelations() {
 		for (String fqn : idx.fqnsInIndexOrder()) {
 			emitInnerTypes(fqn);
 		}
 	}
 
-	/**
-	 *
-	 * @param fqn
-	 */
 	private void emitInnerTypes(String fqn) {
 		String ownerFqn = DeclaredIndex.ownerFqnOf(fqn);
 		if (ownerFqn != null && idx.containsFqn(ownerFqn)) {
@@ -121,24 +98,13 @@ class CollectRelationshipsVisitor {
 		}
 	}
 
-	/**
-	 *
-	 */
 	private void emitInheritanceRelations() {
 		for (var td : idx.typesInIndexOrder()) {
-			String pkg = DeclaredIndex.derivePkg(td);
-			String fqn = DeclaredIndex.deriveFqnDollar(td);
-			emitExtendsImplements(pkg, fqn, td);
+			emitExtendsImplements(td);
 		}
 	}
 
-	/**
-	 *
-	 * @param pkg
-	 * @param subFqn
-	 * @param td
-	 */
-	private void emitExtendsImplements(String pkg, String subFqn, TypeDeclaration<?> td) {
+	private void emitExtendsImplements(TypeDeclaration<?> td) {
 		if (td instanceof ClassOrInterfaceDeclaration cid) {
 			for (ClassOrInterfaceType ext : cid.getExtendedTypes()) {
 				emitExtends(cid, ext);
@@ -149,7 +115,11 @@ class CollectRelationshipsVisitor {
 			}
 		} else if (td instanceof EnumDeclaration ed) {
 			for (ClassOrInterfaceType impl : ed.getImplementedTypes()) {
-				emitImplements(pkg, subFqn, impl);
+				emitImplements(ed, impl);
+			}
+		} else if (td instanceof RecordDeclaration rd) {
+			for (ClassOrInterfaceType impl : rd.getImplementedTypes()) {
+				emitImplements(rd, impl);
 			}
 		}
 	}
@@ -181,30 +151,6 @@ class CollectRelationshipsVisitor {
 		pw.withBeforeTag("@assis:cherry-pick ghost", () -> pw.connectImplements(subFqn, impl.getNameWithScope()));
 	}
 
-	/**
-	 *
-	 * @param pkg
-	 * @param subFqn
-	 * @param impl
-	 */
-	private void emitImplements(String pkg, String subFqn, ClassOrInterfaceType impl) {
-		String nameWithScope = impl.getNameWithScope();
-
-		String raw = DeclaredIndex.simpleName(nameWithScope);
-		String target = idx.resolveTypeName(pkg, raw);
-		if (target != null) {
-			pw.connectImplements(subFqn, target);
-		} else {
-			pw.withBeforeTag("@assis:cherry-pick ghost", () -> pw.connectImplements(subFqn, nameWithScope));
-		}
-	}
-
-	/**
-	 *
-	 * @param pkg
-	 * @param td
-	 * @param ext
-	 */
 	private void emitExtends(ClassOrInterfaceDeclaration cid, ClassOrInterfaceType ext) {
 		String subFqn = DeclaredIndex.deriveFqnDollar(cid);
 
@@ -213,22 +159,28 @@ class CollectRelationshipsVisitor {
 
 		if (tr.isPresent()) {
 			TypeRef ref = tr.get();
+			logger.log(Level.INFO, () -> "IsPresent: " + ref);
 
 			if (ref instanceof DeclaredTypeRef dtr) {
+				logger.log(Level.INFO, () -> "DeclaredTypeRef: " + dtr);
+
 				String target = DeclaredIndex.deriveFqnDollar(dtr.declaration());
 				pw.connectExtends(subFqn, target);
 				return;
 			}
 
 			if (ref instanceof ExternalTypeRef etr) {
+				logger.log(Level.INFO, () -> "ExternalTypeRef: " + etr);
 				pw.connectExtends(subFqn, etr.fqn());
 				return;
 			}
+			logger.log(Level.INFO, () -> "Unresolved: " + ref.displayName());
 
 			// Unresolved (or other TypeRef): ghost
 			pw.withBeforeTag("@assis:cherry-pick ghost", () -> pw.connectExtends(subFqn, ref.displayName()));
 			return;
 		}
+		logger.log(Level.INFO, () -> "Fallback: " + ext.getNameWithScope());
 
 		// Fallback (should be rare for extends)
 		pw.withBeforeTag("@assis:cherry-pick ghost", () -> pw.connectExtends(subFqn, ext.getNameWithScope()));
@@ -266,27 +218,16 @@ class CollectRelationshipsVisitor {
 		}
 	}
 
-	/**
-	 *
-	 * @param pkg
-	 * @param ownerFqn
-	 * @param p
-	 */
 	private void emitRecordParameterAssociation(String pkg, String ownerFqn, Parameter p) {
+		// FIXME
 		String target = idx.resolveAssocTarget(pkg, ownerFqn, p.getType());
+
 		if (target != null) {
 			String st = DeclaredIndex.stereotypesToString(p);
-
 			emitAssociation(ownerFqn, target, p.getNameAsString(), st);
 		}
 	}
 
-	/**
-	 *
-	 * @param pkg
-	 * @param ownerFqn
-	 * @param fd
-	 */
 	private void emitFieldAssociation(String pkg, String ownerFqn, FieldDeclaration fd) {
 		String st = DeclaredIndex.renderStereotypes(DeclaredIndex.stereotypesOf(fd));
 
@@ -310,7 +251,7 @@ class CollectRelationshipsVisitor {
 
 					target = etr.fqn(); // or etr.displayName()/name() depending on your API
 					// Wait, no association for externals, field emitted earlier!
-					return;
+					break; // or return or continue
 				} else {
 					logger.log(Level.INFO, () -> "Unresolved: " + ref);
 
