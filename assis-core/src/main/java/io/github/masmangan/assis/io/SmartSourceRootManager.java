@@ -13,6 +13,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,6 +36,10 @@ public class SmartSourceRootManager {
 
 	private static final Logger logger = Logger.getLogger(SmartSourceRootManager.class.getName());
 
+	
+	private SmartSourceRootManager() {
+	}
+	
 	/**
 	 * Scans the given Java source root directories and parses all {@code .java}
 	 * files found.
@@ -57,8 +62,8 @@ public class SmartSourceRootManager {
 	 * @throws IOException if an I/O error occurs while scanning or parsing
 	 */
 	public static List<CompilationUnit> autoscan(DeterministicPathList sortedSourceRoots) throws IOException {
-		// checkSourceRoots(sourceRoots);
-
+		Objects.requireNonNull(sortedSourceRoots);
+		
 		List<CompilationUnit> units = new ArrayList<>();
 
 		logger.log(Level.INFO, () -> "Scanning started");
@@ -97,7 +102,6 @@ public class SmartSourceRootManager {
 	}
 
 	private static void warnOnPrimaryTypeCollisions(List<CompilationUnit> units) {
-		// key: declared package + primary type name
 		Map<String, List<String>> occurrences = new HashMap<>();
 
 		for (CompilationUnit u : units) {
@@ -122,8 +126,6 @@ public class SmartSourceRootManager {
 	}
 
 	private static void sortUnitsByPackage(List<CompilationUnit> units) {
-		// replacing units.sort(Comparator.comparing(unit -> unit.getStorage().map(s ->
-		// s.getPath().toString()).orElse("")));
 		Comparator<CompilationUnit> bySemanticIdentity = Comparator
 				.comparing((CompilationUnit u) -> u.getPackageDeclaration().map(pd -> pd.getNameAsString()).orElse(""))
 				.thenComparing(u -> u.getPrimaryTypeName().orElse("")).thenComparing(
