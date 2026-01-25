@@ -13,6 +13,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -77,9 +78,10 @@ public class SmartSourceRootManager {
 
 			int addedFromThisRoot = 0;
 			for (ParseResult<CompilationUnit> r : results) {
-				if (r.getResult().isPresent()) {
-					units.add(r.getResult().get());
-					addedFromThisRoot++;
+				Optional<CompilationUnit> opt = r.getResult();
+				if (opt.isPresent()) {
+				    units.add(opt.get());
+				    addedFromThisRoot++;
 				}
 			}
 
