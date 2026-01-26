@@ -22,20 +22,16 @@ class GenerateClassDiagramDependencyCoverageSamplesTest {
 	Path tempDir;
 
 	@Test
-	void generatesDependencyByMethodBody() throws Exception {
+	void methodBodyDependency() throws Exception {
 		String puml = generatePumlFromSample("samples/deps/bylocal", tempDir, "bylocal");
 
 		assertPumlContainsName(puml, "A");
 		assertPumlContainsName(puml, "B");
-		// assertAnyLineContainsAll(puml, "A", "..>", "B");
-
-		// adding package p1 gives a more challenging sample
 		assertAnyLineContainsAll(puml, "p1.A", "..>", "p1.B");
-
 	}
 
 	@Test
-	void dep01_methodReturnTypeCreatesDependency() throws Exception {
+	void methodReturnTypeCreatesDependency() throws Exception {
 		String puml = generatePumlFromSample("samples/deps/byreturn", tempDir, "byreturn");
 
 		assertPumlContainsName(puml, "p1.A");

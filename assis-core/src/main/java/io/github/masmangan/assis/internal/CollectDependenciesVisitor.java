@@ -132,7 +132,6 @@ final class CollectDependenciesVisitor extends VoidVisitorAdapter<DependencyCont
 		if (ownerStack.isEmpty()) {
 			return;
 		}
-
 		ctx.resolveScopeName(simpleName, site).ifPresent(target -> collect(owner(), target, ctx));
 	}
 

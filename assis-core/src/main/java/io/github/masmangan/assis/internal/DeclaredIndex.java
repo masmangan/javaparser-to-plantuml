@@ -230,12 +230,11 @@ public class DeclaredIndex {
 	public Optional<TypeRef> resolveTarget(Type typeNode, Node usageSite) {
 		logger.log(Level.INFO, () -> "Resolving target: " + typeNode);
 
-		// If you want arrays like Foo[] to count as dependency on Foo:
+		// If we want arrays like Foo[] to count as dependency on Foo:
 		if (typeNode instanceof ArrayType at) {
 			return resolveTarget(at.getComponentType(), usageSite);
 		}
 
-		// FIXME: i) What about enumerations?
 		if (typeNode instanceof TypeParameter tp) {
 			// resolve its first bound if present
 			if (!tp.getTypeBound().isEmpty()) {
@@ -266,11 +265,9 @@ public class DeclaredIndex {
 		TypeDeclaration<?> td = getByFqn(fallbackName);
 		if (td != null) {
 			logger.log(Level.SEVERE, () -> "QualifiedName dot-dot succeeded on index (2): " + fallbackName);
-
 			return Optional.of(new DeclaredTypeRef(td));
 		}
 		logger.log(Level.INFO, () -> "UNSOLVED: " + cit.getNameWithScope());
-
 		return Optional.of(new UnresolvedTypeRef(fallbackName));
 
 	}
@@ -624,6 +621,15 @@ public class DeclaredIndex {
 			s = s.substring(lt + 1);
 		}
 		return s;
+	}
+
+	// Scope simple name is not solver-confirmed; unresolved unless indexed.
+	public Optional<TypeRef> resolveScopeName(String simpleName, Node usageSite) {
+		TypeDeclaration<?> indexed = getByFqn(simpleName);
+		if (indexed != null) {
+			return Optional.of(new DeclaredTypeRef(indexed));
+		}
+		return Optional.of(new UnresolvedTypeRef(simpleName));
 	}
 
 }
