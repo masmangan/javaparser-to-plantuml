@@ -451,7 +451,6 @@ public class DeclaredIndex {
 		return typeAsString.replaceAll("<[^>]*>", EMPTY_STRING).replace("[]", EMPTY_STRING).trim();
 	}
 
-
 	/**
 	 * Returns the immediate lexical owner FQN for a nested type name.
 	 *
