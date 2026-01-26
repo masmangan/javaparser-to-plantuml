@@ -39,32 +39,20 @@ class GenerateClassDiagramDependencyCoverageSamplesTest {
 		assertAnyLineContainsAll(puml, "p1.A", "..>", "p1.B");
 	}
 
-	// -------------------------------------------------------------------------
-	// Dep 02 — Method parameter type creates dependency
-	// package p1; class B {} class A { void m(B b) {} }
-	// Expect: "p1.A" ..> "p1.B"
-	// -------------------------------------------------------------------------
-
-	@Disabled("Enable one test at a time while adding samples and implementing '..>' emission.")
+	@Disabled("FAILED: Enable one test at a time while adding samples and implementing '..>' emission.")
 	@Test
 	void dep02_methodParameterCreatesDependency() throws Exception {
-		String puml = generatePumlFromSample("samples/deps/dep02-param", tempDir, "dep02-param");
+		String puml = generatePumlFromSample("samples/deps/byparam", tempDir, "byparam");
 
 		assertPumlContainsName(puml, "p1.A");
 		assertPumlContainsName(puml, "p1.B");
 		assertAnyLineContainsAll(puml, "p1.A", "..>", "p1.B");
 	}
 
-	// -------------------------------------------------------------------------
-	// Dep 03 — Throws clause creates dependency
-	// package p1; class X extends Exception {} class A { void m() throws X {} }
-	// Expect: "p1.A" ..> "p1.X"
-	// -------------------------------------------------------------------------
-
-	@Disabled("Enable one test at a time while adding samples and implementing '..>' emission.")
+	@Disabled("FAILED: Enable one test at a time while adding samples and implementing '..>' emission.")
 	@Test
-	void dep03_throwsClauseCreatesDependency() throws Exception {
-		String puml = generatePumlFromSample("samples/deps/dep03-throws", tempDir, "dep03-throws");
+	void throwsClauseCreatesDependency() throws Exception {
+		String puml = generatePumlFromSample("samples/deps/bythrows", tempDir, "bythrows");
 
 		assertPumlContainsName(puml, "p1.A");
 		assertPumlContainsName(puml, "p1.X");
@@ -73,6 +61,7 @@ class GenerateClassDiagramDependencyCoverageSamplesTest {
 
 	// -------------------------------------------------------------------------
 	// Dep 04 — Generic type argument does NOT create dependency in Rodrigues/facts
+// Is this the source? https://www.researchgate.net/publication/220676637_A_lightweight_approach_to_datatype-generic_rewriting
 	// package p1; import java.util.List;
 	// class D {} class A { void m(List<D> ds) {} }
 	// Expect: NO dependency to p1.D via type-arg
@@ -81,7 +70,7 @@ class GenerateClassDiagramDependencyCoverageSamplesTest {
 
 	@Disabled("Enable after implementing '..>' and confirming generic args are not unpacked in facts mode.")
 	@Test
-	void dep04_genericTypeArgumentDoesNotCreateDependencyInFactsMode() throws Exception {
+	void genericTypeArgumentDoesNotCreateDependencyInFactsMode() throws Exception {
 		String puml = generatePumlFromSample("samples/deps/dep04-generic-arg", tempDir, "dep04-generic-arg");
 
 		assertPumlContainsName(puml, "p1.A");
@@ -104,7 +93,7 @@ class GenerateClassDiagramDependencyCoverageSamplesTest {
 
 	@Disabled("Enable after implementing '..>' to ensure method usage doesn't create '-->' association.")
 	@Test
-	void dep05_methodUsageDoesNotCreateAssociation() throws Exception {
+	void methodUsageDoesNotCreateAssociation() throws Exception {
 		String puml = generatePumlFromSample("samples/deps/dep05-no-association", tempDir, "dep05-no-association");
 
 		assertPumlContainsName(puml, "p1.A");
@@ -117,17 +106,9 @@ class GenerateClassDiagramDependencyCoverageSamplesTest {
 		assertPumlNotContains(puml, "p1.A --> p1.B");
 	}
 
-	// -------------------------------------------------------------------------
-	// Dep 06 — Cross-package dependency (imported type used in signature)
-	// package p2; public class G {}
-	// package p1; import p2.G; class A { G m(){ return null; } }
-	// Expect: "p1.A" ..> "p2.G"
-	// -------------------------------------------------------------------------
-
-	@Disabled("Enable after implementing '..>' and confirming FQN resolution for dependencies.")
 	@Test
-	void dep06_crossPackageDependencyInSignatureUsesFqn() throws Exception {
-		String puml = generatePumlFromSample("samples/deps/dep06-cross-package", tempDir, "dep06-cross-package");
+	void crossPackageDependencyInSignatureUsesFqn() throws Exception {
+		String puml = generatePumlFromSample("samples/deps/crosspkg", tempDir, "crosspkg");
 
 		assertPumlContainsName(puml, "p1.A");
 		assertPumlContainsName(puml, "p2.G");
