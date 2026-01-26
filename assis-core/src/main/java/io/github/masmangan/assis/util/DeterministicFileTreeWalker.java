@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * Deterministic traversal of one or more roots.
@@ -80,7 +79,7 @@ public final class DeterministicFileTreeWalker {
 		try (var stream = Files.list(dir)) {
 			return stream.map(p -> new Child(p, Files.isDirectory(p), fileName(p), absNorm(p))).sorted(Comparator
 					.comparingInt((Child c) -> c.isDir ? 0 : 1).thenComparing(c -> c.name).thenComparing(c -> c.abs))
-					.map(Child::path).collect(Collectors.toList());
+					.map(Child::path).toList();
 		}
 	}
 
@@ -99,6 +98,6 @@ public final class DeterministicFileTreeWalker {
 		}
 
 		return roots.stream().filter(Objects::nonNull).map(p -> p.toAbsolutePath().normalize()).distinct()
-				.sorted(Comparator.comparing(Path::toString)).collect(Collectors.toList());
+				.sorted(Comparator.comparing(Path::toString)).toList();
 	}
 }
