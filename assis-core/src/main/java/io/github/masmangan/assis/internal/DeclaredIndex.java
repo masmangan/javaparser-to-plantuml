@@ -262,7 +262,6 @@ public class DeclaredIndex {
 		// simple name.
 		logger.log(Level.INFO, () -> "Textual: " + cit.getNameWithScope());
 
-		// FIXME: ii) What about getQualifiedName()?
 		String fallbackName = cit.getNameWithScope();
 		TypeDeclaration<?> td = getByFqn(fallbackName);
 		if (td != null) {
@@ -274,15 +273,6 @@ public class DeclaredIndex {
 
 		return Optional.of(new UnresolvedTypeRef(fallbackName));
 
-		//
-		// String raw = cit.getNameAsString(); // simple name
-		// TypeDeclaration<?> declared = resolveDeclaredByContext(raw, usageSite); //
-		// NEW
-		// if (declared != null) return Optional.of(new DeclaredTypeRef(declared));
-
-		// if name in code was qualified, keep it
-		// String textual = cit.getNameWithScope();
-		// return Optional.of(new ExternalTypeRef(textual));
 	}
 
 	private Optional<TypeRef> tryResolveWithSolver(ClassOrInterfaceType cit) {
@@ -400,13 +390,6 @@ public class DeclaredIndex {
 	 * @return
 	 */
 	String resolveAssocTarget(String pkg, String ownerFqn, Type type) {
-		// FIXME: solving type
-		logger.log(Level.INFO, () -> "Type: " + type.toString());
-		Optional<String> op = DeclaredIndex.debugResolve(type);
-
-		logger.log(Level.INFO, () -> "Name: " + op.orElse("NOPE"));
-
-		//
 		String raw = DeclaredIndex.rawNameOf(type);
 		String target = resolveTypeName(pkg, raw);
 		if (target == null || target.equals(ownerFqn)) {
@@ -468,40 +451,6 @@ public class DeclaredIndex {
 		return typeAsString.replaceAll("<[^>]*>", EMPTY_STRING).replace("[]", EMPTY_STRING).trim();
 	}
 
-	static Optional<String> debugResolve(Type type) {
-		try {
-			if (!(type instanceof ClassOrInterfaceType cit)) {
-				logger.fine(() -> "Skip non-reference type: " + type);
-				return Optional.empty();
-			}
-
-			ResolvedType rt = cit.resolve();
-			logger.info(() -> "Resolved '" + cit + "' -> " + rt.describe());
-
-			if (!rt.isReferenceType()) {
-				logger.fine(() -> "Not a reference type: " + rt);
-				return Optional.empty();
-			}
-
-			ResolvedReferenceType rrt = rt.asReferenceType();
-			String qname = rrt.getQualifiedName(); // dot form
-			logger.info(() -> "Qualified name: " + qname);
-
-			return Optional.of(qname);
-
-		} catch (UnsolvedSymbolException e) {
-			logger.info(() -> "Unsolved symbol: " + e.getName());
-			return Optional.empty();
-
-		} catch (IllegalStateException e) {
-			logger.info(() -> "SymbolSolver not configured at node");
-			return Optional.empty();
-
-		} catch (Exception e) {
-			logger.log(Level.WARNING, "Unexpected resolution error", e);
-			return Optional.empty();
-		}
-	}
 
 	/**
 	 * Returns the immediate lexical owner FQN for a nested type name.
