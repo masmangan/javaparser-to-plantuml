@@ -81,7 +81,7 @@ public final class ClassDiagramGeneration {
 
 		} catch (IOException e) {
 			logger.log(Level.WARNING, () -> "Error writing diagram file: " + e.getLocalizedMessage());
-			throw e;
+			throw new IllegalStateException("Error writing diagram file", e);
 		}
 	}
 
