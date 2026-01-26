@@ -58,20 +58,10 @@ class GenerateClassDiagramDependencyCoverageSamplesTest {
 		assertPumlContainsName(puml, "p1.X");
 		assertAnyLineContainsAll(puml, "p1.A", "..>", "p1.X");
 	}
-
-	// -------------------------------------------------------------------------
-	// Dep 04 — Generic type argument does NOT create dependency in Rodrigues/facts
-// Is this the source? https://www.researchgate.net/publication/220676637_A_lightweight_approach_to_datatype-generic_rewriting
-	// package p1; import java.util.List;
-	// class D {} class A { void m(List<D> ds) {} }
-	// Expect: NO dependency to p1.D via type-arg
-	// (You may or may not emit dependency to java.util.List; we don't assert it.)
-	// -------------------------------------------------------------------------
-
-	@Disabled("Enable after implementing '..>' and confirming generic args are not unpacked in facts mode.")
+	
 	@Test
 	void genericTypeArgumentDoesNotCreateDependencyInFactsMode() throws Exception {
-		String puml = generatePumlFromSample("samples/deps/dep04-generic-arg", tempDir, "dep04-generic-arg");
+		String puml = generatePumlFromSample("samples/deps/generic", tempDir, "generic");
 
 		assertPumlContainsName(puml, "p1.A");
 		assertPumlContainsName(puml, "p1.D");
@@ -83,18 +73,9 @@ class GenerateClassDiagramDependencyCoverageSamplesTest {
 		assertPumlNotContains(puml, "p1.A ..> p1.D");
 	}
 
-	// -------------------------------------------------------------------------
-	// Dep 05 — Dependency only (no field association)
-	// package p1; class B {} class A { B m(){ return null; } }
-	// Ensure you do NOT accidentally emit association '-->' when only a method
-	// mentions B.
-	// Expect: contains '..>' and does NOT contain '-->' between A and B.
-	// -------------------------------------------------------------------------
-
-	@Disabled("Enable after implementing '..>' to ensure method usage doesn't create '-->' association.")
 	@Test
 	void methodUsageDoesNotCreateAssociation() throws Exception {
-		String puml = generatePumlFromSample("samples/deps/dep05-no-association", tempDir, "dep05-no-association");
+		String puml = generatePumlFromSample("samples/deps/omr", tempDir, "omr");
 
 		assertPumlContainsName(puml, "p1.A");
 		assertPumlContainsName(puml, "p1.B");
@@ -115,36 +96,20 @@ class GenerateClassDiagramDependencyCoverageSamplesTest {
 		assertAnyLineContainsAll(puml, "p1.A", "..>", "p2.G");
 	}
 
-	// -------------------------------------------------------------------------
-	// Sample 10 — Method return type MUST NOT create dependency
-	// class A { B b; B m(){ return b; } }
-	// Contains: A --> B : b
-	// Not contains: A ..> B
-	// -------------------------------------------------------------------------
-
-	@Disabled("Enable one sample at a time while adding sample folders/files.")
+	@Disabled("FAILED: Enable one sample at a time while adding sample folders/files.")
 	@Test
-	void sample10_methodReturnTypeDoesNotCreateDependency() throws Exception {
-		String puml = generatePumlFromSample("samples/associations/sample10-no-method-dependency", tempDir,
-				"sample10-no-method-dependency");
+	void methodReturnTypeDoesNotCreateDependency() throws Exception {
+		String puml = generatePumlFromSample("samples/deps/nodepret", tempDir, "nodepret");
 
 		assertAnyLineContainsAll(puml, "A", "-->", "B", ":", "b");
 		assertPumlNotContains(puml, "..>");
 	}
 
-	// -------------------------------------------------------------------------
-	// Sample 11 — Only fields count; method return doesn't add relations
-	// class B {} class C {}
-	// class A { B b; C c; B m() {} }
-	// Expected: A --> B : b
-	// Not contains: A ..> B (dependency)
-	// -------------------------------------------------------------------------
-
-	@Disabled("Enable one sample at a time while adding sample folders/files.")
+	@Disabled("FAILED: Enable one sample at a time while adding sample folders/files.")
 	@Test
-	void sample11_onlyFieldAssociationsAreEmitted() throws Exception {
-		String puml = generatePumlFromSample("samples/associations/sample11-only-fields", tempDir,
-				"sample11-only-fields");
+	void onlyFieldAssociationsAreEmitted() throws Exception {
+		// Do we need class C?
+		String puml = generatePumlFromSample("samples/deps/of", tempDir, "of");
 
 		assertAnyLineContainsAll(puml, "A", "-->", "B", ":", "b");
 		assertPumlNotContains(puml, "..>");
