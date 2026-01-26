@@ -10,7 +10,6 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import io.github.masmangan.assis.AssisInfo;
@@ -80,7 +79,6 @@ public final class ClassDiagramGeneration {
 			pw.endDiagram("class-diagram");
 
 		} catch (IOException e) {
-			logger.log(Level.WARNING, () -> "Error writing diagram file: " + e.getLocalizedMessage());
 			throw new IllegalStateException("Error writing diagram file", e);
 		}
 	}
