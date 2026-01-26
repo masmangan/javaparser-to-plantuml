@@ -55,9 +55,12 @@ class CollectRelationshipsVisitor {
 
 	private final PlantUMLWriter pw;
 
-	CollectRelationshipsVisitor(final DeclaredIndex idx, final PlantUMLWriter pw) {
+	private final EdgeRegistry er;
+
+	CollectRelationshipsVisitor(final DeclaredIndex idx, final PlantUMLWriter pw, EdgeRegistry er) {
 		this.idx = idx;
 		this.pw = pw;
+		this.er = er;
 	}
 
 	/**
@@ -199,7 +202,7 @@ class CollectRelationshipsVisitor {
 	 */
 	private void emitAssociation(String ownerFqn, String targetFqn, String role, String stereotypes) {
 		pw.connectAssociation(ownerFqn, targetFqn, role, stereotypes);
-		// add a list of of associations here to avoid deps sobreposition later!
+		er.registerAssociation(ownerFqn, targetFqn);
 	}
 
 	/**

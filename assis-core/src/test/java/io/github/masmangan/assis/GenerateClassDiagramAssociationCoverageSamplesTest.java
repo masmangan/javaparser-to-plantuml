@@ -92,6 +92,10 @@ class GenerateClassDiagramAssociationCoverageSamplesTest {
 		assertAnyLineContainsAll(puml, "es", ":", "List<E>");
 
 		assertPumlNotContains(puml, "-->");
+
+		assertAnyLineContainsAll(puml, "p1.ListRecord", "..>", "p1.E");
+		assertAnyLineContainsAll(puml, "cherry-pick ghost", "p1.ListRecord", "..>", "java.util.List");
+
 	}
 
 	@Test

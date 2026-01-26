@@ -5,9 +5,7 @@
 
 package io.github.masmangan.assis.internal;
 
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.TypeDeclaration;
@@ -24,16 +22,18 @@ class DependencyContext {
 
 	private final PlantUMLWriter pw;
 
-	private final Set<DepKey> deps = new HashSet<>();
+	private final EdgeRegistry er;
 
 	/**
 	 *
 	 * @param idx
 	 * @param pw
+	 * @param er
 	 */
-	public DependencyContext(DeclaredIndex idx, PlantUMLWriter pw) {
+	public DependencyContext(DeclaredIndex idx, PlantUMLWriter pw, EdgeRegistry er) {
 		this.idx = idx;
 		this.pw = pw;
+		this.er = er;
 	}
 
 	public Optional<TypeRef> resolveTarget(Type typeNode, Node usageSite) {
@@ -57,7 +57,14 @@ class DependencyContext {
 	 * @return
 	 */
 	public boolean hasDependency(TypeDeclaration<?> from, TypeRef to) {
-		return deps.contains(new DepKey(from, to));
+		String fromFqn = DeclaredIndex.deriveFqnDollar(from);
+		final String toFqn;
+		if (to instanceof DeclaredTypeRef dtr) {
+			toFqn = DeclaredIndex.deriveFqnDollar(dtr.declaration());
+		} else {
+			toFqn = to.displayName();
+		}
+		return er.isRegistered(fromFqn, toFqn);
 	}
 
 	/**
@@ -75,7 +82,7 @@ class DependencyContext {
 			return;
 		}
 		pw.connectDepends(fromFqn, toFqn);
-		deps.add(new DepKey(from, to));
+		er.registerDependency(fromFqn, toFqn);
 	}
 
 	/**
@@ -95,13 +102,7 @@ class DependencyContext {
 			return;
 		}
 		pw.withBeforeTag("@assis:cherry-pick ghost", () -> pw.connectDepends(fromFqn, toFqn));
-		deps.add(new DepKey(from, to));
+		er.registerDependency(fromFqn, toFqn);
 	}
 
-}
-
-/**
- *
- */
-record DepKey(TypeDeclaration<?> from, TypeRef to) {
 }

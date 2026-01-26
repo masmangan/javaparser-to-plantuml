@@ -8,6 +8,7 @@ package io.github.masmangan.assis.internal;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -44,7 +45,7 @@ import com.github.javaparser.resolution.types.ResolvedType;
 public class DeclaredIndex {
 
 	private static final Logger logger = Logger.getLogger(DeclaredIndex.class.getName());
- 
+
 	private static final String EMPTY_STRING = "";
 
 	private static final String PACKAGE_SEPARATOR = ".";
@@ -52,29 +53,35 @@ public class DeclaredIndex {
 	private static final char CHAR_INNER_TYPE_SEPARATOR = '$';
 
 	private static final char CHAR_PACKAGE_SEPARATOR = '.';
-	
-	/**
-	 * FQN → declaration
-	 */
-	private final Map<String, TypeDeclaration<?>> byFqn = new LinkedHashMap<>();
 
 	/**
-	 * FQN → declared package (from CompilationUnit)
+	 * Type key → declaration
 	 */
-	private final Map<String, String> pkgByFqn = new LinkedHashMap<>();
+	private final Map<TypeKey, TypeDeclaration<?>> byKey = new LinkedHashMap<>();
 
 	/**
-	 * package → list of FQNs
+	 * Type key → declared package (from CompilationUnit)
 	 */
-	private Map<String, List<String>> fqnsByPkg = new LinkedHashMap<>();
+	private final Map<TypeKey, String> pkgByKey = new LinkedHashMap<>();
 
 	/**
-	 * simple name → unique FQN (only when unambiguous)
-	 *
+	 * package → list of type keys
 	 */
-	private final Map<String, String> uniqueBySimple = new LinkedHashMap<>();
+	private Map<String, List<TypeKey>> keysByPkg = new LinkedHashMap<>();
 
- 
+	/**
+	 * simple name → unique type key (only when unambiguous)
+	 */
+	private final Map<String, TypeKey> uniqueBySimple = new LinkedHashMap<>();
+
+	private static TypeKey key(String fqn) {
+		return new TypeKey(fqn);
+	}
+
+	private static String text(TypeKey k) {
+		return k.text();
+	}
+
 	/**
 	 * Populates index with declared types from compilation units.
 	 *
@@ -88,23 +95,22 @@ public class DeclaredIndex {
 			}
 		}
 
-		for (Map.Entry<String, String> e : pkgByFqn.entrySet()) {
-			String fqn = e.getKey();
+		for (Map.Entry<TypeKey, String> e : pkgByKey.entrySet()) {
+			TypeKey key = e.getKey();
 			String pkg = e.getValue();
-			fqnsByPkg.computeIfAbsent(pkg, k -> new ArrayList<>()).add(fqn);
+			keysByPkg.computeIfAbsent(pkg, __ -> new ArrayList<>()).add(key);
 		}
 
-		fqnsByPkg = sortPackagesByNameFqn(fqnsByPkg);
-		fqnsByPkg.values().forEach(list -> list.sort(String::compareTo));
+		keysByPkg = sortPackagesByNameFqn(keysByPkg);
+		keysByPkg.values().forEach(list -> list.sort(Comparator.comparing(TypeKey::text)));
 
-		Map<String, String> seen = new LinkedHashMap<>();
+		Map<String, TypeKey> seen = new LinkedHashMap<>();
 		Set<String> ambiguous = new LinkedHashSet<>();
 
-		for (String fqn : byFqn.keySet()) {
-			String simple = DeclaredIndex.simpleName(fqn);
-			if (!seen.containsKey(simple)) {
-				seen.put(simple, fqn);
-			} else {
+		for (TypeKey k : byKey.keySet()) {
+			String simple = DeclaredIndex.simpleName(text(k));
+			TypeKey prior = seen.putIfAbsent(simple, k);
+			if (prior != null) {
 				ambiguous.add(simple);
 			}
 		}
@@ -117,7 +123,6 @@ public class DeclaredIndex {
 
 	}
 
- 
 	private void collectTypeRecursive(CompilationUnit unit, TypeDeclaration<?> td, String ownerFqn, String separator) {
 		String name = td.getNameAsString();
 		String fqn;
@@ -128,7 +133,10 @@ public class DeclaredIndex {
 		} else {
 			fqn = ownerFqn + separator + name;
 		}
-		if (byFqn.containsKey(fqn)) {
+
+		TypeKey k = key(fqn);
+
+		if (byKey.containsKey(k)) {
 			logger.log(Level.WARNING, () -> "Attempt to redefine " + fqn);
 			logger.log(Level.WARNING, unit::toString);
 			logger.log(Level.WARNING, td::toString);
@@ -136,8 +144,8 @@ public class DeclaredIndex {
 			return;
 		}
 
-		byFqn.put(fqn, td);
-		pkgByFqn.put(fqn, pkg);
+		byKey.put(k, td);
+		pkgByKey.put(k, pkg);
 
 		if (td instanceof ClassOrInterfaceDeclaration cid) {
 			cid.getMembers().forEach(m -> {
@@ -155,15 +163,15 @@ public class DeclaredIndex {
 	}
 
 	public Iterable<String> fqnsInIndexOrder() {
-		return Collections.unmodifiableSet(byFqn.keySet());
+		return Collections.unmodifiableList(byKey.keySet().stream().map(TypeKey::text).toList());
 	}
 
 	public boolean containsFqn(String fqn) {
-		return byFqn.containsKey(fqn);
+		return byKey.containsKey(key(fqn));
 	}
 
 	public TypeDeclaration<?> getByFqn(String fqn) {
-		return byFqn.get(fqn);
+		return byKey.get(key(fqn));
 	}
 
 	/**
@@ -172,9 +180,9 @@ public class DeclaredIndex {
 	 */
 	public Iterable<TypeDeclaration<?>> typesInIndexOrder() {
 		List<TypeDeclaration<?>> out = new ArrayList<>();
-		for (var entry : fqnsByPkg.entrySet()) {
-			for (String fqn : entry.getValue()) {
-				TypeDeclaration<?> td = byFqn.get(fqn);
+		for (var entry : keysByPkg.entrySet()) {
+			for (TypeKey key : entry.getValue()) {
+				TypeDeclaration<?> td = byKey.get(key);
 				if (td != null) {
 					out.add(td);
 				}
@@ -185,19 +193,19 @@ public class DeclaredIndex {
 
 	/** Deterministic package iteration order (read-only). */
 	public Iterable<String> packagesInIndexOrder() {
-		return Collections.unmodifiableSet(fqnsByPkg.keySet());
+		return Collections.unmodifiableSet(keysByPkg.keySet());
 	}
 
 	/** Deterministic type order inside the package (read-only). */
 	public Iterable<TypeDeclaration<?>> typesInPackageOrder(String pkg) {
-		List<String> fqns = fqnsByPkg.get(pkg);
-		if (fqns == null || fqns.isEmpty()) {
+		List<TypeKey> keys = keysByPkg.get(pkg);
+		if (keys == null || keys.isEmpty()) {
 			return List.of();
 		}
 
-		List<TypeDeclaration<?>> out = new ArrayList<>(fqns.size());
-		for (String fqn : fqns) {
-			TypeDeclaration<?> td = byFqn.get(fqn);
+		List<TypeDeclaration<?>> out = new ArrayList<>(keys.size());
+		for (TypeKey key : keys) {
+			TypeDeclaration<?> td = byKey.get(key);
 			if (td != null) {
 				out.add(td);
 			}
@@ -342,7 +350,7 @@ public class DeclaredIndex {
 			return null;
 		}
 
-		if (raw.contains(PACKAGE_SEPARATOR) && byFqn.containsKey(raw)) {
+		if (raw.contains(PACKAGE_SEPARATOR) && byKey.containsKey(key(raw))) {
 			return raw;
 		}
 
@@ -350,11 +358,12 @@ public class DeclaredIndex {
 
 		String samePkg = (ownerPkg == null || ownerPkg.isEmpty()) ? simple : ownerPkg + PACKAGE_SEPARATOR + simple;
 
-		if (byFqn.containsKey(samePkg)) {
+		if (byKey.containsKey(key(samePkg))) {
 			return samePkg;
 		}
 
-		return uniqueBySimple.get(simple);
+		TypeKey unique = uniqueBySimple.get(simple);
+		return unique == null ? null : unique.text();
 	}
 
 	/**
@@ -489,11 +498,11 @@ public class DeclaredIndex {
 
 	/**
 	 *
-	 * @param byPkg
+	 * @param keysByPkg2
 	 * @return
 	 */
-	private static Map<String, List<String>> sortPackagesByNameFqn(Map<String, List<String>> byPkg) {
-		return byPkg.entrySet().stream().sorted(Map.Entry.comparingByKey())
+	private static Map<String, List<TypeKey>> sortPackagesByNameFqn(Map<String, List<TypeKey>> keysByPkg2) {
+		return keysByPkg2.entrySet().stream().sorted(Map.Entry.comparingByKey())
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, LinkedHashMap::new));
 	}
 

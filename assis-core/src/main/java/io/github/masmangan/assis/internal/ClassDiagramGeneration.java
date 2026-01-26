@@ -68,9 +68,11 @@ public final class ClassDiagramGeneration {
 			pw.println();
 			pw.println();
 
-			writeStructuralRelations(pw);
+			EdgeRegistry er = new EdgeRegistry();
 
-			writeDependencies(pw);
+			writeStructuralRelations(pw, er);
+
+			writeDependencies(pw, er);
 			pw.println();
 
 			pw.endDiagram("class-diagram");
@@ -112,12 +114,12 @@ public final class ClassDiagramGeneration {
 		}
 	}
 
-	private void writeStructuralRelations(PlantUMLWriter pw) {
-		new CollectRelationshipsVisitor(idx, pw).emitAll();
+	private void writeStructuralRelations(PlantUMLWriter pw, EdgeRegistry er) {
+		new CollectRelationshipsVisitor(idx, pw, er).emitAll();
 	}
 
-	private void writeDependencies(PlantUMLWriter pw) {
-		DependencyContext context = new DependencyContext(idx, pw);
+	private void writeDependencies(PlantUMLWriter pw, EdgeRegistry er) {
+		DependencyContext context = new DependencyContext(idx, pw, er);
 		CollectDependenciesVisitor dependenciesVisitor = new CollectDependenciesVisitor();
 		for (var td : idx.typesInIndexOrder()) {
 			if (DeclaredIndex.isTopLevel(td)) {

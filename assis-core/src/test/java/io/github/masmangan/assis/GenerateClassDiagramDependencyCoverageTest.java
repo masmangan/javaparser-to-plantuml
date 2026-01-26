@@ -12,7 +12,6 @@ import static io.github.masmangan.assis.TestWorkbench.generatePumlFromSample;
 
 import java.nio.file.Path;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -39,9 +38,8 @@ class GenerateClassDiagramDependencyCoverageSamplesTest {
 		assertAnyLineContainsAll(puml, "p1.A", "..>", "p1.B");
 	}
 
-	@Disabled("FAILED: Enable one test at a time while adding samples and implementing '..>' emission.")
 	@Test
-	void dep02_methodParameterCreatesDependency() throws Exception {
+	void methodParameterCreatesDependency() throws Exception {
 		String puml = generatePumlFromSample("samples/deps/byparam", tempDir, "byparam");
 
 		assertPumlContainsName(puml, "p1.A");
@@ -49,7 +47,6 @@ class GenerateClassDiagramDependencyCoverageSamplesTest {
 		assertAnyLineContainsAll(puml, "p1.A", "..>", "p1.B");
 	}
 
-	@Disabled("FAILED: Enable one test at a time while adding samples and implementing '..>' emission.")
 	@Test
 	void throwsClauseCreatesDependency() throws Exception {
 		String puml = generatePumlFromSample("samples/deps/bythrows", tempDir, "bythrows");
@@ -58,19 +55,17 @@ class GenerateClassDiagramDependencyCoverageSamplesTest {
 		assertPumlContainsName(puml, "p1.X");
 		assertAnyLineContainsAll(puml, "p1.A", "..>", "p1.X");
 	}
-	
+
 	@Test
-	void genericTypeArgumentDoesNotCreateDependencyInFactsMode() throws Exception {
+	void genericTypeArgumentCreateDependency() throws Exception {
 		String puml = generatePumlFromSample("samples/deps/generic", tempDir, "generic");
 
 		assertPumlContainsName(puml, "p1.A");
 		assertPumlContainsName(puml, "p1.D");
 
-		// Don't infer dependency to D from List<D> in facts mode
-		assertPumlNotContains(puml, "..> \"p1.D\"");
-		assertPumlNotContains(puml, "..> p1.D");
-		assertPumlNotContains(puml, "p1.A\" ..> \"p1.D\"");
-		assertPumlNotContains(puml, "p1.A ..> p1.D");
+		assertAnyLineContainsAll(puml, "p1.A", "..>", "java.util.List");
+		assertAnyLineContainsAll(puml, "p1.A", "..>", "p1.D");
+
 	}
 
 	@Test
@@ -96,22 +91,21 @@ class GenerateClassDiagramDependencyCoverageSamplesTest {
 		assertAnyLineContainsAll(puml, "p1.A", "..>", "p2.G");
 	}
 
-	@Disabled("FAILED: Enable one sample at a time while adding sample folders/files.")
 	@Test
 	void methodReturnTypeDoesNotCreateDependency() throws Exception {
 		String puml = generatePumlFromSample("samples/deps/nodepret", tempDir, "nodepret");
 
-		assertAnyLineContainsAll(puml, "A", "-->", "B", ":", "b");
+		assertAnyLineContainsAll(puml, "A", "-->", "b", "B");
 		assertPumlNotContains(puml, "..>");
 	}
 
-	@Disabled("FAILED: Enable one sample at a time while adding sample folders/files.")
 	@Test
 	void onlyFieldAssociationsAreEmitted() throws Exception {
 		// Do we need class C?
 		String puml = generatePumlFromSample("samples/deps/of", tempDir, "of");
 
-		assertAnyLineContainsAll(puml, "A", "-->", "B", ":", "b");
+		assertAnyLineContainsAll(puml, "A", "-->", "b", "B");
+		assertAnyLineContainsAll(puml, "A", "-->", "c", "C");
 		assertPumlNotContains(puml, "..>");
 	}
 }

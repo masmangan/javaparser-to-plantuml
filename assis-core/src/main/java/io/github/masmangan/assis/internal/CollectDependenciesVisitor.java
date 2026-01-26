@@ -13,9 +13,11 @@ import java.util.logging.Logger;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.InstanceOfExpr;
@@ -45,6 +47,20 @@ final class CollectDependenciesVisitor extends VoidVisitorAdapter<DependencyCont
 	}
 
 	@Override
+	public void visit(FieldDeclaration fd, DependencyContext ctx) {
+		if (ownerStack.isEmpty()) {
+			super.visit(fd, ctx);
+			return;
+		}
+
+		for (VariableDeclarator vd : fd.getVariables()) {
+			recordTypeUse(vd.getType(), vd, ctx);
+		}
+
+		super.visit(fd, ctx);
+	}
+
+	@Override
 	public void visit(ObjectCreationExpr n, DependencyContext ctx) {
 		logger.log(Level.INFO, () -> "Object creationg for " + n);
 		recordTypeUse(n.getType(), n, ctx);
@@ -61,6 +77,10 @@ final class CollectDependenciesVisitor extends VoidVisitorAdapter<DependencyCont
 	@Override
 	public void visit(RecordDeclaration n, DependencyContext ctx) {
 		enter(n);
+
+		// Record components are parameters, not fields.
+		n.getParameters().forEach(p -> recordTypeUse(p.getType(), p, ctx));
+
 		super.visit(n, ctx);
 		exit();
 	}
@@ -96,10 +116,24 @@ final class CollectDependenciesVisitor extends VoidVisitorAdapter<DependencyCont
 	@Override
 	public void visit(MethodDeclaration md, DependencyContext ctx) {
 		logger.log(Level.INFO, () -> "Collecting dependencies for " + md);
-		super.visit(md, ctx);
-		if (!md.getType().isVoidType()) {
-			ctx.resolveTarget(md.getType(), md).ifPresent(to -> collect(owner(), to, ctx));
+
+		if (ownerStack.isEmpty()) {
+			super.visit(md, ctx);
+			return;
 		}
+
+		// 1) Parameters: m(b : B) -> A ..> B
+		md.getParameters().forEach(p -> recordTypeUse(p.getType(), p, ctx));
+
+		// 2) Throws clause: m() throws X -> A ..> X
+		md.getThrownExceptions().forEach(t -> recordTypeUse(t, t, ctx));
+
+		// 3) Return type (keep consistent with other type uses)
+		if (!md.getType().isVoidType()) {
+			recordTypeUse(md.getType(), md, ctx);
+		}
+
+		super.visit(md, ctx);
 	}
 
 	private void recordTypeUse(Type typeNode, Node site, DependencyContext ctx) {
@@ -136,12 +170,14 @@ final class CollectDependenciesVisitor extends VoidVisitorAdapter<DependencyCont
 	}
 
 	private void collect(TypeDeclaration<?> from, TypeRef to, DependencyContext ctx) {
+
 		if (ctx.hasDependency(from, to)) {
 			return;
 		}
 		if (to instanceof DeclaredTypeRef) {
 			ctx.addDependency(from, to);
 		} else {
+			// External + Unresolved become ghost deps
 			ctx.addCherryPick(from, to);
 		}
 	}
