@@ -134,7 +134,7 @@ class CollectRelationshipsVisitor {
 	private void emitImplements(TypeDeclaration<?> td, ClassOrInterfaceType impl) {
 		String subFqn = DeclaredIndex.deriveFqnDollar(td);
 
-		Optional<TypeRef> tr = idx.resolveTarget(impl, td);
+		Optional<TypeRef> tr = idx.resolveTarget(impl);
 		logger.log(Level.INFO, () -> "Trying to resolve implements type: " + tr);
 
 		if (tr.isPresent()) {
@@ -161,7 +161,7 @@ class CollectRelationshipsVisitor {
 	private void emitExtends(ClassOrInterfaceDeclaration cid, ClassOrInterfaceType ext) {
 		String subFqn = DeclaredIndex.deriveFqnDollar(cid);
 
-		Optional<TypeRef> tr = idx.resolveTarget(ext, cid);
+		Optional<TypeRef> tr = idx.resolveTarget(ext);
 		logger.log(Level.INFO, () -> "Trying to resolve extends type: " + tr);
 
 		if (tr.isPresent()) {
@@ -241,7 +241,7 @@ class CollectRelationshipsVisitor {
 		for (VariableDeclarator vd : fd.getVariables()) {
 			String target = null;
 
-			Optional<TypeRef> tr = idx.resolveTarget(vd.getType(), vd); // usageSite can be vd or fd
+			Optional<TypeRef> tr = idx.resolveTarget(vd.getType()); // usageSite can be vd or fd
 			logger.log(Level.INFO, () -> "Trying to resolve type: " + tr);
 
 			if (tr.isPresent()) {

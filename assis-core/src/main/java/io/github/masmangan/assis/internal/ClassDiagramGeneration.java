@@ -29,6 +29,7 @@ import io.github.masmangan.assis.io.PlantUMLWriter;
  * <p>
  * The output file is written using UTF-8.
  *
+ * @author Marco Mangan
  */
 public final class ClassDiagramGeneration {
 
@@ -73,6 +74,7 @@ public final class ClassDiagramGeneration {
 			writeStructuralRelations(pw, er);
 
 			writeDependencies(pw, er);
+
 			pw.println();
 
 			pw.endDiagram("class-diagram");

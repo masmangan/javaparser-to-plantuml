@@ -20,6 +20,7 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import com.github.javaparser.utils.Log;
 import com.github.javaparser.utils.SourceRoot;
 
@@ -63,17 +64,24 @@ public class SmartSourceRoot extends SourceRoot {
 		this.rootPath = root;
 
 		CombinedTypeSolver ts = new CombinedTypeSolver();
-		// Intentionally source-only: unparsed types remain unresolved (no
-		// ReflectionTypeSolver).
-		// FIXME: put solver back!
-		// ts.add(new ReflectionTypeSolver());
 
-		// ts.add(new JavaParserTypeSolver(root));
+		ts.add(new ReflectionTypeSolver());
+
+		ts.add(new JavaParserTypeSolver(root));
 
 		JavaSymbolSolver jss = new JavaSymbolSolver(ts);
 
-		ParserConfiguration cfg = new ParserConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17)
-				.setSymbolResolver(jss);
+		//@formatter:off
+		ParserConfiguration cfg = new ParserConfiguration()
+				.setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17)
+				.setSymbolResolver(jss)
+				.setLexicalPreservationEnabled(false)
+				.setAttributeComments(false)
+				.setDoNotAssignCommentsPrecedingEmptyLines(true)
+				.setIgnoreAnnotationsWhenAttributingComments(false)
+				.setStoreTokens(false)
+				.setDetectOriginalLineSeparator(false);
+		//@formatter:on
 
 		super.setParserConfiguration(cfg);
 		locked = true;

@@ -233,49 +233,70 @@ public class DeclaredIndex {
 		return Collections.unmodifiableList(out);
 	}
 
-	public Optional<TypeRef> resolveTarget(Type typeNode, Node usageSite) {
+	public Optional<TypeRef> resolveTarget(Type typeNode) {
 		logger.log(Level.INFO, () -> "Resolving target: " + typeNode);
 
-		// If we want arrays like Foo[] to count as dependency on Foo:
+		if (typeNode == null) {
+			return Optional.empty();
+		}
+
+		// Arrays: Foo[] depends on Foo
 		if (typeNode instanceof ArrayType at) {
-			return resolveTarget(at.getComponentType(), usageSite);
+			return resolveTarget(at.getComponentType());
 		}
 
+		// Ignore primitives / void as "no dependency"
+		if (typeNode.isPrimitiveType() || typeNode.isVoidType()) {
+			return Optional.empty();
+		}
+
+		// Type parameters: T -> first bound if exists, else unresolved "T"
 		if (typeNode instanceof TypeParameter tp) {
-			// resolve its first bound if present
 			if (!tp.getTypeBound().isEmpty()) {
-				return resolveTarget(tp.getTypeBound().get(0), usageSite);
+				return resolveTarget(tp.getTypeBound().get(0));
 			}
-			return Optional.empty();
+			return Optional.of(new UnresolvedTypeRef(tp.getNameAsString()));
 		}
+
+		// Wildcards: ? extends Foo -> Foo ; plain ? -> unresolved "?"
 		if (typeNode instanceof WildcardType wt) {
-			return wt.getExtendedType().map(t -> resolveTarget(t, usageSite)).orElse(Optional.empty());
-		}
-		if (!(typeNode instanceof ClassOrInterfaceType cit)) {
-			return Optional.empty();
-		}
-
-		logger.log(Level.INFO, () -> "Trying to resolve type: " + cit);
-
-		Optional<TypeRef> solved = tryResolveWithSolver(cit);
-		if (solved.isPresent()) {
-			return solved;
+			if (wt.getExtendedType().isPresent()) {
+				return resolveTarget(wt.getExtendedType().get());
+			}
+			if (wt.getSuperType().isPresent()) {
+				return resolveTarget(wt.getSuperType().get());
+			}
+			return Optional.of(new UnresolvedTypeRef("?"));
 		}
 
-		// 2) Best-effort textual fallback (ghost/external)
-		// getNameWithScope keeps Outer.Inner if present in source, which is better than
-		// simple name.
-		logger.log(Level.INFO, () -> "Textual: " + cit.getNameWithScope());
+		// The "normal" case
+		if (typeNode instanceof ClassOrInterfaceType cit) {
+			logger.log(Level.INFO, () -> "Trying to resolve type: " + cit);
 
-		String fallbackName = cit.getNameWithScope();
-		TypeDeclaration<?> td = getByFqn(fallbackName);
-		if (td != null) {
-			logger.log(Level.SEVERE, () -> "QualifiedName dot-dot succeeded on index (2): " + fallbackName);
-			return Optional.of(new DeclaredTypeRef(td));
+			Optional<TypeRef> solved = tryResolveWithSolver(cit);
+			if (solved.isPresent()) {
+				return solved;
+			}
+
+			String fallbackName = cit.getNameWithScope(); // may be Outer.Inner
+			logger.log(Level.INFO, () -> "Textual: " + fallbackName);
+
+			TypeDeclaration<?> td = getByFqn(fallbackName);
+			if (td != null) {
+				logger.log(Level.INFO, () -> "Index hit: " + fallbackName);
+				return Optional.of(new DeclaredTypeRef(td));
+			}
+
+			return Optional.of(new UnresolvedTypeRef(fallbackName));
 		}
-		logger.log(Level.INFO, () -> "UNSOLVED: " + cit.getNameWithScope());
-		return Optional.of(new UnresolvedTypeRef(fallbackName));
 
+		// Last-resort: keep a name, don’t go empty
+		// (IntersectionType, UnionType, VarType, UnknownType, etc.)
+		String label = typeNode.asString();
+		if (label == null || label.isBlank()) {
+			label = typeNode.toString();
+		}
+		return Optional.of(new UnresolvedTypeRef(label));
 	}
 
 	private Optional<TypeRef> tryResolveWithSolver(ClassOrInterfaceType cit) {

@@ -37,8 +37,8 @@ class DependencyContext {
 		this.er = er;
 	}
 
-	public Optional<TypeRef> resolveTarget(Type typeNode, Node usageSite) {
-		return idx.resolveTarget(typeNode, usageSite);
+	public Optional<TypeRef> resolveTarget(Type typeNode) {
+		return idx.resolveTarget(typeNode);
 	}
 
 	/**

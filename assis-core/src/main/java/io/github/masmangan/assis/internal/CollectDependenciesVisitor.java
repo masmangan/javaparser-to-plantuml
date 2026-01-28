@@ -23,7 +23,6 @@ import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.InstanceOfExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
@@ -47,27 +46,7 @@ final class CollectDependenciesVisitor extends VoidVisitorAdapter<DependencyCont
 		exit();
 	}
 
-	@Override
-	public void visit(FieldDeclaration fd, DependencyContext ctx) {
-		if (ownerStack.isEmpty()) {
-			super.visit(fd, ctx);
-			return;
-		}
-
-		for (VariableDeclarator vd : fd.getVariables()) {
-			recordTypeUse(vd.getType(), vd, ctx);
-		}
-
-		super.visit(fd, ctx);
-	}
-
-	@Override
-	public void visit(ObjectCreationExpr n, DependencyContext ctx) {
-		logger.log(Level.INFO, () -> "Object creationg for " + n);
-		recordTypeUse(n.getType(), n, ctx);
-		super.visit(n, ctx);
-	}
-
+	// no samples!
 	@Override
 	public void visit(EnumDeclaration n, DependencyContext ctx) {
 		enter(n);
@@ -86,32 +65,19 @@ final class CollectDependenciesVisitor extends VoidVisitorAdapter<DependencyCont
 		exit();
 	}
 
+	// no samples!
 	@Override
-	public void visit(InstanceOfExpr n, DependencyContext ctx) {
-		recordTypeUse(n.getType(), n, ctx);
-		super.visit(n, ctx);
-	}
+	public void visit(FieldDeclaration fd, DependencyContext ctx) {
+		if (ownerStack.isEmpty()) {
+			super.visit(fd, ctx);
+			return;
+		}
 
-	@Override
-	public void visit(CastExpr n, DependencyContext ctx) {
-		recordTypeUse(n.getType(), n, ctx);
-		super.visit(n, ctx);
-	}
+		for (VariableDeclarator vd : fd.getVariables()) {
+			recordTypeUse(vd.getType(), vd, ctx);
+		}
 
-	@Override
-	public void visit(ClassExpr n, DependencyContext ctx) {
-		recordTypeUse(n.getType(), n, ctx);
-		super.visit(n, ctx);
-	}
-
-	@Override
-	public void visit(MethodCallExpr n, DependencyContext ctx) {
-		n.getScope().ifPresent(scope -> {
-			if (scope instanceof NameExpr ne) {
-				recordScope(ne.getNameAsString(), n, ctx);
-			}
-		});
-		super.visit(n, ctx);
+		super.visit(fd, ctx);
 	}
 
 	@Override
@@ -137,18 +103,41 @@ final class CollectDependenciesVisitor extends VoidVisitorAdapter<DependencyCont
 		super.visit(md, ctx);
 	}
 
-	private void recordTypeUse(Type typeNode, Node site, DependencyContext ctx) {
-		logger.log(Level.INFO, () -> "Record Type Use for " + typeNode);
-		if (ownerStack.isEmpty()) {
-			return;
-		}
+	// related to visitor bug
+//	@Override
+//	public void visit(ObjectCreationExpr n, DependencyContext ctx) {
+//		logger.log(Level.INFO, () -> "Object creation for " + n);
+//		recordTypeUse(n.getType(), n, ctx);
+//		super.visit(n, ctx);
+//	}
 
-		ctx.resolveTarget(typeNode, site).ifPresent(target -> collect(owner(), target, ctx));
+	@Override
+	public void visit(InstanceOfExpr n, DependencyContext ctx) {
+		recordTypeUse(n.getType(), n, ctx);
+		super.visit(n, ctx);
+	}
 
-		// unwrap generic arguments
-		if (typeNode instanceof ClassOrInterfaceType cit) {
-			cit.getTypeArguments().ifPresent(args -> args.forEach(arg -> recordTypeUse(arg, site, ctx)));
-		}
+	@Override
+	public void visit(CastExpr n, DependencyContext ctx) {
+		recordTypeUse(n.getType(), n, ctx);
+		super.visit(n, ctx);
+	}
+
+	@Override
+	public void visit(ClassExpr n, DependencyContext ctx) {
+		recordTypeUse(n.getType(), n, ctx);
+		super.visit(n, ctx);
+	}
+
+	// no samples!
+	@Override
+	public void visit(MethodCallExpr n, DependencyContext ctx) {
+		n.getScope().ifPresent(scope -> {
+			if (scope instanceof NameExpr ne) {
+				recordScope(ne.getNameAsString(), n, ctx);
+			}
+		});
+		super.visit(n, ctx);
 	}
 
 	private void enter(TypeDeclaration<?> td) {
@@ -161,6 +150,19 @@ final class CollectDependenciesVisitor extends VoidVisitorAdapter<DependencyCont
 
 	private TypeDeclaration<?> owner() {
 		return ownerStack.peek();
+	}
+
+	private void recordTypeUse(Type typeNode, Node site, DependencyContext ctx) {
+		logger.log(Level.INFO, () -> "Record Type Use for " + typeNode);
+		if (ownerStack.isEmpty()) {
+			return;
+		}
+
+		ctx.resolveTarget(typeNode).ifPresent(target -> collect(owner(), target, ctx));
+
+		if (typeNode instanceof ClassOrInterfaceType cit) {
+			cit.getTypeArguments().ifPresent(args -> args.forEach(arg -> recordTypeUse(arg, site, ctx)));
+		}
 	}
 
 	private void recordScope(String simpleName, Node site, DependencyContext ctx) {
@@ -178,7 +180,6 @@ final class CollectDependenciesVisitor extends VoidVisitorAdapter<DependencyCont
 		if (to instanceof DeclaredTypeRef) {
 			ctx.addDependency(from, to);
 		} else {
-			// External + Unresolved become ghost deps
 			ctx.addCherryPick(from, to);
 		}
 	}
