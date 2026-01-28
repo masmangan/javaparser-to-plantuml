@@ -112,22 +112,13 @@ class GenerateClassDiagramDependencyCoverageSamplesTest {
 	}
 
 	@ParameterizedTest(name = "dependency coverage: {0}")
-	@ValueSource(strings = {
-	    "byinstanceof",
-	    "bycast",
-	    "byclassliteral",
-	    "byscope"
-	})
+	@ValueSource(strings = { "byinstanceof", "bycast", "byclassliteral", "byscope" })
 	void dependencyCoverageSamples(String sample) throws Exception {
-	    String puml = generatePumlFromSample(
-	        "samples/deps/" + sample,
-	        tempDir,
-	        sample
-	    );
+		String puml = generatePumlFromSample("samples/deps/" + sample, tempDir, sample);
 
-	    assertPumlContainsName(puml, "p1.A");
-	    assertPumlContainsName(puml, "p1.B");
-	    assertAnyLineContainsAll(puml, "p1.A", "..>", "p1.B");
+		assertPumlContainsName(puml, "p1.A");
+		assertPumlContainsName(puml, "p1.B");
+		assertAnyLineContainsAll(puml, "p1.A", "..>", "p1.B");
 		assertPumlNotContains(puml, "-->");
 
 	}

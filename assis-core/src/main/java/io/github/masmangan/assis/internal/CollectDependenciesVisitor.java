@@ -31,6 +31,7 @@ import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 /**
  * Visits AST to collect dependency relationships.
  *
+ * @author Marco Mangan
  */
 final class CollectDependenciesVisitor extends VoidVisitorAdapter<DependencyContext> {
 
@@ -181,4 +182,5 @@ final class CollectDependenciesVisitor extends VoidVisitorAdapter<DependencyCont
 			ctx.addCherryPick(from, to);
 		}
 	}
+
 }

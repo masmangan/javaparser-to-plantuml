@@ -7,8 +7,10 @@ package io.github.masmangan.assis.internal;
 
 /**
  *
+ * @author Marco Mangan
  */
 sealed interface TypeRef permits DeclaredTypeRef, ExternalTypeRef, UnresolvedTypeRef {
 
 	String displayName();
+
 }

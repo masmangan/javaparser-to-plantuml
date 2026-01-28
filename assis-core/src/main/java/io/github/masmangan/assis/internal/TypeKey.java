@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2025-2026, Marco Mangan. All rights reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ */
+
 package io.github.masmangan.assis.internal;
 
 import java.util.Objects;
@@ -30,6 +35,8 @@ import java.util.Objects;
  * compiler-visible marker distinguishing type-related strings from other
  * textual values.
  * </p>
+ *
+ * @author Marco Mangan
  */
 public record TypeKey(String text) {
 
@@ -41,4 +48,5 @@ public record TypeKey(String text) {
 	public String toString() {
 		return text;
 	}
+
 }

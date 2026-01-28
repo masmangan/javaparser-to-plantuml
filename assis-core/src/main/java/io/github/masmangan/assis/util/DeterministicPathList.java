@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2025-2026, Marco Mangan. All rights reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ */
+
 package io.github.masmangan.assis.util;
 
 import java.nio.file.Path;
@@ -23,6 +28,8 @@ import java.util.stream.Collectors;
  *
  * Non-goals: - This is NOT semantic sorting (packages/types/etc). It's only
  * deterministic root ordering.
+ *
+ * @author Marco Mangan
  */
 public final class DeterministicPathList implements Iterable<Path> {
 
@@ -106,4 +113,5 @@ public final class DeterministicPathList implements Iterable<Path> {
 			throw new IllegalArgumentException("sourceRoots must not be empty.");
 		}
 	}
+
 }

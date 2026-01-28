@@ -7,6 +7,8 @@ package io.github.masmangan.assis.internal;
 
 /**
  *
+ *
+ * @author Marco Mangan
  */
 record UnresolvedTypeRef(String name) implements TypeRef {
 
@@ -14,4 +16,5 @@ record UnresolvedTypeRef(String name) implements TypeRef {
 	public String displayName() {
 		return name;
 	}
+
 }

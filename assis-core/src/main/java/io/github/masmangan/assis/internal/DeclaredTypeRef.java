@@ -9,6 +9,8 @@ import com.github.javaparser.ast.body.TypeDeclaration;
 
 /**
  *
+ *
+ * @author Marco Mangan
  */
 record DeclaredTypeRef(TypeDeclaration<?> declaration) implements TypeRef {
 
@@ -16,4 +18,5 @@ record DeclaredTypeRef(TypeDeclaration<?> declaration) implements TypeRef {
 	public String displayName() {
 		return declaration.getNameAsString();
 	}
+
 }

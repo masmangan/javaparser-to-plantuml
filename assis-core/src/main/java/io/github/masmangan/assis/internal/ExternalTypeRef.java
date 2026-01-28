@@ -7,6 +7,8 @@ package io.github.masmangan.assis.internal;
 
 /**
  *
+ *
+ * @author Marco Mangan
  */
 record ExternalTypeRef(String fqn) implements TypeRef {
 
@@ -14,4 +16,5 @@ record ExternalTypeRef(String fqn) implements TypeRef {
 	public String displayName() {
 		return fqn;
 	}
+
 }

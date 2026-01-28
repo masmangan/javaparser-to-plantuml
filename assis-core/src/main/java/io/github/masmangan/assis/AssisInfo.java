@@ -7,6 +7,8 @@ package io.github.masmangan.assis;
 
 /**
  * Placeholder for ASSIS CORE information.
+ *
+ * @author Marco Mangan
  */
 public class AssisInfo {
 
@@ -24,4 +26,5 @@ public class AssisInfo {
 		String v = GenerateClassDiagram.class.getPackage().getImplementationVersion();
 		return (v == null || v.isBlank()) ? "dev" : v;
 	}
+
 }

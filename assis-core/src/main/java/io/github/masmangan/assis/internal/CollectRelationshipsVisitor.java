@@ -44,6 +44,8 @@ import io.github.masmangan.assis.io.PlantUMLWriter;
  * {@link CollectTypesVisitor}) or as an association here, never both. The
  * decision is made by resolving the declared type name using
  * {@link DeclaredIndex#resolveTypeName(String, String)}.
+ *
+ * @author Marco Mangan
  */
 class CollectRelationshipsVisitor {
 

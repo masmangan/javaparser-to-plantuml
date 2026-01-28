@@ -60,6 +60,8 @@ import io.github.masmangan.assis.io.PlantUMLWriter;
  * This class performs no PlantUML validation; it relies on
  * {@link PlantUMLWriter} for block emission and on upstream logic for indexing
  * and name resolution.
+ *
+ * @author Marco Mangan
  */
 class CollectTypesVisitor {
 
@@ -491,4 +493,5 @@ class CollectTypesVisitor {
 		}
 		return resolved;
 	}
+
 }

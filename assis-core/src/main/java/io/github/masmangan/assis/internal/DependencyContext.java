@@ -15,6 +15,7 @@ import io.github.masmangan.assis.io.PlantUMLWriter;
 
 /**
  *
+ * @author Marco Mangan
  */
 class DependencyContext {
 
